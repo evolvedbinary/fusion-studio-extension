@@ -1,69 +1,14 @@
 import * as React from 'react';
-import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, SelectableTreeNode, ExpandableTreeNode, TreeNode, NodeProps, ConfirmDialog } from "@theia/core/lib/browser";
+import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, ConfirmDialog } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
 import { NewConnectionDialog } from './new-connection-dialog';
-import { PebbleConnection } from '../common/connection.class';
-import { PebbleResource, PebbleCollection } from '../common/item.class';
+import { PebbleConnection } from '../classes/connection';
+import { PebbleResource, PebbleCollection } from '../classes/item';
 import { PEBBLE_RESOURCE_SCHEME } from './resource';
+import { PebbleNode, PebbleResourceNode, PebbleCollectionNode, PebbleLoadingNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from '../classes/node';
 
 export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
-
-export interface PebbleNode extends TreeNode {
-  type: 'connection' | 'toolbar' | 'item' | 'loading';
-  connection?: PebbleConnection;
-}
-
-export interface PebbleConnectionNode extends PebbleNode, CompositeTreeNode, SelectableTreeNode,  ExpandableTreeNode {
-  type: 'connection';
-  connection: PebbleConnection;
-  loaded?: boolean;
-}
-export interface PebbleLoadingNode extends PebbleNode {
-  type: 'loading';
-  connection?: PebbleConnection;
-}
-export interface PebbleToolbarNode extends PebbleNode {
-  type: 'toolbar';
-  connection?: PebbleConnection;
-}
-export interface PebbleItemNode extends PebbleNode, SelectableTreeNode {
-  type: 'item';
-  connection: PebbleConnection;
-  link: string;
-  loaded?: boolean;
-  collection: boolean;
-}
-export interface PebbleCollectionNode extends PebbleItemNode, CompositeTreeNode, ExpandableTreeNode {
-  collection: true;
-}
-export interface PebbleResourceNode extends PebbleItemNode {
-  collection: false;
-}
-
-export namespace PebbleNode {
-  export function is(node: TreeNode): node is PebbleNode {
-    return !!node && 'type' in node;
-  }
-  export function isConnection(node: TreeNode): node is PebbleConnectionNode {
-    return PebbleNode.is(node) && node.type === 'connection';
-  }
-  export function isToolbar(node: TreeNode): node is PebbleToolbarNode {
-    return PebbleNode.is(node) && node.type === 'toolbar';
-  }
-  export function isLoading(node: TreeNode): node is PebbleLoadingNode {
-    return PebbleNode.is(node) && node.type === 'loading';
-  }
-  export function isItem(node: TreeNode): node is PebbleCollectionNode {
-    return PebbleNode.is(node) && node.type === 'item';
-  }
-  export function isCollection(node: TreeNode): node is PebbleCollectionNode {
-    return PebbleNode.isItem(node) && node.collection;
-  }
-  export function isResource(node: TreeNode): node is PebbleItemNode {
-    return PebbleNode.isItem(node) && !node.collection;
-  }
-}
 
 export class PebbleViewWidget extends TreeWidget {
   constructor(

@@ -1,10 +1,11 @@
 import { open, WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode, OpenerService } from "@theia/core/lib/browser";
 import { injectable, inject } from "inversify";
-import { PebbleViewWidget, PebbleViewWidgetFactory, PebbleNode, PebbleConnectionNode, PebbleResourceNode } from "./widget";
+import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget";
+import { PebbleNode, PebbleConnectionNode, PebbleResourceNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
 import { PebbleApi } from "../common/api";
-import { PebbleItem, PebbleCollection } from "../common/item.class";
-import { PebbleConnection } from "../common/connection.class";
+import { PebbleItem, PebbleCollection } from "../classes/item";
+import { PebbleConnection } from "../classes/connection";
 import URI from "@theia/core/lib/common/uri";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 

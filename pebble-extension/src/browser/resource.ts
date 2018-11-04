@@ -3,7 +3,7 @@ import URI from "@theia/core/lib/common/uri";
 import { injectable } from "inversify";
 import { TextDocumentContentChangeEvent } from "vscode-languageserver-types";
 import { PebbleApi } from "../common/api";
-import { PebbleConnection } from "../common/connection.class";
+import { PebbleConnection } from "../classes/connection";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 

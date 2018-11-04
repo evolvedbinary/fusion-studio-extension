@@ -1,4 +1,4 @@
-import { PebbleCollection, PebblePermission, PebblePermissions, PebbleResource, PebbleItem } from "./item.class";
+import { PebbleCollection, PebblePermission, PebblePermissions, PebbleResource, PebbleItem } from "../classes/item";
 // import { xml2js } from 'xml-js';
 
 // const TEMP = '';

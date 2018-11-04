@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
-import { PebbleConnection } from "../common/connection.class";
+import { PebbleConnection } from "../classes/connection";
 
 @injectable()
 export class PebbleConnectionDialogProps extends DialogProps {
