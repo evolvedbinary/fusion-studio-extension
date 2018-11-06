@@ -4,6 +4,7 @@ import { injectable } from "inversify";
 import { TextDocumentContentChangeEvent } from "vscode-languageserver-types";
 import { PebbleApi } from "../common/api";
 import { PebbleConnection } from "../classes/connection";
+import { PebbleDocument } from "../classes/item";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 
@@ -15,9 +16,9 @@ export class PebbleResource implements Resource {
     const parts = this.uri.path.toString().split(':');
     const id = parts.pop() || '';
     const connection: PebbleConnection = JSON.parse(parts.join(':'));
-    const result = await PebbleApi.load(connection, id);
+    const result = await PebbleApi.load(connection, id) as PebbleDocument;
     console.log(result);
-    return JSON.stringify(result, null, 2);
+    return result.content;
   }
   async saveContentChanges(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void> {
     console.group('saving changes...');
