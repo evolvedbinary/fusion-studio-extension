@@ -61,13 +61,21 @@ function readCollection(data: any): PebbleCollection {
 }
 
 async function load(server: string, uri: string): Promise<PebbleCollection | PebbleResource> {
-  const result = await fetch(server + '/exist/restxq/pebble/explorer?uri=' + uri).then(result => result.json());
-  return 'collections' in result ? readCollection(result) : readResource(result, server, uri);
+  // try {
+    const result = await fetch(server + '/exist/restxq/pebble/explorer?uri=' + uri).then(result => result.json());
+    return 'collections' in result ? readCollection(result) : readResource(result, server, uri);
+  // } catch (e) {
+  //   throw e;
+  // }
 }
 
 async function connect(server: string): Promise<PebbleCollection> {
-  const root = await load(server, '/') as PebbleCollection;
-  return root;
+  // try {
+    const root = await load(server, '/') as PebbleCollection;
+    return root;
+  // } catch (e) {
+  //   throw e;
+  // }
 }
 
 export const PebbleApi = {

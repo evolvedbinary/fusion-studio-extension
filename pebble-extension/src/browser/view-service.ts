@@ -36,11 +36,16 @@ export class PebbleViewService implements WidgetFactory {
       return;
     }
     this.widget.laod(node);
-    const result = await PebbleApi.connect(connection.server);
-    (node as PebbleConnectionNode).loaded = true;
-    const collection = result as PebbleCollection;
-    collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
-    collection.resources.forEach(resource => this.widget && this.widget.addResource(node, connection, resource));
+    try {
+      const result = await PebbleApi.connect(connection.server);
+      (node as PebbleConnectionNode).loaded = true;
+      const collection = result as PebbleCollection;
+      collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
+      collection.resources.forEach(resource => this.widget && this.widget.addResource(node, connection, resource));
+    } catch (e) {
+      (node as PebbleConnectionNode).expanded = false;
+      console.error(e);
+    }
     this.widget.unlaod(node);
   }
   
@@ -49,12 +54,17 @@ export class PebbleViewService implements WidgetFactory {
       return;
     }
     this.widget.laod(node);
-    const result = await PebbleApi.load(connection.server, uri);
-    if (PebbleItem.isResource(result)) {} else {
-      (node as PebbleConnectionNode).loaded = true;
-      const collection = result as PebbleCollection;
-      collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
-      collection.resources.forEach(resource => this.widget && this.widget.addResource(node, connection, resource));
+    try {
+      const result = await PebbleApi.load(connection.server, uri);
+      if (PebbleItem.isResource(result)) {} else {
+        (node as PebbleConnectionNode).loaded = true;
+        const collection = result as PebbleCollection;
+        collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
+        collection.resources.forEach(resource => this.widget && this.widget.addResource(node, connection, resource));
+      }
+    } catch (e) {
+      (node as PebbleConnectionNode).expanded = false;
+      console.error(e);
     }
     this.widget.unlaod(node);
   }
