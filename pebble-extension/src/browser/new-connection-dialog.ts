@@ -83,8 +83,7 @@ export class NewConnectionDialog extends AbstractDialog<NewConnectionDialogResul
   protected isValid(value: NewConnectionDialogResult, mode: DialogMode): DialogError {
     return !!(
       value.connection.name &&
-      value.connection.server &&
-      value.connection.username
+      value.connection.server
     );
     // return super.isValid(value, mode);
   }

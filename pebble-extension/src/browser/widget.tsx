@@ -123,7 +123,7 @@ export class PebbleViewWidget extends TreeWidget {
       title: 'New connection',
       name: 'Localhost',
       server: 'http://localhost:8080',
-      username: 'admin',
+      username: '',
       password: '',
     });
     const result = await dialog.open();
@@ -174,10 +174,10 @@ export class PebbleViewWidget extends TreeWidget {
     </div>;
   }
   protected renderConnection(node: PebbleConnectionNode): React.ReactNode {
-    return <div className='pebbleNode connectionNode' title={node.connection.name + ' (' + node.connection.username + '@' + node.connection.server + ')'}>
+    return <div className='pebbleNode connectionNode' title={node.connection.name + ' (' + (node.connection.username || '(anonymous)') + '@' + node.connection.server + ')'}>
       <i className={'fa fa-toggle-' + (node.loaded ? 'on' : 'off')}></i>
       <span className='name'>{node.connection.name}</span>
-      <span className='server'>{node.connection.username}@{node.connection.server}</span>
+      <span className='server'>{node.connection.username || '(anonymous)'}@{node.connection.server}</span>
     </div>;
   }
   protected renderItem(node: PebbleItemNode): React.ReactNode {

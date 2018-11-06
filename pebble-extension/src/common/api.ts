@@ -45,13 +45,11 @@ function readItem(data: any): PebbleItem {
   };
 }
 async function get(connection: PebbleConnection, uri: string): Promise<Response> {
-  const headers = new Headers();
-  console.log('Basic ' + btoa(connection.username + ':' + connection.password));
-  headers.append('Authorization', 'Basic ' + btoa(connection.username + ':' + connection.password));
-  console.log(headers);
-  return fetch(connection.server + uri,  { headers: {
-    'Authorization': 'Basic ' + btoa(connection.username + ':' + connection.password)
-  } });
+  return fetch(connection.server + uri,  connection.username === '' ? undefined : {
+    headers: {
+      Authorization: 'Basic ' + btoa(connection.username + ':' + connection.password),
+    }
+  });
 }
 async function readDocument(data: any, connection: PebbleConnection, uri: string): Promise<PebbleDocument> {
   return {
