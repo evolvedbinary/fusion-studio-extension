@@ -82,6 +82,7 @@ export class PebbleViewWidget extends TreeWidget {
   }
   public unlaod(node: TreeNode): void {
     CompositeTreeNode.removeChild(node as CompositeTreeNode, (node as CompositeTreeNode).children[0]);
+    this.model.refresh();
   }
   public addToolbar(parent: CompositeTreeNode): void {
     this.addNode(parent, {
