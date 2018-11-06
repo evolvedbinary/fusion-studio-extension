@@ -37,7 +37,7 @@ export class PebbleViewService implements WidgetFactory {
     }
     this.widget.laod(node);
     try {
-      const result = await PebbleApi.connect(connection.server);
+      const result = await PebbleApi.connect(connection);
       (node as PebbleConnectionNode).loaded = true;
       const collection = result as PebbleCollection;
       collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
@@ -55,7 +55,7 @@ export class PebbleViewService implements WidgetFactory {
     }
     this.widget.laod(node);
     try {
-      const result = await PebbleApi.load(connection.server, uri);
+      const result = await PebbleApi.load(connection, uri);
       if (PebbleItem.isResource(result)) {} else {
         (node as PebbleConnectionNode).loaded = true;
         const collection = result as PebbleCollection;

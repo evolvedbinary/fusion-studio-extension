@@ -1,4 +1,5 @@
 import { PebbleCollection, PebblePermission, PebblePermissions, PebbleResource, PebbleItem } from "../classes/item";
+import { PebbleConnection } from "../classes/connection";
 // import { xml2js } from 'xml-js';
 
 // const TEMP = '';
@@ -43,13 +44,20 @@ function readItem(data: any): PebbleItem {
     permissions: readPermissions(data['mode'] || ''),
   };
 }
-async function readResource(data: any, server: string, uri: string): Promise<PebbleResource> {
+async function get(connection: PebbleConnection, uri: string): Promise<Response> {
+  const headers = new Headers();
+  console.log('Basic ' + btoa(connection.username + ':' + connection.password));
+  headers.append('Authorization', 'Basic ' + btoa(connection.username + ':' + connection.password));
+  console.log(headers);
+  return fetch(connection.server + uri,  { headers: {
+    'Authorization': 'Basic ' + btoa(connection.username + ':' + connection.password)
+  } });
+}
+async function readResource(data: any, connection: PebbleConnection, uri: string): Promise<PebbleResource> {
   return {
     ...readItem(data),
     lastModified: readDate(data['lastModified'] || null),
-    content: 'uri',
-    // TODO: add cors config to the api
-    // content: await fetch(server + '/exist/rest' + uri).then(result => result.text()),
+    content: await get(connection, '/exist/restxq/pebble/document?uri=' + uri).then(result => result.text()),
   };
 }
 function readCollection(data: any): PebbleCollection {
@@ -60,18 +68,18 @@ function readCollection(data: any): PebbleCollection {
   };
 }
 
-async function load(server: string, uri: string): Promise<PebbleCollection | PebbleResource> {
+async function load(connection: PebbleConnection, uri: string): Promise<PebbleCollection | PebbleResource> {
   // try {
-    const result = await fetch(server + '/exist/restxq/pebble/explorer?uri=' + uri).then(result => result.json());
-    return 'collections' in result ? readCollection(result) : readResource(result, server, uri);
+    const result = await get(connection, '/exist/restxq/pebble/explorer?uri=' + uri).then(result => result.json());
+    return 'collections' in result ? readCollection(result) : readResource(result, connection, uri);
   // } catch (e) {
   //   throw e;
   // }
 }
 
-async function connect(server: string): Promise<PebbleCollection> {
+async function connect(connection: PebbleConnection): Promise<PebbleCollection> {
   // try {
-    const root = await load(server, '/') as PebbleCollection;
+    const root = await load(connection, '/') as PebbleCollection;
     return root;
   // } catch (e) {
   //   throw e;

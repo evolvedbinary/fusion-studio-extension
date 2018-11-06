@@ -15,7 +15,7 @@ export class PebbleResource implements Resource {
     const parts = this.uri.path.toString().split(':');
     const id = parts.pop() || '';
     const connection: PebbleConnection = JSON.parse(parts.join(':'));
-    const result = await PebbleApi.load(connection.server, id);
+    const result = await PebbleApi.load(connection, id);
     console.log(result);
     return JSON.stringify(result, null, 2);
   }
