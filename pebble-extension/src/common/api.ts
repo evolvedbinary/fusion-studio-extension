@@ -1,4 +1,4 @@
-import { PebbleCollection, PebblePermission, PebblePermissions, PebbleResource, PebbleItem } from "../classes/item";
+import { PebbleCollection, PebblePermission, PebblePermissions, PebbleDocument, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 // import { xml2js } from 'xml-js';
 
@@ -53,7 +53,7 @@ async function get(connection: PebbleConnection, uri: string): Promise<Response>
     'Authorization': 'Basic ' + btoa(connection.username + ':' + connection.password)
   } });
 }
-async function readResource(data: any, connection: PebbleConnection, uri: string): Promise<PebbleResource> {
+async function readDocument(data: any, connection: PebbleConnection, uri: string): Promise<PebbleDocument> {
   return {
     ...readItem(data),
     lastModified: readDate(data['lastModified'] || null),
@@ -64,14 +64,14 @@ function readCollection(data: any): PebbleCollection {
   return {
     ...readItem(data),
     collections: (data['collections'] || []).map((collection: any) => readCollection(collection)),
-    resources: (data['documents'] || []).map((docoment: any) => readCollection(docoment)),
+    documents: (data['documents'] || []).map((docoment: any) => readCollection(docoment)),
   };
 }
 
-async function load(connection: PebbleConnection, uri: string): Promise<PebbleCollection | PebbleResource> {
+async function load(connection: PebbleConnection, uri: string): Promise<PebbleCollection | PebbleDocument> {
   // try {
     const result = await get(connection, '/exist/restxq/pebble/explorer?uri=' + uri).then(result => result.json());
-    return 'collections' in result ? readCollection(result) : readResource(result, connection, uri);
+    return 'collections' in result ? readCollection(result) : readDocument(result, connection, uri);
   // } catch (e) {
   //   throw e;
   // }

@@ -3,9 +3,9 @@ import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNod
 import { inject, postConstruct } from "inversify";
 import { NewConnectionDialog } from './new-connection-dialog';
 import { PebbleConnection } from '../classes/connection';
-import { PebbleResource, PebbleCollection } from '../classes/item';
+import { PebbleDocument, PebbleCollection } from '../classes/item';
 import { PEBBLE_RESOURCE_SCHEME } from './resource';
-import { PebbleNode, PebbleResourceNode, PebbleCollectionNode, PebbleLoadingNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from '../classes/node';
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleLoadingNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from '../classes/node';
 
 export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
@@ -49,17 +49,17 @@ export class PebbleViewWidget extends TreeWidget {
   protected getName(id: string): string {
     return id.split('/').pop() || id;
   }
-  public addResource(parent: TreeNode, connection: PebbleConnection, resource: PebbleResource): void {
+  public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument): void {
     this.addNode(parent, {
       type: 'item',
       connection,
       collection: false,
-      id: resource.name,
-      link: PEBBLE_RESOURCE_SCHEME + ':' + resource.name,
-      name: this.getName(resource.name),
+      id: document.name,
+      link: PEBBLE_RESOURCE_SCHEME + ':' + document.name,
+      name: this.getName(document.name),
       parent: parent,
       selected: false,
-    } as PebbleResourceNode);
+    } as PebbleDocumentNode);
   }
   public addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): void {
     this.addNode(parent, {
@@ -181,7 +181,7 @@ export class PebbleViewWidget extends TreeWidget {
     </div>;
   }
   protected renderItem(node: PebbleItemNode): React.ReactNode {
-    return node.collection ? this.renderCollection(node as PebbleCollectionNode) : this.renderResource(node as PebbleResourceNode);
+    return node.collection ? this.renderCollection(node as PebbleCollectionNode) : this.renderDocument(node as PebbleDocumentNode);
   }
   protected renderCollection(node: PebbleCollectionNode): React.ReactNode {
     return <div className='pebbleNode itemNode collectionNode'>
@@ -189,8 +189,8 @@ export class PebbleViewWidget extends TreeWidget {
       <span className='name'>{node.name}</span>
     </div>;
   }
-  protected renderResource(node: PebbleResourceNode): React.ReactNode {
-    return <div className='pebbleNode itemNode resourceNode'>
+  protected renderDocument(node: PebbleDocumentNode): React.ReactNode {
+    return <div className='pebbleNode itemNode documentNode'>
       <i className={'icon fa fa-file' + (node.loaded ? '' : '-o')}></i>
       <span className='name'>{node.name}</span>
     </div>;

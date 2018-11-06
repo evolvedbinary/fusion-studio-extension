@@ -1,7 +1,7 @@
 import { open, WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode, OpenerService } from "@theia/core/lib/browser";
 import { injectable, inject } from "inversify";
 import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget";
-import { PebbleNode, PebbleConnectionNode, PebbleResourceNode } from "../classes/node";
+import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
 import { PebbleApi } from "../common/api";
 import { PebbleItem, PebbleCollection } from "../classes/item";
@@ -41,7 +41,7 @@ export class PebbleViewService implements WidgetFactory {
       (node as PebbleConnectionNode).loaded = true;
       const collection = result as PebbleCollection;
       collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
-      collection.resources.forEach(resource => this.widget && this.widget.addResource(node, connection, resource));
+      collection.documents.forEach(document => this.widget && this.widget.addDocument(node, connection, document));
     } catch (e) {
       (node as PebbleConnectionNode).expanded = false;
       console.error(e);
@@ -56,11 +56,11 @@ export class PebbleViewService implements WidgetFactory {
     this.widget.laod(node);
     try {
       const result = await PebbleApi.load(connection, uri);
-      if (PebbleItem.isResource(result)) {} else {
+      if (PebbleItem.isDocument(result)) {} else {
         (node as PebbleConnectionNode).loaded = true;
         const collection = result as PebbleCollection;
         collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
-        collection.resources.forEach(resource => this.widget && this.widget.addResource(node, connection, resource));
+        collection.documents.forEach(document => this.widget && this.widget.addDocument(node, connection, document));
       }
     } catch (e) {
       (node as PebbleConnectionNode).expanded = false;
@@ -70,14 +70,14 @@ export class PebbleViewService implements WidgetFactory {
   }
   
   async onOpen(node: Readonly<any>): Promise<void> {
-    const resource = node as PebbleResourceNode;
+    const document = node as PebbleDocumentNode;
     const uri = new URI(PEBBLE_RESOURCE_SCHEME + ':' + JSON.stringify({
-      server: resource.connection.server,
-      username: resource.connection.username,
-      password: resource.connection.password,
-    }) + ':' + resource.id);
+      server: document.connection.server,
+      username: document.connection.username,
+      password: document.connection.password,
+    }) + ':' + document.id);
     await open(this.openerService, uri);
-    resource.loaded = true;
+    document.loaded = true;
     this.widget && this.widget.model.refresh();
   }
   

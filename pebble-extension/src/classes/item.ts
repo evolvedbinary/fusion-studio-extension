@@ -15,13 +15,13 @@ export interface PebbleItem {
   group: string;
   permissions?: PebblePermissions
 }
-export interface PebbleResource extends PebbleItem {
+export interface PebbleDocument extends PebbleItem {
   lastModified?: Date;
   content: string;
 }
 export interface PebbleCollection extends PebbleItem {
   collections: PebbleCollection[];
-  resources: PebbleResource[];
+  documents: PebbleDocument[];
 }
 
 
@@ -37,9 +37,9 @@ export namespace PebbleItem {
   export function isCollection(obj: any): obj is PebbleItem {
     return PebbleItem.is(obj)
       && 'collections' in obj
-      && 'resources' in obj;
+      && 'Documents' in obj;
   }
-  export function isResource(obj: any): obj is PebbleItem {
+  export function isDocument(obj: any): obj is PebbleItem {
     return PebbleItem.is(obj)
       && 'content' in obj
       && 'lastModified' in obj;

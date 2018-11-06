@@ -29,7 +29,7 @@ export interface PebbleItemNode extends PebbleNode, SelectableTreeNode {
 export interface PebbleCollectionNode extends PebbleItemNode, CompositeTreeNode, ExpandableTreeNode {
   collection: true;
 }
-export interface PebbleResourceNode extends PebbleItemNode {
+export interface PebbleDocumentNode extends PebbleItemNode {
   collection: false;
 }
 
@@ -52,7 +52,7 @@ export namespace PebbleNode {
   export function isCollection(node: TreeNode): node is PebbleCollectionNode {
     return PebbleNode.isItem(node) && node.collection;
   }
-  export function isResource(node: TreeNode): node is PebbleItemNode {
+  export function isDocument(node: TreeNode): node is PebbleItemNode {
     return PebbleNode.isItem(node) && !node.collection;
   }
 }
