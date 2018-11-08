@@ -1,43 +1,73 @@
-import { injectable, inject } from "inversify";
-import { CommandContribution, CommandRegistry, MenuContribution, MenuModelRegistry, MessageService } from "@theia/core/lib/common";
-import { CommonMenus, open, OpenerService } from "@theia/core/lib/browser";
-// import { WorkspaceService } from "@theia/workspace/lib/browser";
-import URI from "@theia/core/lib/common/uri";
-import { PEBBLE_RESOURCE_SCHEME } from "./resource";
+import { injectable } from "inversify";
+import { AbstractViewContribution, CommonMenus, KeybindingRegistry } from "@theia/core/lib/browser";
+import { PebbleViewWidget } from "./widget";
+import { MenuModelRegistry, CommandRegistry } from "@theia/core";
+import { PEBBLE_COMMANDS } from "./commands";
+import { PebbleConnection } from "../classes/connection";
+import { NewConnectionDialog } from "./new-connection-dialog";
 
-export const ExCommand = {
-    id: 'Ex.command',
-    label: "Shows a message"
-};
-
+export const PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID = 'pebble-view';
 @injectable()
-export class ExCommandContribution implements CommandContribution {
+export class PebbleContribution extends AbstractViewContribution<PebbleViewWidget> {
 
-    constructor(
-        @inject(MessageService) private readonly messageService: MessageService,
-        // @inject(SidePanelHandler) private readonly test: SidePanelHandler,
-        @inject(OpenerService) private readonly os: OpenerService,
-        // @inject(WorkspaceService) private readonly ws: WorkspaceService,
-    ) {}
+  constructor() {
+    super({
+      widgetId: PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID,
+      widgetName: 'Pebble Connections',
+      defaultWidgetOptions: {
+        area: 'left'
+      },
+      toggleCommandId: 'PebbleView:toggle',
+      toggleKeybinding: 'ctrlcmd+shift+c'
+    });
+  }
 
-    registerCommands(registry: CommandRegistry): void {
-        registry.registerCommand(ExCommand, {
-            execute: () => {
-                this.messageService.info('Hello World! 4')
-                // console.log(this.tree);
-                open(this.os, new URI(PEBBLE_RESOURCE_SCHEME + ':///C:/Users/dc/w/tests/ex/ex/src/browser/test.xml'));
-            }
-        });
-    }
-}
+  async initializeLayout(): Promise<void> {
+    await this.openView();
+  }
 
-@injectable()
-export class ExMenuContribution implements MenuContribution {
+  async onStart(): Promise<void> {
+    // TODO: load saved state
+  }
 
-    registerMenus(menus: MenuModelRegistry): void {
-        menus.registerMenuAction(CommonMenus.EDIT_FIND, {
-            commandId: ExCommand.id,
-            label: 'Say Hello'
-        });
-    }
+  onStop(): void {
+    // TODO: save state
+  }
+
+  registerMenus(menus: MenuModelRegistry): void {
+    super.registerMenus(menus);
+    menus.registerMenuAction(CommonMenus.FILE_NEW, {
+      commandId: PEBBLE_COMMANDS.connect.id,
+      label: PEBBLE_COMMANDS.connect.menu,
+      icon: PEBBLE_COMMANDS.connect.icon,
+    });
+  }
+
+  registerCommands(registry: CommandRegistry): void {
+    super.registerCommands(registry);
+    registry.registerCommand(PEBBLE_COMMANDS.connect, {
+      execute: () => this.connect()
+    });
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    super.registerKeybindings(keybindings);
+    keybindings.registerKeybinding({
+      command: PEBBLE_COMMANDS.connect.id,
+      keybinding: PEBBLE_COMMANDS.connect.shortcut,
+    });
+  }
+
+  protected async connect(): Promise<PebbleConnection | null> {
+    const dialog = new NewConnectionDialog({
+      title: 'New connection',
+      name: 'Localhost',
+      server: 'http://localhost:8080',
+      username: '',
+      password: '',
+    });
+    const result = await dialog.open();
+    return result ? result.connection : null;
+  }
+
 }

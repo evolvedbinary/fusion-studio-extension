@@ -2,21 +2,16 @@
  * Generated using theia-extension-generator
  */
 
-import { ExCommandContribution, ExMenuContribution } from './contribution';
-import {
-  CommandContribution,
-  MenuContribution,
-  ResourceResolver,
-} from "@theia/core/lib/common";
+import { ResourceResolver } from "@theia/core/lib/common";
 
 import { ContainerModule, interfaces } from "inversify";
 import { PebbleResourceResolver } from '../browser/resource';
 import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget';
 import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PebbleViewService } from './view-service';
-import { PebbleViewContribution } from './view-contribution';
 
 import '../../src/style/index.scss';
+import { PebbleContribution } from "./contribution";
 
 export default new ContainerModule(bind => {
 
@@ -30,11 +25,10 @@ export default new ContainerModule(bind => {
   bind(PebbleResourceResolver).toSelf().inSingletonScope();
   bind(ResourceResolver).toService(PebbleResourceResolver);
 
-  bindViewContribution(bind, PebbleViewContribution);
-  bind(FrontendApplicationContribution).toService(PebbleViewContribution);
-  
-  bind(CommandContribution).to(ExCommandContribution);
-  bind(MenuContribution).to(ExMenuContribution);
+  // bindViewContribution(bind, PebbleViewContribution);
+  // bind(FrontendApplicationContribution).toService(PebbleViewContribution);
+  bindViewContribution(bind, PebbleContribution);
+  bind(FrontendApplicationContribution).toService(PebbleContribution);
   
 });
 
