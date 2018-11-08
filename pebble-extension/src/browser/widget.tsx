@@ -11,6 +11,7 @@ export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
 
 export class PebbleViewWidget extends TreeWidget {
+  static CONTEXT_MENU = ['pebble-context-menu'];
   constructor(
     @inject(TreeProps) protected readonly treeProps: TreeProps,
     @inject(TreeModel) model: TreeModel,

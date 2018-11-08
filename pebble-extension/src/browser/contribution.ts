@@ -36,6 +36,11 @@ export class PebbleContribution extends AbstractViewContribution<PebbleViewWidge
 
   registerMenus(menus: MenuModelRegistry): void {
     super.registerMenus(menus);
+    menus.registerMenuAction(PebbleViewWidget.CONTEXT_MENU, {
+      commandId: PEBBLE_COMMANDS.connect.id,
+      label: PEBBLE_COMMANDS.connect.menu,
+      icon: PEBBLE_COMMANDS.connect.icon,
+    });
     menus.registerMenuAction(CommonMenus.FILE_NEW, {
       commandId: PEBBLE_COMMANDS.connect.id,
       label: PEBBLE_COMMANDS.connect.menu,
