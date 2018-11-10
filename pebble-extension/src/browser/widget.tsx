@@ -4,7 +4,6 @@ import { inject, postConstruct } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleLoadingNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from '../classes/node';
 import { PebbleCore } from './core';
 import { PebbleAction } from '../classes/action';
-import { CommandRegistry } from '@theia/core';
 
 export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
@@ -13,7 +12,6 @@ export class PebbleViewWidget extends TreeWidget {
   static CONTEXT_MENU = ['pebble-context-menu'];
   constructor(
     @inject(PebbleCore) protected readonly core: PebbleCore,
-    @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(TreeProps) protected readonly treeProps: TreeProps,
     @inject(TreeModel) model: TreeModel,
     @inject(ContextMenuRenderer) protected readonly contextMenuRenderer: ContextMenuRenderer
@@ -42,7 +40,7 @@ export class PebbleViewWidget extends TreeWidget {
       <div className="title"><i className="fa fa-plug fa-fw"></i>Pebble Connections</div>
       <div className='center'>No connections available yet.</div>
       <div className='open-workspace-button-container'>
-        <button className='open-workspace-button' title='Connect to a database' onClick={() => this.commands.executeCommand('pebble.connect')}>Connect...</button>
+        <button className='open-workspace-button' title='Connect to a database' onClick={() => this.core.execute('pebble.connect')}>Connect...</button>
       </div>
     </div>);
   }
@@ -52,7 +50,7 @@ export class PebbleViewWidget extends TreeWidget {
       action = action.id;
     }
     if (typeof action === 'string') {
-      click = () => this.commands.executeCommand(action as string)
+      click = () => this.core.execute(action as string)
     } else {
       click = action.bind(this);
     }
