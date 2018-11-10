@@ -8,6 +8,7 @@ import { PebbleItem, PebbleCollection } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import URI from "@theia/core/lib/common/uri";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
+// import { PebbleSession } from "./session";
 
 @injectable()
 export class PebbleViewService implements WidgetFactory {
@@ -17,6 +18,7 @@ export class PebbleViewService implements WidgetFactory {
   protected widget?: PebbleViewWidget;
 
   constructor(
+    // @inject(PebbleSession) protected session: PebbleSession,
     @inject(PebbleViewWidgetFactory) protected factory: PebbleViewWidgetFactory,
     @inject(OpenerService) private readonly openerService: OpenerService,
   ) { }
@@ -98,6 +100,7 @@ export class PebbleViewService implements WidgetFactory {
     if (!this.widget) {
       return;
     }
+    // this.session.selected = nodes.length > 0 ? nodes[0] : undefined;
     const toolbar = nodes.find(node => PebbleNode.isToolbar(node));
     if (toolbar) {
       this.widget.model.toggleNode(toolbar);

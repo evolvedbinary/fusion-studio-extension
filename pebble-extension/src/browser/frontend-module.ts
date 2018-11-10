@@ -12,6 +12,7 @@ import { PebbleViewService } from './view-service';
 
 import '../../src/style/index.scss';
 import { PebbleContribution } from "./contribution";
+import { PebbleCore } from "./core";
 
 export default new ContainerModule(bind => {
 
@@ -27,8 +28,11 @@ export default new ContainerModule(bind => {
 
   // bindViewContribution(bind, PebbleViewContribution);
   // bind(FrontendApplicationContribution).toService(PebbleViewContribution);
+
   bindViewContribution(bind, PebbleContribution);
   bind(FrontendApplicationContribution).toService(PebbleContribution);
+
+  bind(PebbleCore).toSelf().inSingletonScope();
   
 });
 
