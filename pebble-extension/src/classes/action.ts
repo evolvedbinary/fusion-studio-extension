@@ -55,14 +55,14 @@ export function registerMenus(menus: MenuModelRegistry, ...actions: PebbleAction
   actions.forEach(action => {
     if (action.menu) {
       menus.registerMenuAction(action.menu, {
-        commandId: action.id,
+        commandId: actionID(action.id),
         icon: action.icon,
         label: action.menuLabel || action.label,
       })
     }
     if (action.contextMenu) {
       menus.registerMenuAction(action.contextMenu, {
-        commandId: action.id,
+        commandId: actionID(action.id),
         icon: action.icon,
         label: action.contextMenuLabel || action.label,
       })
@@ -73,7 +73,7 @@ export function registerKeybindings(keybindings: KeybindingRegistry, ...actions:
   actions.forEach(action => {
     if (action.keys) {
       keybindings.registerKeybinding({
-        command: action.id,
+        command: actionID(action.id),
         keybinding: action.keys,
       });
     }
