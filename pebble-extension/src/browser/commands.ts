@@ -3,7 +3,7 @@ import { CommonMenus } from "@theia/core/lib/browser";
 import { PebbleViewWidget } from "./widget";
 
 const connect: PebbleAction = {
-  id: 'pebble.connect',
+  id: 'connect',
   label: 'Connect to a database',
   menu: CommonMenus.FILE_NEW,
   menuLabel: 'Connect...',
@@ -12,7 +12,7 @@ const connect: PebbleAction = {
   execute: core => () => core && core.newConnection(),
 };
 const disconnect: PebbleAction = {
-  id: 'pebble.disconnect',
+  id: 'disconnect',
   label: 'Remove connection',
   contextMenu: PebbleViewWidget.CONTEXT_MENU,
   keys: 'alt+shift+i',

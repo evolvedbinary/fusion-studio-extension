@@ -2,6 +2,7 @@ import { PebbleCore } from "../browser/core";
 import { CommandRegistry, MenuModelRegistry, CommandHandler } from "@theia/core";
 import { KeybindingRegistry } from "@theia/core/lib/browser";
 
+export const ACTIONS_SCOPE = 'pebble';
 export namespace PebbleAction {
   export function is(action: any): action is PebbleAction {
     return !!action && typeof action === 'object'
@@ -24,8 +25,17 @@ export interface PebbleAction {
   visible?(core: PebbleCore | undefined): (...args: any[]) => boolean;
   toggled?(core: PebbleCore | undefined): (...args: any[]) => boolean;
 }
+
+export function actionID(id: string): string {
+  return id.indexOf('.') > -1 ? id : ACTIONS_SCOPE + '.' + id;
+}
+
 export function registerCommands(core: PebbleCore | undefined, commands: CommandRegistry, ...actions: PebbleAction[]) {
   actions.forEach(action => {
+    const command = {
+      id: actionID(action.id),
+      label: action.label,
+    }
     const handler: CommandHandler = {
       execute: action.execute(core),
     }
@@ -38,7 +48,7 @@ export function registerCommands(core: PebbleCore | undefined, commands: Command
     if (action.toggled) {
       handler.isToggled = action.toggled(core);
     }
-    commands.registerCommand(action, handler);
+    commands.registerCommand(command, handler);
   });
 }
 export function registerMenus(menus: MenuModelRegistry, ...actions: PebbleAction[]) {

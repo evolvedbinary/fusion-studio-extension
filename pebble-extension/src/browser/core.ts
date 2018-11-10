@@ -6,6 +6,7 @@ import { PebbleDocument, PebbleCollection } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import { NewConnectionDialog } from "./new-connection-dialog";
 import { CommandRegistry } from "@theia/core";
+import { actionID } from "../classes/action";
 
 @injectable()
 export class PebbleCore {
@@ -41,7 +42,7 @@ export class PebbleCore {
   }
 
   execute(action: string) {
-    this.commands && this.commands.executeCommand(action);
+    this.commands && this.commands.executeCommand(actionID(action));
   }
 
   // from widget

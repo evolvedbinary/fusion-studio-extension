@@ -40,7 +40,7 @@ export class PebbleViewWidget extends TreeWidget {
       <div className="title"><i className="fa fa-plug fa-fw"></i>Pebble Connections</div>
       <div className='center'>No connections available yet.</div>
       <div className='open-workspace-button-container'>
-        <button className='open-workspace-button' title='Connect to a database' onClick={() => this.core.execute('pebble.connect')}>Connect...</button>
+        <button className='open-workspace-button' title='Connect to a database' onClick={() => this.core.execute('connect')}>Connect...</button>
       </div>
     </div>);
   }
