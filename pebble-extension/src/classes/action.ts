@@ -2,6 +2,14 @@ import { PebbleCore } from "../browser/core";
 import { CommandRegistry, MenuModelRegistry, CommandHandler } from "@theia/core";
 import { KeybindingRegistry } from "@theia/core/lib/browser";
 
+export namespace PebbleAction {
+  export function is(action: any): action is PebbleAction {
+    return !!action && typeof action === 'object'
+      && 'id' in action
+      && 'label' in action
+      && 'execute' in action;
+  }
+}
 export interface PebbleAction {
   id: string,
   label: string,
@@ -11,10 +19,10 @@ export interface PebbleAction {
   contextMenuLabel?: string,
   keys?: string,
   icon?: string,
-  execute(session: PebbleCore | undefined): (...args: any[]) => any;
-  enabled?(session: PebbleCore | undefined): (...args: any[]) => boolean;
-  visible?(session: PebbleCore | undefined): (...args: any[]) => boolean;
-  toggled?(session: PebbleCore | undefined): (...args: any[]) => boolean;
+  execute: (core: PebbleCore | undefined) => (...args: any[]) => any;
+  enabled?(core: PebbleCore | undefined): (...args: any[]) => boolean;
+  visible?(core: PebbleCore | undefined): (...args: any[]) => boolean;
+  toggled?(core: PebbleCore | undefined): (...args: any[]) => boolean;
 }
 export function registerCommands(core: PebbleCore | undefined, commands: CommandRegistry, ...actions: PebbleAction[]) {
   actions.forEach(action => {

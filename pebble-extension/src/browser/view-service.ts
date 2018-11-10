@@ -8,7 +8,7 @@ import { PebbleItem, PebbleCollection } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import URI from "@theia/core/lib/common/uri";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
-// import { PebbleSession } from "./session";
+import { PebbleCore } from "./core";
 
 @injectable()
 export class PebbleViewService implements WidgetFactory {
@@ -18,7 +18,7 @@ export class PebbleViewService implements WidgetFactory {
   protected widget?: PebbleViewWidget;
 
   constructor(
-    // @inject(PebbleSession) protected session: PebbleSession,
+    @inject(PebbleCore) protected core: PebbleCore,
     @inject(PebbleViewWidgetFactory) protected factory: PebbleViewWidgetFactory,
     @inject(OpenerService) private readonly openerService: OpenerService,
   ) { }
@@ -27,48 +27,48 @@ export class PebbleViewService implements WidgetFactory {
     return this.widget !== undefined && this.widget.isVisible;
   }
 
-  publish(roots: PebbleNode[]): void {
-    if (this.widget) {
-      this.widget.createRoot(roots);
-      // this.onDidChangeOutlineEmitter.fire(roots);
-    }
-  }
+  // publish(roots: PebbleNode[]): void {
+  //   if (this.core) {
+  //     this.core.createRoot(roots);
+  //     // this.onDidChangeOutlineEmitter.fire(roots);
+  //   }
+  // }
   async connect(node: CompositeTreeNode, connection: PebbleConnection) {
     if (!this.widget) {
       return;
     }
-    this.widget.laod(node);
+    this.core.laod(node);
     try {
       const result = await PebbleApi.connect(connection);
       (node as PebbleConnectionNode).loaded = true;
       const collection = result as PebbleCollection;
-      collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
-      collection.documents.forEach(document => this.widget && this.widget.addDocument(node, connection, document));
+      collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
+      collection.documents.forEach(document => this.core.addDocument(node, connection, document));
     } catch (e) {
       (node as PebbleConnectionNode).expanded = false;
       console.error(e);
     }
-    this.widget.unlaod(node);
+    this.core.unlaod(node);
   }
   
   async load(node: CompositeTreeNode, connection: PebbleConnection, uri: string) {
     if (!this.widget) {
       return;
     }
-    this.widget.laod(node);
+    this.core.laod(node);
     try {
       const result = await PebbleApi.load(connection, uri);
       if (PebbleItem.isDocument(result)) {} else {
         (node as PebbleConnectionNode).loaded = true;
         const collection = result as PebbleCollection;
-        collection.collections.forEach(subCollection => this.widget && this.widget.addCollection(node, connection, subCollection));
-        collection.documents.forEach(document => this.widget && this.widget.addDocument(node, connection, document));
+        collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
+        collection.documents.forEach(document => this.core.addDocument(node, connection, document));
       }
     } catch (e) {
       (node as PebbleConnectionNode).expanded = false;
       console.error(e);
     }
-    this.widget.unlaod(node);
+    this.core.unlaod(node);
   }
   
   async onOpen(node: Readonly<any>): Promise<void> {
