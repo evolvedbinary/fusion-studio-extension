@@ -60,6 +60,21 @@ async function remove(connection: PebbleConnection, uri: string): Promise<Respon
   }
   return fetch(connection.server + uri, options);
 }
+async function put(connection: PebbleConnection, uri: string, body: any): Promise<Response> {
+  const headers: any = {};
+  if (connection.username !== '') {
+    headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
+  }
+  console.log(headers);
+  return fetch(connection.server + uri, {
+    headers,
+    method: 'PUT',
+    body,
+  }).then(result => {
+    console.log('put', result);
+    return result;
+  });
+}
 async function readDocument(data: any, connection: PebbleConnection, uri: string): Promise<PebbleDocument> {
   return {
     ...readItem(data),
@@ -83,6 +98,17 @@ async function load(connection: PebbleConnection, uri: string): Promise<PebbleCo
   //   throw e;
   // }
 }
+
+async function save(connection: PebbleConnection, uri: string, content: string): Promise<boolean> {
+  // try {
+    const result = await put(connection, '/exist/restxq/pebble/document?uri=' + uri, content).then(result => result.json()).catch(err => console.log('save failed', err));
+    console.log('saved:', result);
+    return true;
+  // } catch (e) {
+  //   throw e;
+  // }
+}
+
 async function connect(connection: PebbleConnection): Promise<PebbleCollection> {
   // try {
     const root = await load(connection, '/') as PebbleCollection;
@@ -103,6 +129,7 @@ async function removeDoc(connection: PebbleConnection, uri: string): Promise<boo
 
 export const PebbleApi = {
   load,
+  save,
   connect,
   remove: removeDoc,
 };
