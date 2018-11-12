@@ -6,9 +6,10 @@ import { DisposableCollection } from "vscode-ws-jsonrpc";
 import { PebbleApi } from "../common/api";
 import { PebbleItem, PebbleCollection } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
+import { PebbleCore } from "./core";
 import URI from "@theia/core/lib/common/uri";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
-import { PebbleCore } from "./core";
+// import { EditorWidget } from "@theia/editor/lib/browser";
 
 @injectable()
 export class PebbleViewService implements WidgetFactory {
@@ -76,8 +77,7 @@ export class PebbleViewService implements WidgetFactory {
   async onOpen(node: Readonly<any>): Promise<void> {
     if (PebbleNode.isDocument(node as any)) {
       const document = node as PebbleDocumentNode;
-      const widget = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + document.id));
-      console.log('widget:', widget);
+      document.editor = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + document.id)) as any;
       document.loaded = true;
       this.widget && this.widget.model.refresh();
     } else if (PebbleNode.isCollection(node as any)) {

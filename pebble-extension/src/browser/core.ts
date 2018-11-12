@@ -246,6 +246,11 @@ export class PebbleCore {
         PebbleApi.remove(node.connection, node.uri || '').then(done => {
           console.log(done);
           if (done) {
+            if (node.editor) {
+              node.editor.closeWithoutSaving();
+              // TODO: keep the file in the editor as a new one
+              // node.editor.saveable.setDirty(true);
+            }
             CompositeTreeNode.removeChild(node.parent as CompositeTreeNode, node);
             this.refresh();
           }
