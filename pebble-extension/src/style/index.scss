@@ -1,3 +1,4 @@
+@import "../browser/widget/home.scss";
 .pebble-view {
   .ReactVirtualized__Grid__innerScrollContainer[role=rowgroup] {
     > div:first-child {
@@ -6,20 +7,6 @@
           cursor: default;
           background: var(--theia-layout-color0);
         }
-      }
-    }
-  }
-  .pebble-no-connection {
-    width: 100%;
-    color: var(--theia-ui-font-color1);
-    .title {
-      font-size: 16px;
-      text-align: center;
-      margin: 4px 0 8px;
-      color: #fff;
-      i {
-        margin-left: -8px;
-        margin-right: 4px;
       }
     }
   }

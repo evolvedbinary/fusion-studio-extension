@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from '../classes/node';
-import { PebbleCore } from './core';
-import { PebbleAction } from '../classes/action';
+import { PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleNode } from '../../classes/node';
+import { PebbleCore } from '../core';
+import { PebbleAction } from '../../classes/action';
+import { PebbleHome } from './home';
 
 export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
@@ -35,13 +36,7 @@ export class PebbleViewWidget extends TreeWidget {
     return !model.root || (model.root as CompositeTreeNode).children.length < 2;
   }
   protected noConnections(): React.ReactNode {
-    return (<div className='pebble-no-connection theia-navigator-container'>
-      <div className="title"><i className="fa fa-plug fa-fw"></i>Pebble Connections</div>
-      <div className='center'>No connections available yet.</div>
-      <div className='open-workspace-button-container'>
-        <button className='open-workspace-button' title='Connect to a database' onClick={() => this.core.execute('connect')}>Connect...</button>
-      </div>
-    </div>);
+    return <PebbleHome core={this.core} />;
   }
   protected button(id: string, text:string, icon: string, action: string | PebbleAction | React.MouseEventHandler<any>, color = ''): React.ReactNode {
     let click: React.MouseEventHandler<any>;
@@ -58,12 +53,6 @@ export class PebbleViewWidget extends TreeWidget {
     </button>;
   }
 
-  // protected renderTree(model: TreeModel): React.ReactNode {
-  //   return <div>
-  //     {this.toolbar()}
-  //     {!this.isEmpty(model) && super.renderTree(model)}
-  //   </div>;
-  // }
   protected renderConnection(node: PebbleConnectionNode): React.ReactNode {
     return <div className='pebbleNode connectionNode' title={node.connection.name + ' (' + (node.connection.username || '(guest)') + '@' + node.connection.server + ')'}>
       <i className={this.core.getIcon(node)}></i>
@@ -93,9 +82,10 @@ export class PebbleViewWidget extends TreeWidget {
       {/* {this.button('pebble-toolbar-button-delete', 'Delete connection', 'minus', this.deleteConnection, 'red')} */}
     </div>);
   }
-
+  
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
     if (PebbleNode.is(node)) {
+      console.log('node')
       if (PebbleNode.isConnection(node)) {
         return this.renderConnection(node);
       } else if (PebbleNode.isToolbar(node)) {

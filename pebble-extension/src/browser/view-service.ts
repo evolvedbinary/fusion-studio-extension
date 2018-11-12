@@ -1,6 +1,6 @@
 import { WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
 import { injectable, inject } from "inversify";
-import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget";
+import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget/main";
 import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode, PebbleCollectionNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
 import { PebbleApi } from "../common/api";
