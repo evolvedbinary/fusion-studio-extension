@@ -44,7 +44,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [{
   contextMenu: CONTEXT_MENU_NEW,
   // keys: 'alt+shift+i',
   icon: 'fa fa-file-o',
-  execute: core => () => core && core.deleteConnection(),
+  execute: core => () => core && core.newDocument(),
   enabled: core => () => !!core && core.isCollection(),
   visible: core => () => !!core && core.selected,
 }, {

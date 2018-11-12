@@ -63,6 +63,21 @@
     i {
       margin-right: 5px;
     }
+    &.pebbleNew {
+      position: relative;
+      &:before {
+        content: "";
+        display: block;
+        background: red;
+        width: 8px;
+        height: 8px;
+        position: absolute;
+        z-index: 1;
+        border-radius: 4px;
+        left: -2px;
+        top: 0px;
+      }
+    }
     .name {
       overflow: hidden;
       text-overflow: ellipsis;

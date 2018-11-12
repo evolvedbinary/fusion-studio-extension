@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleLoadingNode, PebbleConnectionNode } from "../classes/node";
-import { TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog } from "@theia/core/lib/browser";
+import { TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog } from "@theia/core/lib/browser";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 import { PebbleDocument, PebbleCollection } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
@@ -48,6 +48,14 @@ export class PebbleCore {
     return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isDocument(this._model.selectedNodes[0]);
   }
 
+  fileExists(name: string, node?: PebbleCollectionNode): boolean {
+    node = (node && PebbleNode.isCollection(node)) ? node : ((this.node && PebbleNode.isCollection(this.node)) ? this.node : undefined);
+    if (node) {
+      return !!node.children.find(file => file.name === name);
+    }
+    return false;
+  }
+
   execute(action: string) {
     this.commands && this.commands.executeCommand(actionID(action));
   }
@@ -76,7 +84,8 @@ export class PebbleCore {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
     this._model && this._model.refresh();
   }
-  public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument): void {
+  public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): void {
+    console.log(document);
     this.addNode({
       type: 'item',
       connection,
@@ -85,6 +94,7 @@ export class PebbleCore {
       link: PEBBLE_RESOURCE_SCHEME + ':' + document.name,
       name: this.getName(document.name),
       parent: parent,
+      isNew,
       selected: false,
     } as PebbleDocumentNode, parent);
   }
@@ -207,5 +217,31 @@ export class PebbleCore {
     if (result) {
       this.addConnection(result.connection, this._model.root, result.autoConnect);  
     }
+  }
+
+  public async newDocument(): Promise<boolean> {
+    if (!this.node) {
+      return false;
+    }
+    const collection = this.node as PebbleCollectionNode;
+    const dialog = new SingleTextInputDialog({
+      title: 'New document',
+      confirmButtonLabel: 'Create',
+      validate: (input) => input !== '' && !this.fileExists(input),
+    });
+    let name = await dialog.open();
+    if (name) {
+      name = collection.id + '/' + name;
+      // const result = await PebbleApi.save(collection.connection, uri);
+      // if (result) {
+        this.addDocument(collection, collection.connection, {
+          content: '',
+          name,
+          group: '',
+          owner: '',
+        }, true);
+      // }
+    }
+    return false;
   }
 }

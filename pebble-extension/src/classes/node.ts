@@ -32,6 +32,7 @@ export interface PebbleCollectionNode extends PebbleItemNode, CompositeTreeNode,
 }
 export interface PebbleDocumentNode extends PebbleItemNode {
   collection: false;
+  isNew: boolean;
 }
 
 export namespace PebbleNode {

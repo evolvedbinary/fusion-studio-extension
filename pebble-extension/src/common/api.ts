@@ -99,7 +99,7 @@ async function load(connection: PebbleConnection, uri: string): Promise<PebbleCo
   // }
 }
 
-async function save(connection: PebbleConnection, uri: string, content: string): Promise<boolean> {
+async function save(connection: PebbleConnection, uri: string, content: string = ' '): Promise<boolean> {
   // try {
     const result = await put(connection, '/exist/restxq/pebble/document?uri=' + uri, content).then(result => result.json()).catch(err => console.log('save failed', err));
     console.log('saved:', result);

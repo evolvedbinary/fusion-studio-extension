@@ -30,6 +30,9 @@ export class PebbleResource implements Resource {
     const parts = this.uri.path.toString().split(':');
     const id = parts.pop() || '';
     const connection: PebbleConnection = JSON.parse(parts.join(':'));
+    if ((connection as any).isNew) {
+      return '';
+    }
     const result = await PebbleApi.load(connection, id) as PebbleDocument;
     console.log(result);
     return result.content;
@@ -37,7 +40,10 @@ export class PebbleResource implements Resource {
   async saveContentChanges(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void> {
     const content = await this.readContents(options);
     console.group('saving changes...');
-    this.saveContents(this.applyChanges(content, changes), options);
+    const newContent = this.applyChanges(content, changes);
+    if (newContent !== content) {
+      this.saveContents(newContent, options);
+    }
   }
   async saveContents(content: string, options?: { encoding?: string }): Promise<void> {
     console.group('saving...');

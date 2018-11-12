@@ -78,6 +78,7 @@ export class PebbleViewService implements WidgetFactory {
         server: document.connection.server,
         username: document.connection.username,
         password: document.connection.password,
+        isNew: document.isNew,
       }) + ':' + document.id);
       await open(this.openerService, uri);
       document.loaded = true;

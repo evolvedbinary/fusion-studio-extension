@@ -88,7 +88,7 @@ export class PebbleViewWidget extends TreeWidget {
     </div>;
   }
   protected renderDocument(node: PebbleDocumentNode): React.ReactNode {
-    return <div className='pebbleNode itemNode documentNode'>
+    return <div className={'pebbleNode itemNode documentNode' + (node.isNew ? ' pebbleNew' : '')}>
       <i className={'icon fa fa-' + (node.loading ? 'spin fa-spinner' : ('file' + (node.loaded ? '' : '-o')))}></i>
       <span className='name'>{node.name}</span>
     </div>;
