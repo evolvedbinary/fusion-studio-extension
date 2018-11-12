@@ -1,7 +1,7 @@
 import { open, WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode, OpenerService } from "@theia/core/lib/browser";
 import { injectable, inject } from "inversify";
 import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget";
-import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode } from "../classes/node";
+import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode, PebbleCollectionNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
 import { PebbleApi } from "../common/api";
 import { PebbleItem, PebbleCollection } from "../classes/item";
@@ -72,15 +72,23 @@ export class PebbleViewService implements WidgetFactory {
   }
   
   async onOpen(node: Readonly<any>): Promise<void> {
-    const document = node as PebbleDocumentNode;
-    const uri = new URI(PEBBLE_RESOURCE_SCHEME + ':' + JSON.stringify({
-      server: document.connection.server,
-      username: document.connection.username,
-      password: document.connection.password,
-    }) + ':' + document.id);
-    await open(this.openerService, uri);
-    document.loaded = true;
-    this.widget && this.widget.model.refresh();
+    if (PebbleNode.isDocument(node as any)) {
+      const document = node as PebbleDocumentNode;
+      const uri = new URI(PEBBLE_RESOURCE_SCHEME + ':' + JSON.stringify({
+        server: document.connection.server,
+        username: document.connection.username,
+        password: document.connection.password,
+      }) + ':' + document.id);
+      await open(this.openerService, uri);
+      document.loaded = true;
+      this.widget && this.widget.model.refresh();
+    } else if (PebbleNode.isCollection(node as any)) {
+      const collection = node as PebbleCollectionNode;
+      collection.children = [];
+      collection.expanded = true;
+      collection.loaded = false;
+      this.onExpansionChanged(collection);
+    }
   }
   
   async onExpansionChanged(node: Readonly<ExpandableTreeNode>): Promise<void> {
