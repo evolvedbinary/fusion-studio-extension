@@ -74,12 +74,6 @@ export class PebbleViewService implements WidgetFactory {
   async onOpen(node: Readonly<any>): Promise<void> {
     if (PebbleNode.isDocument(node as any)) {
       const document = node as PebbleDocumentNode;
-      const uri = new URI(PEBBLE_RESOURCE_SCHEME + ':' + JSON.stringify({
-        server: document.connection.server,
-        username: document.connection.username,
-        password: document.connection.password,
-        isNew: document.isNew,
-      }) + ':' + document.uri);
       const widget = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + document.id));
       console.log('widget:', widget);
       document.loaded = true;
