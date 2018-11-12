@@ -165,7 +165,7 @@ export class PebbleCore {
     if (!this.selected || !this._model) {
       return;
     }
-    if (this.node && PebbleNode.isDocument(this.node)) {
+    if (this.node && PebbleNode.isDocument(this.node) && !this.node.loading) {
       const node = this.node as PebbleDocumentNode;
       const msg = document.createElement('p');
       msg.innerHTML = 'Are you sure you want to delete the document: <strong>' + node.name + '</strong>?';
@@ -175,6 +175,7 @@ export class PebbleCore {
         cancel: 'Keep',
         ok: 'Delete'
       });
+      this.node.loading = true;
       const result = await dialog.open();
       if (result) {
         PebbleApi.remove(node.connection, node.link.split(':').pop() || '').then(done => {
@@ -184,8 +185,8 @@ export class PebbleCore {
             this.refresh();
           }
         });
-        // CompositeTreeNode.removeChild(this._model.root as CompositeTreeNode, node);
       } else {
+        this.node.loading = false;
         this._model.selectNode(node);
       }
     }

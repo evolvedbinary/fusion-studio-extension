@@ -24,6 +24,7 @@ export interface PebbleItemNode extends PebbleNode, SelectableTreeNode {
   connection: PebbleConnection;
   link: string;
   loaded?: boolean;
+  loading?: boolean;
   collection: boolean;
 }
 export interface PebbleCollectionNode extends PebbleItemNode, CompositeTreeNode, ExpandableTreeNode {
