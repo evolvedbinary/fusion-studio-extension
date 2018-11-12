@@ -13,6 +13,7 @@ import { PebbleViewService } from './view-service';
 import '../../src/style/index.scss';
 import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
+import { CONTEXT_MENU } from "./commands";
 
 export default new ContainerModule(bind => {
 
@@ -39,7 +40,7 @@ export default new ContainerModule(bind => {
 function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
   const child = createTreeContainer(parent);
 
-  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, contextMenuPath: PebbleViewWidget.CONTEXT_MENU });
+  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, contextMenuPath: CONTEXT_MENU });
 
   child.unbind(TreeWidget);
   child.bind(PebbleViewWidget).toSelf();

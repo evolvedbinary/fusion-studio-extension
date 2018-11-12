@@ -20,6 +20,7 @@ export interface PebbleAction {
   contextMenuLabel?: string,
   keys?: string,
   icon?: string,
+  order?: string,
   execute: (core: PebbleCore | undefined) => (...args: any[]) => any;
   enabled?(core: PebbleCore | undefined): (...args: any[]) => boolean;
   visible?(core: PebbleCore | undefined): (...args: any[]) => boolean;
@@ -58,6 +59,7 @@ export function registerMenus(menus: MenuModelRegistry, ...actions: PebbleAction
         commandId: actionID(action.id),
         icon: action.icon,
         label: action.menuLabel || action.label,
+        order: action.order,
       })
     }
     if (action.contextMenu) {
@@ -65,6 +67,7 @@ export function registerMenus(menus: MenuModelRegistry, ...actions: PebbleAction
         commandId: actionID(action.id),
         icon: action.icon,
         label: action.contextMenuLabel || action.label,
+        order: action.order,
       })
     }
   });

@@ -7,6 +7,7 @@ import { PebbleConnection } from "../classes/connection";
 import { NewConnectionDialog } from "./new-connection-dialog";
 import { CommandRegistry } from "@theia/core";
 import { actionID } from "../classes/action";
+import { PebbleApi } from "../common/api";
 
 @injectable()
 export class PebbleCore {
@@ -39,6 +40,12 @@ export class PebbleCore {
 
   isConnection(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isConnection(this._model.selectedNodes[0]);
+  }
+  isCollection(): boolean {
+    return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isCollection(this._model.selectedNodes[0]);
+  }
+  isDocument(): boolean {
+    return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isDocument(this._model.selectedNodes[0]);
   }
 
   execute(action: string) {
@@ -135,7 +142,7 @@ export class PebbleCore {
     if (this.node && PebbleNode.isConnection(this.node)) {
       const node = this.node as PebbleConnectionNode;
       const msg = document.createElement('p');
-      msg.innerHTML = 'Are you sure you want to the connection: <strong>' + node.connection.name + '</strong>?<br/>' +
+      msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connection.name + '</strong>?<br/>' +
       'Server: <strong>' + node.connection.server + '</strong><br/>' +
       'Username: <strong>' + node.connection.username + '</strong>';
       const dialog = new ConfirmDialog({
@@ -148,6 +155,36 @@ export class PebbleCore {
       if (result) {
         CompositeTreeNode.removeChild(this._model.root as CompositeTreeNode, node);
         this._model.refresh();
+      } else {
+        this._model.selectNode(node);
+      }
+    }
+  }
+  
+  public async deleteDocument(): Promise<void> {
+    if (!this.selected || !this._model) {
+      return;
+    }
+    if (this.node && PebbleNode.isDocument(this.node)) {
+      const node = this.node as PebbleDocumentNode;
+      const msg = document.createElement('p');
+      msg.innerHTML = 'Are you sure you want to delete the document: <strong>' + node.name + '</strong>?';
+      const dialog = new ConfirmDialog({
+        title: 'Delete document',
+        msg,
+        cancel: 'Keep',
+        ok: 'Delete'
+      });
+      const result = await dialog.open();
+      if (result) {
+        PebbleApi.remove(node.connection, node.link.split(':').pop() || '').then(done => {
+          console.log(done);
+          if (done) {
+            CompositeTreeNode.removeChild(node.parent as CompositeTreeNode, node);
+            this.refresh();
+          }
+        });
+        // CompositeTreeNode.removeChild(this._model.root as CompositeTreeNode, node);
       } else {
         this._model.selectNode(node);
       }

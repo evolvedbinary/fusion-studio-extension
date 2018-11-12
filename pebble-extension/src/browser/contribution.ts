@@ -37,16 +37,16 @@ export class PebbleContribution extends AbstractViewContribution<PebbleViewWidge
 
   registerMenus(menus: MenuModelRegistry): void {
     super.registerMenus(menus);
-    registerMenus(menus, PEBBLE_COMMANDS.connect, PEBBLE_COMMANDS.disconnect);
+    registerMenus(menus, ...PEBBLE_COMMANDS);
   }
 
   registerCommands(registry: CommandRegistry): void {
     super.registerCommands(registry);
-    registerCommands(this.core, registry, PEBBLE_COMMANDS.connect, PEBBLE_COMMANDS.disconnect);
+    registerCommands(this.core, registry, ...PEBBLE_COMMANDS);
   }
   
   registerKeybindings(keybindings: KeybindingRegistry): void {
     super.registerKeybindings(keybindings);
-    registerKeybindings(keybindings, PEBBLE_COMMANDS.connect, PEBBLE_COMMANDS.disconnect);
+    registerKeybindings(keybindings, ...PEBBLE_COMMANDS);
   }
 }
