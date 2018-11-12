@@ -243,7 +243,7 @@ export class PebbleCore {
       this.node.loading = true;
       const result = await dialog.open();
       if (result) {
-        PebbleApi.remove(node.connection, node.link.split(':').pop() || '').then(done => {
+        PebbleApi.remove(node.connection, node.uri || '').then(done => {
           console.log(done);
           if (done) {
             CompositeTreeNode.removeChild(node.parent as CompositeTreeNode, node);
