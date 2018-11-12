@@ -3,7 +3,6 @@ import URI from "@theia/core/lib/common/uri";
 import { injectable, inject } from "inversify";
 import { TextDocumentContentChangeEvent, TextDocument } from "vscode-languageserver-types";
 import { PebbleApi } from "../common/api";
-import { PebbleConnection } from "../classes/connection";
 import { PebbleDocument } from "../classes/item";
 import { PebbleCore } from "./core";
 import { PebbleDocumentNode, PebbleNode } from "../classes/node";
@@ -58,10 +57,8 @@ export class PebbleResource implements Resource {
     }
   }
   async saveContents(content: string, options?: { encoding?: string }): Promise<void> {
-    const parts = this.uri.path.toString().split(':');
-    const id = parts.pop() || '';
-    const connection: PebbleConnection = JSON.parse(parts.join(':'));
-    const result = await PebbleApi.save(connection, id, content);
+    const document = this.getDocument();
+    const result = await PebbleApi.save(document.connection, document.uri || '', content);
     console.log(result);
   }
 
