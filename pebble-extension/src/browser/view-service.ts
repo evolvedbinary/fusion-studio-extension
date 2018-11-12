@@ -1,7 +1,7 @@
 import { WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
 import { injectable, inject } from "inversify";
 import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget/main";
-import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode, PebbleCollectionNode } from "../classes/node";
+import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
 import { PebbleApi } from "../common/api";
 import { PebbleItem, PebbleCollection } from "../classes/item";
@@ -77,11 +77,7 @@ export class PebbleViewService implements WidgetFactory {
       document.editor = await this.core.openDocument(document);
       this.widget && this.widget.model.refresh();
     } else if (PebbleNode.isCollection(node as any)) {
-      const collection = node as PebbleCollectionNode;
-      collection.expanded = true;
-      collection.loaded = false;
-      this.core.empty(collection);
-      this.onExpansionChanged(collection);
+      this.core.refresh(node as any);//.then(() => this.onExpansionChanged(node as any));
     }
   }
   
