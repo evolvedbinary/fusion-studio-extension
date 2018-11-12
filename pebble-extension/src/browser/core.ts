@@ -38,6 +38,14 @@ export class PebbleCore {
     this._model && this._model.refresh();
   }
 
+  empty(node: CompositeTreeNode) {
+    let child: TreeNode | undefined;
+    while (child = CompositeTreeNode.getFirstChild(node)) {
+      CompositeTreeNode.removeChild(node, child);
+    }
+    this.refresh();
+  }
+
   isConnection(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isConnection(this._model.selectedNodes[0]);
   }

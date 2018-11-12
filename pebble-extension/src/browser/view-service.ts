@@ -82,9 +82,9 @@ export class PebbleViewService implements WidgetFactory {
       this.widget && this.widget.model.refresh();
     } else if (PebbleNode.isCollection(node as any)) {
       const collection = node as PebbleCollectionNode;
-      collection.children = [];
       collection.expanded = true;
       collection.loaded = false;
+      this.core.empty(collection);
       this.onExpansionChanged(collection);
     }
   }
