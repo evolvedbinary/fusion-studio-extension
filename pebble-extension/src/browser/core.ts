@@ -80,7 +80,7 @@ export class PebbleCore {
     return id.split('/').pop() || id;
   }
   
-  public addNode(child: TreeNode, parent?: TreeNode): void {
+  public addNode(child: PebbleNode, parent?: TreeNode): void {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
     this._model && this._model.refresh();
   }
@@ -90,12 +90,12 @@ export class PebbleCore {
       type: 'item',
       connection,
       collection: false,
-      id: document.name,
-      link: PEBBLE_RESOURCE_SCHEME + ':' + document.name,
+      id: connection.username + '-' + connection.server + '/' + document.name,
       name: this.getName(document.name),
       parent: parent,
       isNew,
       selected: false,
+      uri: document.name,
     } as PebbleDocumentNode, parent);
   }
   public addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): void {
@@ -104,12 +104,13 @@ export class PebbleCore {
       connection,
       collection: true,
       children: [],
-      id: collection.name,
+      id: connection.username + '-' + connection.server + '/' + collection.name,
       link: PEBBLE_RESOURCE_SCHEME + ':' + collection.name,
       name: this.getName(collection.name),
       parent: parent as CompositeTreeNode,
       selected: false,
       expanded: false,
+      uri: collection.name,
     } as PebbleCollectionNode, parent);
   }
   public addConnection(connection: PebbleConnection, parent?: TreeNode, expanded?: boolean): void {
@@ -121,7 +122,8 @@ export class PebbleCore {
       name: connection.name,
       connection: connection,
       parent: parent as any,
-      selected: false
+      selected: false,
+      uri: connection.server
     } as PebbleConnectionNode, parent);
   }
   public addToolbar(parent: CompositeTreeNode): void {

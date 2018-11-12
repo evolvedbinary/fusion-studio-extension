@@ -79,7 +79,7 @@ export class PebbleViewService implements WidgetFactory {
         username: document.connection.username,
         password: document.connection.password,
         isNew: document.isNew,
-      }) + ':' + document.id);
+      }) + ':' + document.uri);
       await open(this.openerService, uri);
       document.loaded = true;
       this.widget && this.widget.model.refresh();
@@ -100,7 +100,7 @@ export class PebbleViewService implements WidgetFactory {
       if (PebbleNode.isConnection(node) && !node.loaded) {
         this.connect(node, node.connection);
       } else if (PebbleNode.isCollection(node) && !node.loaded) {
-        this.load(node, node.connection, node.id);
+        this.load(node, node.connection, node.uri || '');
       }
     }
   }

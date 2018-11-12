@@ -4,6 +4,7 @@ import { PebbleConnection } from "./connection";
 export interface PebbleNode extends TreeNode {
   type: 'connection' | 'toolbar' | 'item' | 'loading';
   connection?: PebbleConnection;
+  uri?: string;
 }
 
 export interface PebbleConnectionNode extends PebbleNode, CompositeTreeNode, SelectableTreeNode,  ExpandableTreeNode {
