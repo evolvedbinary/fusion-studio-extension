@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
-import { PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleNode } from '../../classes/node';
+import { PebbleDocumentNode, PebbleCollectionNode, PebbleConnectionNode, PebbleItemNode, PebbleNode } from '../../classes/node';
 import { PebbleCore } from '../core';
 import { PebbleAction } from '../../classes/action';
 import { PebbleHome } from './home';
+import { PebbleToolbar } from './toolbar';
 
 export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
@@ -34,9 +35,6 @@ export class PebbleViewWidget extends TreeWidget {
   protected isEmpty(model?: TreeModel): boolean {
     model = model || this.model;
     return !model.root || (model.root as CompositeTreeNode).children.length < 2;
-  }
-  protected noConnections(): React.ReactNode {
-    return <PebbleHome core={this.core} />;
   }
   protected button(id: string, text:string, icon: string, action: string | PebbleAction | React.MouseEventHandler<any>, color = ''): React.ReactNode {
     let click: React.MouseEventHandler<any>;
@@ -75,13 +73,6 @@ export class PebbleViewWidget extends TreeWidget {
       <span className='name'>{node.name}</span>
     </div>;
   }
-  protected renderToolbar(node: PebbleToolbarNode): React.ReactNode {
-    return this.isEmpty(this.model) ? this.noConnections() : (<div className='pebble-toolbar'>
-      <span className="title"><i className="fa fa-plug fa-fw"></i>Pebble Connections</span>
-      {this.button('pebble-toolbar-button-add', 'Add connection', 'plus', 'pebble.connect')}
-      {/* {this.button('pebble-toolbar-button-delete', 'Delete connection', 'minus', this.deleteConnection, 'red')} */}
-    </div>);
-  }
   
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
     if (PebbleNode.is(node)) {
@@ -89,7 +80,7 @@ export class PebbleViewWidget extends TreeWidget {
       if (PebbleNode.isConnection(node)) {
         return this.renderConnection(node);
       } else if (PebbleNode.isToolbar(node)) {
-        return this.renderToolbar(node);
+        return this.isEmpty(this.model) ? <PebbleHome core={this.core} /> : <PebbleToolbar core={this.core} />;
       } else if (PebbleNode.isItem(node)) {
         return this.renderItem(node);
       }
