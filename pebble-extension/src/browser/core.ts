@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode } from "../classes/node";
-import { TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog } from "@theia/core/lib/browser";
+import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService } from "@theia/core/lib/browser";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
@@ -8,10 +8,14 @@ import { NewConnectionDialog } from "./new-connection-dialog";
 import { CommandRegistry } from "@theia/core";
 import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
+import URI from "@theia/core/lib/common/uri";
 
 @injectable()
 export class PebbleCore {
   @inject(CommandRegistry) protected readonly commands?: CommandRegistry;
+  constructor(
+    @inject(OpenerService) private readonly openerService: OpenerService,
+  ) {}
   
   public get selected(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0;
@@ -123,13 +127,13 @@ export class PebbleCore {
     }
   }
   
-  public addNode(child: PebbleNode, parent?: TreeNode): void {
+  public addNode(child: PebbleNode, parent?: TreeNode): PebbleNode {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
     this._model && this._model.refresh();
+    return child;
   }
-  public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): void {
-    console.log(document);
-    this.addNode({
+  public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): PebbleDocumentNode {
+    const node = {
       type: 'item',
       connection,
       collection: false,
@@ -139,7 +143,9 @@ export class PebbleCore {
       isNew,
       selected: false,
       uri: document.name,
-    } as PebbleDocumentNode, parent);
+    } as PebbleDocumentNode;
+    this.addNode(node, parent);
+    return node;
   }
   public addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): void {
     this.addNode({
@@ -279,6 +285,12 @@ export class PebbleCore {
     }
   }
 
+  public async openDocument(node: PebbleDocumentNode): Promise<any> {
+    const result = open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
+    node.loaded = true;
+    return result;
+  }
+
   public async newDocument(): Promise<boolean> {
     if (!this.node) {
       return false;
@@ -292,12 +304,12 @@ export class PebbleCore {
     let name = await dialog.open();
     if (name) {
       name = collection.uri + '/' + name;
-      this.addDocument(collection, collection.connection, {
+      this.openDocument(this.addDocument(collection, collection.connection, {
         content: '',
         name,
         group: '',
         owner: '',
-      }, true);
+      }, true));
     }
     return false;
   }

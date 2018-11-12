@@ -1,4 +1,4 @@
-import { open, WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode, OpenerService } from "@theia/core/lib/browser";
+import { WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
 import { injectable, inject } from "inversify";
 import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget";
 import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode, PebbleCollectionNode } from "../classes/node";
@@ -7,8 +7,6 @@ import { PebbleApi } from "../common/api";
 import { PebbleItem, PebbleCollection } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import { PebbleCore } from "./core";
-import URI from "@theia/core/lib/common/uri";
-import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 // import { EditorWidget } from "@theia/editor/lib/browser";
 
 @injectable()
@@ -21,7 +19,6 @@ export class PebbleViewService implements WidgetFactory {
   constructor(
     @inject(PebbleCore) protected core: PebbleCore,
     @inject(PebbleViewWidgetFactory) protected factory: PebbleViewWidgetFactory,
-    @inject(OpenerService) private readonly openerService: OpenerService,
   ) { }
 
   get open(): boolean {
@@ -77,8 +74,7 @@ export class PebbleViewService implements WidgetFactory {
   async onOpen(node: Readonly<any>): Promise<void> {
     if (PebbleNode.isDocument(node as any)) {
       const document = node as PebbleDocumentNode;
-      document.editor = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + document.id)) as any;
-      document.loaded = true;
+      document.editor = await this.core.openDocument(document);
       this.widget && this.widget.model.refresh();
     } else if (PebbleNode.isCollection(node as any)) {
       const collection = node as PebbleCollectionNode;
