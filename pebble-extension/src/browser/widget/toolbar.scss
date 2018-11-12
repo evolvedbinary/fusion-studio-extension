@@ -14,6 +14,20 @@
       margin-right: 4px;
     }
   }
+  .pebble-action {
+    min-width: 23px;
+    height: 23px;
+    padding: 0;
+    margin: 0;
+    line-height: 23px;
+    width: 23px;
+    &.color-red {
+      background-color: var(--md-red-900);
+      &:hover:not([disabled]) {
+        background-color: var(--md-red-600);
+      }
+    }
+  }
 }
 
 // no toolbar hover

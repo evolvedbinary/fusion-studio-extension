@@ -3,7 +3,6 @@ import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNod
 import { inject, postConstruct } from "inversify";
 import { PebbleNode } from '../../classes/node';
 import { PebbleCore } from '../core';
-import { PebbleAction } from '../../classes/action';
 import { PebbleHome } from './home';
 import { PebbleToolbar } from './toolbar';
 import { PebbleItem } from './item';
@@ -36,20 +35,6 @@ export class PebbleViewWidget extends TreeWidget {
   protected isEmpty(model?: TreeModel): boolean {
     model = model || this.model;
     return !model.root || (model.root as CompositeTreeNode).children.length < 2;
-  }
-  protected button(id: string, text:string, icon: string, action: string | PebbleAction | React.MouseEventHandler<any>, color = ''): React.ReactNode {
-    let click: React.MouseEventHandler<any>;
-    if (PebbleAction.is(action)) {
-      action = action.id;
-    }
-    if (typeof action === 'string') {
-      click = () => this.core.execute(action as string)
-    } else {
-      click = action.bind(this);
-    }
-    return <button id={id} className={'pebble-action' + (color ? ' color-' + color : '')} title={text} onClick={click}>
-      <span className={'fa fa-fw fa-' + icon}></span>
-    </button>;
   }
   
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
