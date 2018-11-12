@@ -59,7 +59,10 @@ export class PebbleResource implements Resource {
   async saveContents(content: string, options?: { encoding?: string }): Promise<void> {
     const document = this.getDocument();
     const result = await PebbleApi.save(document.connection, document.uri || '', content);
-    console.log(result);
+    if (result) {
+      document.isNew = false;
+      this.core && this.core.refresh();
+    }
   }
 
   dispose(): void { }

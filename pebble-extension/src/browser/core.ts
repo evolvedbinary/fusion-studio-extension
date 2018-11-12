@@ -79,7 +79,7 @@ export class PebbleCore {
     return 'folder' + (node.expanded ? '-open' : '') + (node.loaded ? '' : '-o');
   }
   protected getDocumentIcon(node: PebbleDocumentNode): string {
-    return 'folder' + ('file' + (node.loaded ? '' : '-o'));
+    return 'file' + (node.loaded ? '' : '-o');
   }
 
   public getIcon(node: PebbleNode): string {
@@ -286,16 +286,13 @@ export class PebbleCore {
     });
     let name = await dialog.open();
     if (name) {
-      name = collection.id + '/' + name;
-      // const result = await PebbleApi.save(collection.connection, uri);
-      // if (result) {
-        this.addDocument(collection, collection.connection, {
-          content: '',
-          name,
-          group: '',
-          owner: '',
-        }, true);
-      // }
+      name = collection.uri + '/' + name;
+      this.addDocument(collection, collection.connection, {
+        content: '',
+        name,
+        group: '',
+        owner: '',
+      }, true);
     }
     return false;
   }

@@ -35,7 +35,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [{
   icon: 'fa fa-folder-o',
   execute: core => () => core && core.deleteConnection(),
   enabled: core => () => !!core && core.isCollection(),
-  visible: core => () => !!core && core.selected,
+  visible: core => () => !!core && core.selected && !core.isConnection(),
 }, {
   id: 'new-document',
   order: 'c',
@@ -46,7 +46,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [{
   icon: 'fa fa-file-o',
   execute: core => () => core && core.newDocument(),
   enabled: core => () => !!core && core.isCollection(),
-  visible: core => () => !!core && core.selected,
+  visible: core => () => !!core && core.selected && !core.isConnection(),
 }, {
   id: 'delete',
   order: 'e',
@@ -57,5 +57,5 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [{
   icon: 'fa fa-trash',
   execute: core => () => core && core.deleteDocument(),
   enabled: core => () => !!core && core.isDocument(),
-  visible: core => () => !!core && core.selected,
+  visible: core => () => !!core && core.selected && !core.isConnection(),
 }];
