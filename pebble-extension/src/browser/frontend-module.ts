@@ -23,9 +23,6 @@ export default new ContainerModule(bind => {
 
   bind(PebbleViewService).toSelf().inSingletonScope();
   bind(WidgetFactory).toDynamicValue(context => context.container.get(PebbleViewService));
-  
-  bind(PebbleResourceResolver).toSelf().inSingletonScope();
-  bind(ResourceResolver).toService(PebbleResourceResolver);
 
   // bindViewContribution(bind, PebbleViewContribution);
   // bind(FrontendApplicationContribution).toService(PebbleViewContribution);
@@ -34,6 +31,9 @@ export default new ContainerModule(bind => {
   bind(FrontendApplicationContribution).toService(PebbleContribution);
 
   bind(PebbleCore).toSelf().inSingletonScope();
+  
+  bind(PebbleResourceResolver).toSelf().inSingletonScope();
+  bind(ResourceResolver).toService(PebbleResourceResolver);
   
 });
 

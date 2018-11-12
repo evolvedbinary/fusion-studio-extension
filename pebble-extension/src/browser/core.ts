@@ -2,7 +2,7 @@ import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleLoadingNode, PebbleConnectionNode } from "../classes/node";
 import { TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog } from "@theia/core/lib/browser";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
-import { PebbleDocument, PebbleCollection } from "../classes/item";
+import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import { NewConnectionDialog } from "./new-connection-dialog";
 import { CommandRegistry } from "@theia/core";
@@ -59,6 +59,21 @@ export class PebbleCore {
   execute(action: string) {
     this.commands && this.commands.executeCommand(actionID(action));
   }
+  
+  protected getName(id: string): string {
+    return id.split('/').pop() || id;
+  }
+  
+  public connectionID(connection: PebbleConnection): string {
+    return (connection.username ? connection.username : '(guest)') + '@' + connection.server;
+  }
+  public itemID(connection: PebbleConnection, item: PebbleItem): string {
+    return this.connectionID(connection) + item.name;
+  }
+
+  public getNode(id: string): PebbleNode | undefined {
+    return this._model ? this._model.getNode(id) as PebbleNode : undefined;
+  }
 
   // from widget
   
@@ -76,10 +91,6 @@ export class PebbleCore {
     }
   }
   
-  protected getName(id: string): string {
-    return id.split('/').pop() || id;
-  }
-  
   public addNode(child: PebbleNode, parent?: TreeNode): void {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
     this._model && this._model.refresh();
@@ -90,7 +101,7 @@ export class PebbleCore {
       type: 'item',
       connection,
       collection: false,
-      id: connection.username + '-' + connection.server + '/' + document.name,
+      id: this.itemID(connection, document),
       name: this.getName(document.name),
       parent: parent,
       isNew,
@@ -104,7 +115,7 @@ export class PebbleCore {
       connection,
       collection: true,
       children: [],
-      id: connection.username + '-' + connection.server + '/' + collection.name,
+      id: this.itemID(connection, collection),
       link: PEBBLE_RESOURCE_SCHEME + ':' + collection.name,
       name: this.getName(collection.name),
       parent: parent as CompositeTreeNode,
@@ -118,7 +129,7 @@ export class PebbleCore {
       type: 'connection',
       children: [],
       expanded,
-      id: connection.username + '-' + connection.server,
+      id: this.connectionID(connection),
       name: connection.name,
       connection: connection,
       parent: parent as any,

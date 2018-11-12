@@ -1,16 +1,32 @@
 import { Resource, ResourceResolver } from "@theia/core";
 import URI from "@theia/core/lib/common/uri";
-import { injectable } from "inversify";
+import { injectable, inject } from "inversify";
 import { TextDocumentContentChangeEvent, TextDocument } from "vscode-languageserver-types";
 import { PebbleApi } from "../common/api";
 import { PebbleConnection } from "../classes/connection";
 import { PebbleDocument } from "../classes/item";
+import { PebbleCore } from "./core";
+import { PebbleDocumentNode, PebbleNode } from "../classes/node";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 
+@injectable()
 export class PebbleResource implements Resource {
 
-  constructor(readonly uri: URI) { }
+  constructor(readonly uri: URI, protected core?: PebbleCore) {}
+
+  getNode(): PebbleNode {
+    if (this.core) {
+      const node = this.core.getNode(this.uri.path.toString());
+      if (node) {
+        return node;
+      }
+    }
+    throw 'Node not found';
+  }
+  getDocument(): PebbleDocumentNode {
+    return this.getNode() as PebbleDocumentNode;
+  }
 
   protected applyChanges(content: string, contentChanges: TextDocumentContentChangeEvent[]): string {
     let document = TextDocument.create('', '', 1, content);
@@ -27,30 +43,21 @@ export class PebbleResource implements Resource {
   }
 
   async readContents(options?: { encoding?: string }): Promise<string> {
-    const parts = this.uri.path.toString().split(':');
-    const id = parts.pop() || '';
-    const connection: PebbleConnection = JSON.parse(parts.join(':'));
-    if ((connection as any).isNew) {
-      return '';
+    const document = this.getDocument();
+    if (!document.isNew && document.connection) {
+      const result = await PebbleApi.load(document.connection, document.uri || '') as PebbleDocument;
+      return result.content;
     }
-    const result = await PebbleApi.load(connection, id) as PebbleDocument;
-    console.log(result);
-    return result.content;
+    return '';
   }
   async saveContentChanges(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void> {
     const content = await this.readContents(options);
-    console.group('saving changes...');
     const newContent = this.applyChanges(content, changes);
     if (newContent !== content) {
       this.saveContents(newContent, options);
     }
   }
   async saveContents(content: string, options?: { encoding?: string }): Promise<void> {
-    console.group('saving...');
-    console.log(this.uri);
-    console.log(content);
-    console.groupEnd();
-
     const parts = this.uri.path.toString().split(':');
     const id = parts.pop() || '';
     const connection: PebbleConnection = JSON.parse(parts.join(':'));
@@ -64,6 +71,8 @@ export class PebbleResource implements Resource {
 @injectable()
 export class PebbleResourceResolver implements ResourceResolver {
 
+  @inject(PebbleCore) protected core?: PebbleCore;
+
   constructor(
   ) { }
 
@@ -75,6 +84,6 @@ export class PebbleResourceResolver implements ResourceResolver {
   }
 
   async getResource(uri: URI): Promise<PebbleResource> {
-    return new PebbleResource(uri);
+    return new PebbleResource(uri, this.core);
   }
 }

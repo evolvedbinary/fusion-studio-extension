@@ -72,10 +72,10 @@ export class PebbleViewWidget extends TreeWidget {
     </div>;
   }
   protected renderConnection(node: PebbleConnectionNode): React.ReactNode {
-    return <div className='pebbleNode connectionNode' title={node.connection.name + ' (' + (node.connection.username || '(anonymous)') + '@' + node.connection.server + ')'}>
+    return <div className='pebbleNode connectionNode' title={node.connection.name + ' (' + (node.connection.username || '(guest)') + '@' + node.connection.server + ')'}>
       <i className={'fa fa-toggle-' + (node.loaded ? 'on' : 'off')}></i>
       <span className='name'>{node.connection.name}</span>
-      <span className='server'>{node.connection.username || '(anonymous)'}@{node.connection.server}</span>
+      <span className='server'>{node.connection.username || '(guest)'}@{node.connection.server}</span>
     </div>;
   }
   protected renderItem(node: PebbleItemNode): React.ReactNode {

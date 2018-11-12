@@ -80,7 +80,8 @@ export class PebbleViewService implements WidgetFactory {
         password: document.connection.password,
         isNew: document.isNew,
       }) + ':' + document.uri);
-      await open(this.openerService, uri);
+      const widget = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + document.id));
+      console.log('widget:', widget);
       document.loaded = true;
       this.widget && this.widget.model.refresh();
     } else if (PebbleNode.isCollection(node as any)) {
