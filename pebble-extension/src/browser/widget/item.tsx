@@ -12,10 +12,9 @@ export class PebbleItem extends React.Component<PebbleItemProps, any> {
     const { node, core } = this.props;
     if (PebbleNode.isConnection(node)) {
       return (
-        <div className='pebble-item pebble-item-connection' title={node.connection.name + ' (' + (node.connection.username || '(guest)') + '@' + node.connection.server + ')'}>
+        <div className='pebble-item pebble-item-connection' title={(node.connection.username || '(guest)') + '@' + node.connection.server}>
           <i className={core.getIcon(node)}></i>
           <span className='name'>{node.connection.name}</span>
-          <span className='server'>{node.connection.username || '(guest)'}@{node.connection.server}</span>
         </div>
       );
     }

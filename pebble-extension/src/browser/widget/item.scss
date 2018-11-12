@@ -1,4 +1,10 @@
 .pebble-item {
+  white-space: nowrap;
+
+  display: flex;
+  align-items: baseline;
+  width: calc(100% - var(--theia-scrollbar-rail-width));
+
   i {
     margin-right: 6px;
   }
@@ -18,8 +24,10 @@
     }
   }
   .name {
+    flex-grow: 1 !important;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
   &.pebble-item-connection {
     display: flex;
@@ -27,15 +35,6 @@
     max-width: 100%;
     div {
       white-space: nowrap;
-    }
-    .server, .name {
-      align-self: flex-end;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .server {
-      font-size: var(--theia-ui-font-size0);
-      color: var(--theia-ui-font-color2);
     }
   }
 }
