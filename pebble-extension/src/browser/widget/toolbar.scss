@@ -15,3 +15,17 @@
     }
   }
 }
+
+// no toolbar hover
+.pebble-view {
+  .ReactVirtualized__Grid__innerScrollContainer[role=rowgroup] {
+    > div:first-child {
+      > .theia-TreeNode {
+        &:hover {
+          cursor: default;
+          background: var(--theia-layout-color0);
+        }
+      }
+    }
+  }
+}

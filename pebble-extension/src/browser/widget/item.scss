@@ -1,0 +1,41 @@
+.pebble-item {
+  i {
+    margin-right: 6px;
+  }
+  &.pebble-item-new {
+    position: relative;
+    &:before {
+      content: "";
+      display: block;
+      background: red;
+      width: 8px;
+      height: 8px;
+      position: absolute;
+      z-index: 1;
+      border-radius: 4px;
+      left: -2px;
+      top: 0px;
+    }
+  }
+  .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &.pebble-item-connection {
+    display: flex;
+    align-items: center;
+    max-width: 100%;
+    div {
+      white-space: nowrap;
+    }
+    .server, .name {
+      align-self: flex-end;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .server {
+      font-size: var(--theia-ui-font-size0);
+      color: var(--theia-ui-font-color2);
+    }
+  }
+}
