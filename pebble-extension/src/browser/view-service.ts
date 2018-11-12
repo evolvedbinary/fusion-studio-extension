@@ -37,38 +37,40 @@ export class PebbleViewService implements WidgetFactory {
     if (!this.widget) {
       return;
     }
-    this.core.laod(node);
-    try {
-      const result = await PebbleApi.connect(connection);
-      (node as PebbleConnectionNode).loaded = true;
-      const collection = result as PebbleCollection;
-      collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
-      collection.documents.forEach(document => this.core.addDocument(node, connection, document));
-    } catch (e) {
-      (node as PebbleConnectionNode).expanded = false;
-      console.error(e);
+    if (this.core.laod(node)) {
+      try {
+        const result = await PebbleApi.connect(connection);
+        (node as PebbleConnectionNode).loaded = true;
+        const collection = result as PebbleCollection;
+        collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
+        collection.documents.forEach(document => this.core.addDocument(node, connection, document));
+      } catch (e) {
+        (node as PebbleConnectionNode).expanded = false;
+        console.error(e);
+      }
+      this.core.unlaod(node);
     }
-    this.core.unlaod(node);
   }
   
   async load(node: CompositeTreeNode, connection: PebbleConnection, uri: string) {
     if (!this.widget) {
       return;
     }
-    this.core.laod(node);
-    try {
-      const result = await PebbleApi.load(connection, uri);
-      if (PebbleItem.isDocument(result)) {} else {
-        (node as PebbleConnectionNode).loaded = true;
-        const collection = result as PebbleCollection;
-        collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
-        collection.documents.forEach(document => this.core.addDocument(node, connection, document));
+    if (this.core.laod(node)) {
+      try {
+        const result = await PebbleApi.load(connection, uri);
+        if (PebbleItem.isDocument(result)) {} else {
+          (node as PebbleConnectionNode).loaded = true;
+          const collection = result as PebbleCollection;
+          collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
+          collection.documents.forEach(document => this.core.addDocument(node, connection, document));
+        }
+      } catch (e) {
+        (node as PebbleConnectionNode).expanded = false;
+        console.error(e);
       }
-    } catch (e) {
-      (node as PebbleConnectionNode).expanded = false;
-      console.error(e);
+      this.core.unlaod(node);
     }
-    this.core.unlaod(node);
   }
   
   async onOpen(node: Readonly<any>): Promise<void> {

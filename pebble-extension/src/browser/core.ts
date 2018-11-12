@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleLoadingNode, PebbleConnectionNode } from "../classes/node";
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode } from "../classes/node";
 import { TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog } from "@theia/core/lib/browser";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
@@ -62,6 +62,30 @@ export class PebbleCore {
   
   protected getName(id: string): string {
     return id.split('/').pop() || id;
+  }
+
+  protected getConnectionIcon(node: PebbleConnectionNode): string {
+    return 'toggle-' + (node.loaded ? 'on' : 'off');
+  }
+  protected getCollectionIcon(node: PebbleCollectionNode): string {
+    return 'folder' + (node.expanded ? '-open' : '') + (node.loaded ? '' : '-o');
+  }
+  protected getDocumentIcon(node: PebbleDocumentNode): string {
+    return 'folder' + ('file' + (node.loaded ? '' : '-o'));
+  }
+
+  public getIcon(node: PebbleNode): string {
+    const loading = 'spin fa-spinner';
+    if (PebbleNode.isConnection(node)) {
+      return 'fa fa-' + (node.loading ? loading : this.getConnectionIcon(node));
+    }
+    if (PebbleNode.isCollection(node)) {
+      return 'fa fa-' + (node.loading ? loading : this.getCollectionIcon(node));
+    }
+    if (PebbleNode.isDocument(node)) {
+      return 'fa fa-' + (node.loading ? loading : this.getDocumentIcon(node));
+    }
+    return '';
   }
   
   public connectionID(connection: PebbleConnection): string {
@@ -146,14 +170,24 @@ export class PebbleCore {
       selected: false,
     } as PebbleToolbarNode, parent);
   }
-  public laod(node: TreeNode): void {
-    this.addNode({
-      type: 'loading',
-    } as PebbleLoadingNode, node);
+  public laod(node: TreeNode): boolean {
+    if (PebbleNode.is(node)) {
+      if (PebbleNode.isConnection(node) || PebbleNode.isCollection(node)) {
+        if (node.loading) {
+          return false;
+        }
+        node.loading = true;
+        return true;
+      }
+    }
+    return false;
   }
   public unlaod(node: TreeNode): void {
-    CompositeTreeNode.removeChild(node as CompositeTreeNode, (node as CompositeTreeNode).children[0]);
-    this.refresh();
+    if (PebbleNode.is(node)) {
+      if (PebbleNode.isConnection(node) || PebbleNode.isCollection(node)) {
+        node.loading = false;
+      }
+    }
   }
 
   // functionalities
