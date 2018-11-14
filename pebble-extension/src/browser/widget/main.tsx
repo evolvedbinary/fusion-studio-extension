@@ -6,6 +6,7 @@ import { PebbleCore } from '../core';
 import { PebbleHome } from './home';
 import { PebbleToolbar } from './toolbar';
 import { PebbleItem } from './item';
+import { DragController } from './drag';
 
 export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
@@ -13,6 +14,7 @@ export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
 export class PebbleViewWidget extends TreeWidget {
   constructor(
     @inject(PebbleCore) protected readonly core: PebbleCore,
+    @inject(DragController) protected readonly drag: DragController,
     @inject(TreeProps) protected readonly treeProps: TreeProps,
     @inject(TreeModel) model: TreeModel,
     @inject(ContextMenuRenderer) protected readonly contextMenuRenderer: ContextMenuRenderer
@@ -26,10 +28,36 @@ export class PebbleViewWidget extends TreeWidget {
     this.title.closable = true;
     this.addClass('pebble-view');
   }
+
   @postConstruct()
   protected init(): void {
     super.init();
     this.core.model = this.model;
+  }
+
+  protected createContainerAttributes(): React.HTMLAttributes<HTMLElement> {
+    const attrs = super.createContainerAttributes();
+    return {
+      ...attrs,
+      onDragEnter: event => this.drag.onDragEnter(this.model.root, event),
+      onDragOver: event => this.drag.onDragOver(this.model.root, event),
+      onDragLeave: event => this.drag.onDragLeave(this.model.root, event),
+      onDrop: event => this.drag.onDrop(this.model.root, event)
+    };
+  }
+
+  protected createNodeAttributes(node: TreeNode, props: NodeProps): React.Attributes & React.HTMLAttributes<HTMLElement> {
+    const elementAttrs = super.createNodeAttributes(node, props);
+    return {
+      ...elementAttrs,
+      draggable: PebbleNode.isCollection(node) || PebbleNode.isItem(node),
+      onDragStart: event => this.drag.onDragStart(node, event),
+      onDragEnter: event => this.drag.onDragEnter(node, event),
+      onDragOver: event => this.drag.onDragOver(node, event),
+      onDragLeave: event => this.drag.onDragLeave(node, event),
+      onDrop: event => this.drag.onDrop(node, event),
+      title: node.name,
+    };
   }
   
   protected isEmpty(model?: TreeModel): boolean {

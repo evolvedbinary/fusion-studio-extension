@@ -14,6 +14,7 @@ import '../../src/style/index.scss';
 import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
 import { CONTEXT_MENU } from "./commands";
+import { DragController } from "./widget/drag";
 
 export default new ContainerModule(bind => {
 
@@ -31,6 +32,7 @@ export default new ContainerModule(bind => {
   bind(FrontendApplicationContribution).toService(PebbleContribution);
 
   bind(PebbleCore).toSelf().inSingletonScope();
+  bind(DragController).toSelf().inSingletonScope();
   
   bind(PebbleResourceResolver).toSelf().inSingletonScope();
   bind(ResourceResolver).toService(PebbleResourceResolver);

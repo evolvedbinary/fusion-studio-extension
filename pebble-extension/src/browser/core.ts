@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode } from "../classes/node";
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from "../classes/node";
 import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService } from "@theia/core/lib/browser";
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
@@ -38,11 +38,20 @@ export class PebbleCore {
   }
 
   // new
-  async expand(node: CompositeTreeNode) {
+  async expanded(node: CompositeTreeNode) {
     if (PebbleNode.isConnection(node) && !node.loaded) {
       this.connect(node, node.connection);
     } else if (PebbleNode.isCollection(node) && !node.loaded) {
       this.load(node, node.connection, node.uri || '');
+    }
+  }
+  expand(node: CompositeTreeNode) {
+    this._model && this._model.expandNode(node as any);
+  }
+  
+  async select(node: PebbleItemNode | PebbleConnectionNode) {
+    if (!PebbleNode.isToolbar(node)) {
+      this._model && this._model.selectNode(node);
     }
   }
 
@@ -99,7 +108,7 @@ export class PebbleCore {
         this._model.collapseNode(node);
         collection.loaded = false;
         this.empty(collection);
-        this._model.expandNode(node);
+        this.expand(node);
         return;
       } else {
         this._model.refresh();

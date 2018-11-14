@@ -44,7 +44,7 @@ export class PebbleViewService implements WidgetFactory {
       return;
     }
     if (node.expanded) {
-      this.core.expand(node);
+      this.core.expanded(node);
     }
   }
   
