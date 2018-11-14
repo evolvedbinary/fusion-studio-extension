@@ -262,10 +262,8 @@ export class PebbleCore {
   }
   public endLoading(node: TreeNode): void {
     if (PebbleNode.is(node)) {
-      if (PebbleNode.isConnection(node) || PebbleNode.isCollection(node)) {
-        node.loading = false;
-        this.refresh();
-      }
+      node.loading = false;
+      this.refresh();
     }
   }
 
@@ -326,11 +324,12 @@ export class PebbleCore {
           }
         } catch (error) {
           console.error('caught:', error);
+          this.endLoading(node);
         }
       } else {
         this._model.selectNode(node);
+        this.endLoading(node);
       }
-      this.endLoading(node);
     }
   }
   
