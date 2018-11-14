@@ -33,7 +33,7 @@ export const actNewCollection: PebbleAction = {
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-folder-o',
   execute: core => () => core && core.deleteConnection(),
-  enabled: core => () => !!core && core.isCollection(),
+  enabled: core => () => !!core && core.isCollection() && (!!core.node && !core.node.loading),
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };
 export const actNewDocument: PebbleAction = {
@@ -43,7 +43,7 @@ export const actNewDocument: PebbleAction = {
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-file-o',
   execute: core => () => core && core.newDocument(),
-  enabled: core => () => !!core && core.isCollection(),
+  enabled: core => () => !!core && core.isCollection() && (!!core.node && !core.node.loading),
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };
 export const actRefresh: PebbleAction = {
@@ -53,7 +53,7 @@ export const actRefresh: PebbleAction = {
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-refresh',
   execute: core => () => core && core.refresh(core.node as any),
-  enabled: core => () => !!core && core.isCollection(),
+  enabled: core => () => !!core && core.isCollection() && (!!core.node && !core.node.loading),
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };
 export const actDelete: PebbleAction = {
@@ -63,7 +63,7 @@ export const actDelete: PebbleAction = {
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-trash',
   execute: core => () => core && core.deleteDocument(),
-  enabled: core => () => !!core && core.isDocument(),
+  enabled: core => () => !!core && core.isDocument() && (!!core.node && !core.node.loading),
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [actConnect, actDisconnect, actNewCollection, actNewDocument, actRefresh, actDelete];

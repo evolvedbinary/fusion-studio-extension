@@ -39,7 +39,6 @@ export class PebbleViewWidget extends TreeWidget {
   
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
     if (PebbleNode.is(node)) {
-      console.log('node')
       if (PebbleNode.isToolbar(node)) {
         return this.isEmpty(this.model) ? <PebbleHome core={this.core} /> : <PebbleToolbar core={this.core} />;
       } else {

@@ -38,6 +38,60 @@ export class PebbleCore {
   }
 
   // new
+  async expand(node: CompositeTreeNode) {
+    if (PebbleNode.isConnection(node) && !node.loaded) {
+      this.connect(node, node.connection);
+    } else if (PebbleNode.isCollection(node) && !node.loaded) {
+      this.load(node, node.connection, node.uri || '');
+    }
+  }
+
+  async connect(node: CompositeTreeNode, connection: PebbleConnection) {
+    if (this.startLoading(node)) {
+      try {
+        const result = await PebbleApi.connect(connection);
+        (node as PebbleConnectionNode).loaded = true;
+        const collection = result as PebbleCollection;
+        collection.collections.forEach(subCollection => this.addCollection(node, connection, subCollection));
+        collection.documents.forEach(document => this.addDocument(node, connection, document));
+      } catch (error) {
+        (node as PebbleConnectionNode).expanded = false;
+        console.error('caught:', error);
+      }
+      this.endLoading(node);
+    }
+  }
+  
+  async load(node: CompositeTreeNode, connection: PebbleConnection, uri: string) {
+    if (this.startLoading(node)) {
+      try {
+        const result = await PebbleApi.load(connection, uri);
+        if (PebbleItem.isDocument(result)) {} else {
+          (node as PebbleConnectionNode).loaded = true;
+          const collection = result as PebbleCollection;
+          collection.collections.forEach(subCollection => this.addCollection(node, connection, subCollection));
+          collection.documents.forEach(document => this.addDocument(node, connection, document));
+        }
+      } catch (error) {
+        (node as PebbleConnectionNode).expanded = false;
+        console.error('caught:', error);
+      }
+      this.endLoading(node);
+    }
+  }
+
+  async save(document: PebbleDocumentNode, content: string) {
+    try {
+      const result = await PebbleApi.save(document.connection, document.uri || '', content);
+      if (result) {
+        document.isNew = false;
+        this.refresh();
+      }
+    } catch (error) {
+      console.error('caught:', error);
+    }
+  }
+
   async refresh(node?: PebbleCollectionNode) {
     if (this._model) {
       if (node) {
@@ -195,22 +249,22 @@ export class PebbleCore {
       selected: false,
     } as PebbleToolbarNode, parent);
   }
-  public laod(node: TreeNode): boolean {
+  public startLoading(node: TreeNode): boolean {
     if (PebbleNode.is(node)) {
-      if (PebbleNode.isConnection(node) || PebbleNode.isCollection(node)) {
-        if (node.loading) {
-          return false;
-        }
-        node.loading = true;
-        return true;
+      if (node.loading) {
+        return false;
       }
+      node.loading = true;
+      this.refresh();
+      return true;
     }
     return false;
   }
-  public unlaod(node: TreeNode): void {
+  public endLoading(node: TreeNode): void {
     if (PebbleNode.is(node)) {
       if (PebbleNode.isConnection(node) || PebbleNode.isCollection(node)) {
         node.loading = false;
+        this.refresh();
       }
     }
   }
@@ -247,7 +301,7 @@ export class PebbleCore {
     if (!this.selected || !this._model) {
       return;
     }
-    if (this.node && PebbleNode.isDocument(this.node) && !this.node.loading) {
+    if (this.node && PebbleNode.isDocument(this.node) && this.startLoading(this.node)) {
       const node = this.node as PebbleDocumentNode;
       const msg = document.createElement('p');
       msg.innerHTML = 'Are you sure you want to delete the document: <strong>' + node.name + '</strong>?';
@@ -257,11 +311,10 @@ export class PebbleCore {
         cancel: 'Keep',
         ok: 'Delete'
       });
-      this.node.loading = true;
       const result = await dialog.open();
       if (result) {
-        PebbleApi.remove(node.connection, node.uri || '').then(done => {
-          console.log(done);
+        try {
+          const done = await PebbleApi.remove(node.connection, node.uri || '');
           if (done) {
             if (node.editor) {
               node.editor.closeWithoutSaving();
@@ -271,11 +324,13 @@ export class PebbleCore {
             CompositeTreeNode.removeChild(node.parent as CompositeTreeNode, node);
             this.refresh();
           }
-        });
+        } catch (error) {
+          console.error('caught:', error);
+        }
       } else {
-        this.node.loading = false;
         this._model.selectNode(node);
       }
+      this.endLoading(node);
     }
   }
   
