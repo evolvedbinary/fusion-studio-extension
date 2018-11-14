@@ -6,7 +6,7 @@ import { ResourceResolver } from "@theia/core/lib/common";
 
 import { ContainerModule, interfaces } from "inversify";
 import { PebbleResourceResolver } from '../browser/resource';
-import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget';
+import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget/main';
 import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PebbleViewService } from './view-service';
 

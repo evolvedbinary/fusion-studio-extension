@@ -38,8 +38,19 @@ export class PebbleCore {
   }
 
   // new
-  refresh() {
-    this._model && this._model.refresh();
+  async refresh(node?: PebbleCollectionNode) {
+    if (this._model) {
+      if (node) {
+        const collection = node as PebbleCollectionNode;
+        this._model.collapseNode(node);
+        collection.loaded = false;
+        this.empty(collection);
+        this._model.expandNode(node);
+        return;
+      } else {
+        this._model.refresh();
+      }
+    }
   }
 
   empty(node: CompositeTreeNode) {

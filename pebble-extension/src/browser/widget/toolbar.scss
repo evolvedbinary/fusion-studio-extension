@@ -1,0 +1,46 @@
+#pebble-toolbar {
+  white-space: nowrap;
+  color: var(--theia-ui-font-color1);
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  height: 23px;
+  border-bottom: 1px solid var(--theia-border-color2);
+  > span:first-child {
+    flex: 1;
+    i {
+      margin-left: -8px;
+      margin-right: 4px;
+    }
+  }
+  .pebble-action {
+    min-width: 23px;
+    height: 23px;
+    padding: 0;
+    margin: 0;
+    line-height: 23px;
+    width: 23px;
+    &.color-red {
+      background-color: var(--md-red-900);
+      &:hover:not([disabled]) {
+        background-color: var(--md-red-600);
+      }
+    }
+  }
+}
+
+// no toolbar hover
+.pebble-view {
+  .ReactVirtualized__Grid__innerScrollContainer[role=rowgroup] {
+    > div:first-child {
+      > .theia-TreeNode {
+        &:hover {
+          cursor: default;
+          background: var(--theia-layout-color0);
+        }
+      }
+    }
+  }
+}

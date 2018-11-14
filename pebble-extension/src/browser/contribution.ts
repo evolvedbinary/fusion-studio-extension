@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { AbstractViewContribution, KeybindingRegistry } from "@theia/core/lib/browser";
-import { PebbleViewWidget } from "./widget";
+import { PebbleViewWidget } from "./widget/main";
 import { MenuModelRegistry, CommandRegistry } from "@theia/core";
 import { PebbleCore } from "./core";
 import { registerCommands, registerMenus, registerKeybindings } from "../classes/action";
