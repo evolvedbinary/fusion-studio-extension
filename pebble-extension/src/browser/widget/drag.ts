@@ -15,6 +15,10 @@ export class DragController {
     @inject(PebbleCore) private core: PebbleCore,
     // @inject(PebbleViewWidget) private tree: PebbleViewWidget,
   ) {}
+
+  private dragOperation(event: React.DragEvent<HTMLElement>) {
+    event.dataTransfer.dropEffect = event.ctrlKey ? 'copy' : 'move';
+  }
   private getParentContainer(node: PebbleItemNode | PebbleConnectionNode): PebbleCollectionNode | undefined {
     let container = node;
     while (container) {
@@ -39,6 +43,7 @@ export class DragController {
     }
     event.stopPropagation();
     event.preventDefault();
+    this.dragOperation(event);
     this.toCancelNodeExpansion.dispose();
     const container = this.getParentContainer(node as PebbleItemNode);
     if (container) {
@@ -54,6 +59,7 @@ export class DragController {
     }
     event.stopPropagation();
     event.preventDefault();
+    this.dragOperation(event);
     if (!this.toCancelNodeExpansion.disposed) {
       return;
     }
@@ -75,7 +81,7 @@ export class DragController {
     }
     event.preventDefault();
     event.stopPropagation();
-    event.dataTransfer.dropEffect = 'copy';
+    this.dragOperation(event);
     const container = this.getParentContainer(node as PebbleItemNode);
     if (container) {
       if (PebbleNode.isConnection(container.parent as any)) {
@@ -83,6 +89,7 @@ export class DragController {
       }
       const source = this.core.getNode(event.dataTransfer.getData(DRAG_NODE));
       console.group('dragging');
+      console.log(event.dataTransfer.dropEffect);
       console.log(source);
       console.log(container);
       console.groupEnd();
