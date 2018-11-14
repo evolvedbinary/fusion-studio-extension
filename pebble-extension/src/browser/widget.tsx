@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleLoadingNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from '../classes/node';
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from '../classes/node';
 import { PebbleCore } from './core';
 import { PebbleAction } from '../classes/action';
 
@@ -9,7 +9,6 @@ export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
 
 export class PebbleViewWidget extends TreeWidget {
-  static CONTEXT_MENU = ['pebble-context-menu'];
   constructor(
     @inject(PebbleCore) protected readonly core: PebbleCore,
     @inject(TreeProps) protected readonly treeProps: TreeProps,
@@ -65,18 +64,11 @@ export class PebbleViewWidget extends TreeWidget {
   //     {!this.isEmpty(model) && super.renderTree(model)}
   //   </div>;
   // }
-
-  protected renderLoading(node: PebbleLoadingNode): React.ReactNode {
-    return <div className='loadingNode'>
-      <i className="fa fa-spin fa-spinner"></i>
-      <span className='name'>Loading...</span>
-    </div>;
-  }
   protected renderConnection(node: PebbleConnectionNode): React.ReactNode {
-    return <div className='pebbleNode connectionNode' title={node.connection.name + ' (' + (node.connection.username || '(anonymous)') + '@' + node.connection.server + ')'}>
-      <i className={'fa fa-toggle-' + (node.loaded ? 'on' : 'off')}></i>
+    return <div className='pebbleNode connectionNode' title={node.connection.name + ' (' + (node.connection.username || '(guest)') + '@' + node.connection.server + ')'}>
+      <i className={this.core.getIcon(node)}></i>
       <span className='name'>{node.connection.name}</span>
-      <span className='server'>{node.connection.username || '(anonymous)'}@{node.connection.server}</span>
+      <span className='server'>{node.connection.username || '(guest)'}@{node.connection.server}</span>
     </div>;
   }
   protected renderItem(node: PebbleItemNode): React.ReactNode {
@@ -84,13 +76,13 @@ export class PebbleViewWidget extends TreeWidget {
   }
   protected renderCollection(node: PebbleCollectionNode): React.ReactNode {
     return <div className='pebbleNode itemNode collectionNode'>
-      <i className={'icon fa fa-folder' + (node.expanded ? '-open' : '') + (node.loaded ? '' : '-o')}></i>
+      <i className={this.core.getIcon(node)}></i>
       <span className='name'>{node.name}</span>
     </div>;
   }
   protected renderDocument(node: PebbleDocumentNode): React.ReactNode {
-    return <div className='pebbleNode itemNode documentNode'>
-      <i className={'icon fa fa-file' + (node.loaded ? '' : '-o')}></i>
+    return <div className={'pebbleNode itemNode documentNode' + (node.isNew ? ' pebbleNew' : '')}>
+      <i className={this.core.getIcon(node)}></i>
       <span className='name'>{node.name}</span>
     </div>;
   }
@@ -110,8 +102,6 @@ export class PebbleViewWidget extends TreeWidget {
         return this.renderToolbar(node);
       } else if (PebbleNode.isItem(node)) {
         return this.renderItem(node);
-      } else if (PebbleNode.isLoading(node)) {
-        return this.renderLoading(node);
       }
     }
     console.error('unknown node:', node);

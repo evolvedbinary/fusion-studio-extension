@@ -51,6 +51,30 @@ async function get(connection: PebbleConnection, uri: string): Promise<Response>
     }
   });
 }
+async function remove(connection: PebbleConnection, uri: string): Promise<Response> {
+  const options: any = {
+    method: 'DELETE',
+  };
+  if (connection.username !== '') {
+    options.headers = { Authorization: 'Basic ' + btoa(connection.username + ':' + connection.password) };
+  }
+  return fetch(connection.server + uri, options);
+}
+async function put(connection: PebbleConnection, uri: string, body: any): Promise<Response> {
+  const headers: any = {};
+  if (connection.username !== '') {
+    headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
+  }
+  console.log(headers);
+  return fetch(connection.server + uri, {
+    headers,
+    method: 'PUT',
+    body,
+  }).then(result => {
+    console.log('put', result);
+    return result;
+  });
+}
 async function readDocument(data: any, connection: PebbleConnection, uri: string): Promise<PebbleDocument> {
   return {
     ...readItem(data),
@@ -75,6 +99,14 @@ async function load(connection: PebbleConnection, uri: string): Promise<PebbleCo
   // }
 }
 
+async function save(connection: PebbleConnection, uri: string, content: string): Promise<boolean> {
+  try {
+    return put(connection, '/exist/restxq/pebble/document?uri=' + uri, content).then(result => result.status === 201);
+  } catch (e) {
+    throw e;
+  }
+}
+
 async function connect(connection: PebbleConnection): Promise<PebbleCollection> {
   // try {
     const root = await load(connection, '/') as PebbleCollection;
@@ -83,8 +115,19 @@ async function connect(connection: PebbleConnection): Promise<PebbleCollection> 
   //   throw e;
   // }
 }
+async function removeDoc(connection: PebbleConnection, uri: string): Promise<boolean> {
+  // try {
+    return remove(connection, '/exist/restxq/pebble/document?uri=' + uri).then(result => result.status === 204)
+      .then(result => true)
+      .catch(err => false);
+  // } catch (e) {
+  //   throw e;
+  // }
+}
 
 export const PebbleApi = {
   load,
+  save,
   connect,
+  remove: removeDoc,
 };

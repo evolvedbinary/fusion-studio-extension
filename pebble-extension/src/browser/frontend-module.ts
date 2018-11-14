@@ -13,6 +13,7 @@ import { PebbleViewService } from './view-service';
 import '../../src/style/index.scss';
 import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
+import { CONTEXT_MENU } from "./commands";
 
 export default new ContainerModule(bind => {
 
@@ -22,9 +23,6 @@ export default new ContainerModule(bind => {
 
   bind(PebbleViewService).toSelf().inSingletonScope();
   bind(WidgetFactory).toDynamicValue(context => context.container.get(PebbleViewService));
-  
-  bind(PebbleResourceResolver).toSelf().inSingletonScope();
-  bind(ResourceResolver).toService(PebbleResourceResolver);
 
   // bindViewContribution(bind, PebbleViewContribution);
   // bind(FrontendApplicationContribution).toService(PebbleViewContribution);
@@ -34,12 +32,15 @@ export default new ContainerModule(bind => {
 
   bind(PebbleCore).toSelf().inSingletonScope();
   
+  bind(PebbleResourceResolver).toSelf().inSingletonScope();
+  bind(ResourceResolver).toService(PebbleResourceResolver);
+  
 });
 
 function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
   const child = createTreeContainer(parent);
 
-  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, contextMenuPath: PebbleViewWidget.CONTEXT_MENU });
+  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, contextMenuPath: CONTEXT_MENU });
 
   child.unbind(TreeWidget);
   child.bind(PebbleViewWidget).toSelf();
