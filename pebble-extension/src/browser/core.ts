@@ -76,14 +76,15 @@ export class PebbleCore {
     if (this.startLoading(node)) {
       try {
         const result = await PebbleApi.load(connection, uri);
-        if (PebbleItem.isDocument(result)) {} else {
-          (node as PebbleConnectionNode).loaded = true;
+        if (PebbleItem.isCollection(result)) {
+          (node as PebbleCollectionNode).loaded = true;
           const collection = result as PebbleCollection;
           collection.collections.forEach(subCollection => this.addCollection(node, connection, subCollection));
           collection.documents.forEach(document => this.addDocument(node, connection, document));
+          (node as PebbleCollectionNode).collection = collection;
         }
       } catch (error) {
-        (node as PebbleConnectionNode).expanded = false;
+        (node as PebbleCollectionNode).expanded = false;
         console.error('caught:', error);
       }
       this.endLoading(node);
@@ -214,7 +215,7 @@ export class PebbleCore {
     const node = {
       type: 'item',
       connection,
-      collection: false,
+      isCollection: false,
       id: this.itemID(connection, document),
       name: this.getName(document.name),
       parent: parent,
@@ -229,7 +230,7 @@ export class PebbleCore {
     this.addNode({
       type: 'item',
       connection,
-      collection: true,
+      isCollection: true,
       children: [],
       id: this.itemID(connection, collection),
       link: PEBBLE_RESOURCE_SCHEME + ':' + collection.name,
@@ -237,6 +238,7 @@ export class PebbleCore {
       parent: parent as CompositeTreeNode,
       selected: false,
       expanded: false,
+      collection,
       uri: collection.name,
     } as PebbleCollectionNode, parent);
   }
@@ -370,25 +372,32 @@ export class PebbleCore {
     return result;
   }
 
-  public async newDocument(): Promise<boolean> {
+  public async newItem(isCollection?: boolean): Promise<boolean> {
     if (!this.node) {
       return false;
     }
     const collection = this.node as PebbleCollectionNode;
     const dialog = new SingleTextInputDialog({
-      title: 'New document',
+      title: 'New ' + (isCollection ? 'collection' : 'document'),
       confirmButtonLabel: 'Create',
       validate: (input) => input !== '' && !this.fileExists(input),
     });
     let name = await dialog.open();
     if (name) {
       name = collection.uri + '/' + name;
-      this.openDocument(this.addDocument(collection, collection.connection, {
-        content: '',
-        name,
-        group: '',
-        owner: '',
-      }, true));
+      if (isCollection) {
+        const result = await PebbleApi.newCollection(collection.connection, name);
+        if (result) {
+          this.addCollection(collection, collection.connection, result);
+        }
+      } else {
+        this.openDocument(this.addDocument(collection, collection.connection, {
+          content: '',
+          name,
+          group: '',
+          owner: '',
+        }, true));
+      }
     }
     return false;
   }
@@ -405,19 +414,16 @@ export class PebbleCore {
       );
       if (result) {
         if (isCollection) {
-          // this.addCollection(operation.destinationContainer, operation.source.connection, {
-          //   collections
-          // })
+          this.addCollection(operation.destinationContainer, operation.source.connection, {
+            ...(operation.source as PebbleCollectionNode).collection,
+            name: operation.destination,
+          });
         } else {
           this.addDocument(operation.destinationContainer, operation.source.connection, {
-            content: '',
-            created: new Date(),
-            group: '',
-            name: operation.source.uri,
-            owner: ''
+            ...(operation.source as PebbleDocumentNode).document,
+            name: operation.destination,
           });
         }
-        this.addNode({ ...operation.source, uri: '' }, );
         this.removeNode(operation.source, operation.sourceContainer);
       }
       return result;

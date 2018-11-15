@@ -1,5 +1,6 @@
 import { TreeNode, ExpandableTreeNode, SelectableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
 import { PebbleConnection } from "./connection";
+import { PebbleDocument, PebbleCollection } from "./item";
 
 export interface PebbleNode extends TreeNode {
   type: 'connection' | 'toolbar' | 'item';
@@ -23,13 +24,15 @@ export interface PebbleItemNode extends PebbleNode, SelectableTreeNode {
   connection: PebbleConnection;
   link: string;
   loaded?: boolean;
-  collection: boolean;
+  isCollection: boolean;
 }
 export interface PebbleCollectionNode extends PebbleItemNode, PebblecontainerNode {
-  collection: true;
+  collection: PebbleCollection;
+  isCollection: true;
 }
 export interface PebbleDocumentNode extends PebbleItemNode {
-  collection: false;
+  document: PebbleDocument;
+  isCollection: false;
   isNew: boolean;
   editor?: any;
 }
@@ -48,9 +51,9 @@ export namespace PebbleNode {
     return PebbleNode.is(node) && node.type === 'item';
   }
   export function isCollection(node?: TreeNode): node is PebbleCollectionNode {
-    return PebbleNode.isItem(node) && node.collection;
+    return PebbleNode.isItem(node) && node.isCollection;
   }
   export function isDocument(node?: TreeNode): node is PebbleDocumentNode {
-    return PebbleNode.isItem(node) && !node.collection;
+    return PebbleNode.isItem(node) && !node.isCollection;
   }
 }

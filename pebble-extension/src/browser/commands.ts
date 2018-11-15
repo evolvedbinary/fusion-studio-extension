@@ -32,7 +32,7 @@ export const actNewCollection: PebbleAction = {
   label: 'New collection',
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-folder-o',
-  execute: core => () => core && core.deleteConnection(),
+  execute: core => () => core && core.newItem(true),
   enabled: core => () => !!core && core.isCollection() && (!!core.node && !core.node.loading),
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };
@@ -42,7 +42,7 @@ export const actNewDocument: PebbleAction = {
   label: 'New document',
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-file-o',
-  execute: core => () => core && core.newDocument(),
+  execute: core => () => core && core.newItem(),
   enabled: core => () => !!core && core.isCollection() && (!!core.node && !core.node.loading),
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };

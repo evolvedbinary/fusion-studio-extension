@@ -61,7 +61,7 @@ async function remove(connection: PebbleConnection, uri: string): Promise<Respon
   }
   return fetch(connection.server + uri, options);
 }
-async function put(connection: PebbleConnection, uri: string, body: any): Promise<Response> {
+async function put(connection: PebbleConnection, uri: string, body: any = ''): Promise<Response> {
   const headers:any = typeof body !== 'string' ? body : {};
   if (connection.username !== '') {
     headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
@@ -116,6 +116,21 @@ async function save(connection: PebbleConnection, uri: string, content: string):
   return false;
 }
 
+async function newCollection(connection: PebbleConnection, uri: string): Promise<PebbleCollection> {
+  try {
+    const result = await put(connection, '/exist/restxq/pebble/collection?uri=' + uri);
+    switch (result.status) {
+      case 201:
+        const json = await result.json();
+        return readCollection(json);
+      case 401: throw createError(Error.permissionDenied, result);
+      default: throw createError(Error.unknown, result);
+    }
+  } catch (error) {
+    throw createError(Error.unknown, error);
+  }
+}
+
 async function connect(connection: PebbleConnection): Promise<PebbleCollection> {
   const root = await load(connection, '/') as PebbleCollection;
   return root;
@@ -157,4 +172,5 @@ export const PebbleApi = {
   connect,
   remove: removeDoc,
   move,
+  newCollection,
 };
