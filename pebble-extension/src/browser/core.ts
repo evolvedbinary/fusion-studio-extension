@@ -43,7 +43,7 @@ export class PebbleCore {
     if (PebbleNode.isConnection(node) && !node.loaded) {
       this.connect(node, node.connection);
     } else if (PebbleNode.isCollection(node) && !node.loaded) {
-      this.load(node, node.connection, node.uri || '');
+      this.load(node, node.connection, node.uri);
     }
   }
   expand(node: CompositeTreeNode) {
@@ -93,7 +93,7 @@ export class PebbleCore {
 
   async save(document: PebbleDocumentNode, content: string) {
     try {
-      const result = await PebbleApi.save(document.connection, document.uri || '', content);
+      const result = await PebbleApi.save(document.connection, document.uri, content);
       if (result) {
         document.isNew = false;
         this.refresh();
@@ -311,16 +311,17 @@ export class PebbleCore {
     }
   }
   
-  public async deleteDocument(): Promise<void> {
+  public async deleteItem(): Promise<void> {
     if (!this.selected || !this._model) {
       return;
     }
-    if (this.node && PebbleNode.isDocument(this.node) && this.startLoading(this.node)) {
+    if (this.node && (PebbleNode.isDocument(this.node) || PebbleNode.isCollection(this.node)) && this.startLoading(this.node)) {
+      const isCollection = PebbleNode.isCollection(this.node);
       const node = this.node as PebbleDocumentNode;
       const msg = document.createElement('p');
-      msg.innerHTML = 'Are you sure you want to delete the document: <strong>' + node.name + '</strong>?';
+      msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.name + '</strong>?';
       const dialog = new ConfirmDialog({
-        title: 'Delete document',
+        title: 'Delete ' + (isCollection ? 'collection' : 'document'),
         msg,
         cancel: 'Keep',
         ok: 'Delete'
@@ -328,7 +329,7 @@ export class PebbleCore {
       const result = await dialog.open();
       if (result) {
         try {
-          const done = await PebbleApi.remove(node.connection, node.uri || '');
+          const done = await PebbleApi.remove(node.connection, node.uri, isCollection);
           if (done) {
             if (node.editor) {
               node.editor.closeWithoutSaving();

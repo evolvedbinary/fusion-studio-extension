@@ -135,9 +135,9 @@ async function connect(connection: PebbleConnection): Promise<PebbleCollection> 
   const root = await load(connection, '/') as PebbleCollection;
   return root;
 }
-async function removeDoc(connection: PebbleConnection, uri: string): Promise<boolean> {
+async function removeDoc(connection: PebbleConnection, uri: string, isCollection?: boolean): Promise<boolean> {
   try {
-    const result = await remove(connection, '/exist/restxq/pebble/document?uri=' + uri);
+    const result = await remove(connection, '/exist/restxq/pebble/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri);
     switch (result.status) {
       case 204: return true;
       case 401: throw createError(Error.permissionDenied, result);

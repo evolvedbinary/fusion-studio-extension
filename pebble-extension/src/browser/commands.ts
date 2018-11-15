@@ -62,8 +62,8 @@ export const actDelete: PebbleAction = {
   label: 'Delete',
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-trash',
-  execute: core => () => core && core.deleteDocument(),
-  enabled: core => () => !!core && core.isDocument() && (!!core.node && !core.node.loading),
+  execute: core => () => core && core.deleteItem(),
+  enabled: core => () => !!core && (core.isDocument() || core.isCollection()) && (!!core.node && !core.node.loading),
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [actConnect, actDisconnect, actNewCollection, actNewDocument, actRefresh, actDelete];
