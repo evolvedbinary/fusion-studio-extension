@@ -62,14 +62,14 @@ async function remove(connection: PebbleConnection, uri: string): Promise<Respon
   return fetch(connection.server + uri, options);
 }
 async function put(connection: PebbleConnection, uri: string, body: any): Promise<Response> {
-  const headers: any = {};
+  const headers:any = typeof body !== 'string' ? body : {};
   if (connection.username !== '') {
     headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
   }
   return fetch(connection.server + uri, {
     headers,
     method: 'PUT',
-    body,
+    body: typeof body === 'string' ? body : undefined,
   });
 }
 async function readDocument(data: any, connection: PebbleConnection, uri: string): Promise<PebbleDocument> {
@@ -133,9 +133,28 @@ async function removeDoc(connection: PebbleConnection, uri: string): Promise<boo
   }
 }
 
+async function move(connection: PebbleConnection, source: string, destination: string, collection: boolean, copy: boolean): Promise<boolean> {
+  try {
+    const headers = {
+      ['x-pebble-' + (copy ? 'copy' : 'move') + '-source']: source,
+    };
+    const endpoint = collection ? 'collection' : 'document';
+    const result = await put(connection, '/exist/restxq/pebble/' + endpoint + '?uri=' + destination, headers);
+    switch (result.status) {
+      case 201: return true;
+      case 401: throw createError(Error.permissionDenied, result);
+      default: throw createError(Error.unknown, result);
+    }
+  } catch (error) {
+    throw createError(Error.unknown, error);
+  }
+  return false;
+}
+
 export const PebbleApi = {
   load,
   save,
   connect,
   remove: removeDoc,
+  move,
 };

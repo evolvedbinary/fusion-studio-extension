@@ -9,6 +9,7 @@ import { CommandRegistry } from "@theia/core";
 import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
+import { PebbleDragOperation } from "./widget/drag";
 
 @injectable()
 export class PebbleCore {
@@ -117,9 +118,9 @@ export class PebbleCore {
   }
 
   empty(node: CompositeTreeNode) {
-    let child: TreeNode | undefined;
-    while (child = CompositeTreeNode.getFirstChild(node)) {
-      CompositeTreeNode.removeChild(node, child);
+    let child: PebbleNode;
+    while (child = CompositeTreeNode.getFirstChild(node) as PebbleNode) {
+      this.removeNode(child, node);
     }
     this.refresh();
   }
@@ -206,6 +207,9 @@ export class PebbleCore {
     this._model && this._model.refresh();
     return child;
   }
+  public removeNode(child: PebbleNode, parent?: TreeNode): void {
+    CompositeTreeNode.removeChild(parent as CompositeTreeNode, child);
+  }
   public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): PebbleDocumentNode {
     const node = {
       type: 'item',
@@ -253,6 +257,7 @@ export class PebbleCore {
     this.addNode({
       type: 'toolbar',
       id: 'pebble-toolbar',
+      uri: 'toolbar',
       name: 'Pebble Toolbar',
       parent: parent,
       selected: false,
@@ -296,7 +301,7 @@ export class PebbleCore {
       });
       const result = await dialog.open();
       if (result) {
-        CompositeTreeNode.removeChild(this._model.root as CompositeTreeNode, node);
+        this.removeNode(node, this._model.root as CompositeTreeNode);
         this._model.refresh();
       } else {
         this._model.selectNode(node);
@@ -328,7 +333,7 @@ export class PebbleCore {
               // TODO: keep the file in the editor as a new one
               // node.editor.saveable.setDirty(true);
             }
-            CompositeTreeNode.removeChild(node.parent as CompositeTreeNode, node);
+            this.removeNode(node, node.parent as CompositeTreeNode);
             this.refresh();
           }
         } catch (error) {
@@ -387,4 +392,40 @@ export class PebbleCore {
     }
     return false;
   }
+
+  public async move(operation: PebbleDragOperation): Promise<boolean> {
+    if (operation.source) {
+      const isCollection = PebbleNode.isCollection(operation.source);
+      const result = await PebbleApi.move(
+        operation.source.connection,
+        operation.source.uri,
+        operation.destination,
+        isCollection,
+        operation.event.dataTransfer.dropEffect === 'copy'
+      );
+      if (result) {
+        if (isCollection) {
+          // this.addCollection(operation.destinationContainer, operation.source.connection, {
+          //   collections
+          // })
+        } else {
+          this.addDocument(operation.destinationContainer, operation.source.connection, {
+            content: '',
+            created: new Date(),
+            group: '',
+            name: operation.source.uri,
+            owner: ''
+          });
+        }
+        this.addNode({ ...operation.source, uri: '' }, );
+        this.removeNode(operation.source, operation.sourceContainer);
+      }
+      return result;
+    } else {
+      // TODO: implements uploads
+      // this.model.upload(container, event.dataTransfer.items);
+      return false;
+    }
+  }
+  
 }
