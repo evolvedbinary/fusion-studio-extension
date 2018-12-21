@@ -1,4 +1,4 @@
-import { PebbleAction } from "../classes/action";
+import { PebbleAction, PebbleSubMenu } from "../classes/action";
 import { CommonMenus } from "@theia/core/lib/browser";
 
 export const CONTEXT_MENU = ['pebble-context-menu'];
@@ -67,3 +67,4 @@ export const actDelete: PebbleAction = {
   visible: core => () => !!core && core.selected && !core.isConnection(),
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [actConnect, actDisconnect, actNewCollection, actNewDocument, actRefresh, actDelete];
+export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [];
