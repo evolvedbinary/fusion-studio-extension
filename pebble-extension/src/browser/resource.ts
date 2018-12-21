@@ -47,7 +47,7 @@ export class PebbleResource implements Resource {
       const result = await PebbleApi.load(document.connection, document.uri) as PebbleDocument;
       return result.content;
     }
-    return '';
+    return document.document ? document.document.content : '';
   }
   async saveContentChanges(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void> {
     const content = await this.readContents(options);

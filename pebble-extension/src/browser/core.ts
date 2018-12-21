@@ -10,6 +10,7 @@ import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
+import { PebbleTemplate } from "../classes/template";
 
 @injectable()
 export class PebbleCore {
@@ -222,6 +223,7 @@ export class PebbleCore {
       isNew,
       selected: false,
       uri: document.name,
+      document,
     } as PebbleDocumentNode;
     this.addNode(node, parent);
     return node;
@@ -371,6 +373,30 @@ export class PebbleCore {
     const result = open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
     node.loaded = true;
     return result;
+  }
+
+  public async newItemFromTemplate(template: PebbleTemplate): Promise<boolean> {
+    if (!this.node) {
+      return false;
+    }
+    const collection = this.node as PebbleCollectionNode;
+    const dialog = new SingleTextInputDialog({
+      title: 'New ' + template.name,
+      confirmButtonLabel: 'Create',
+      validate: (input) => input !== '' && !this.fileExists(input),
+    });
+    let name = await dialog.open();
+    if (name) {
+      name = collection.uri + '/' + name;
+      const params = {};
+      this.openDocument(this.addDocument(collection, collection.connection, {
+        content: template.execute(params),
+        name: name + '.' + template.ext(params),
+        group: '',
+        owner: '',
+      }, true));
+    }
+    return false;
   }
 
   public async newItem(isCollection?: boolean): Promise<boolean> {
