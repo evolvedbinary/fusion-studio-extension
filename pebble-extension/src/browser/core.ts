@@ -370,7 +370,7 @@ export class PebbleCore {
   }
 
   public async openDocument(node: PebbleDocumentNode): Promise<any> {
-    const result = open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
+    const result = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
     node.loaded = true;
     return result;
   }
@@ -388,12 +388,22 @@ export class PebbleCore {
     let result = await dialog.open();
     if (result) {
       const name = collection.uri + '/' + result.params.name;
-      this.openDocument(this.addDocument(collection, collection.connection, {
-        content: template.execute(result.params),
+      const text = template.execute(result.params);
+      const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
+        content: text,
         name,
         group: '',
         owner: '',
       }, true));
+      doc.editor.document.setDirty(true);
+      doc.editor.document.contentChanges.push({
+        range: {
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 0 }
+        },
+        rangeLength: 0,
+        text,
+      });
     }
     return false;
   }
