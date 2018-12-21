@@ -1,6 +1,7 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { PebbleConnection } from "../../classes/connection";
+import { IDialogField } from "../../classes/dialog-field";
 
 @injectable()
 export class PebbleConnectionDialogProps extends DialogProps {
@@ -8,12 +9,6 @@ export class PebbleConnectionDialogProps extends DialogProps {
   server?: string;
   username?: string;
   password?: string;
-}
-
-export interface IDialogField {
-  container: HTMLDivElement;
-  input: HTMLInputElement;
-  label: HTMLSpanElement;
 }
 
 function createField(label: string, className: string, type ='text'): IDialogField {

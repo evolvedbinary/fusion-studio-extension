@@ -4,13 +4,13 @@ import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleText
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
-import { NewConnectionDialog } from "./dialogs/new-connection-dialog";
 import { CommandRegistry } from "@theia/core";
 import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
+import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
 
 @injectable()
 export class PebbleCore {
@@ -380,18 +380,17 @@ export class PebbleCore {
       return false;
     }
     const collection = this.node as PebbleCollectionNode;
-    const dialog = new SingleTextInputDialog({
+    const dialog = new NewFromTemplateDialog({
       title: 'New ' + template.name,
-      confirmButtonLabel: 'Create',
-      validate: (input) => input !== '' && !this.fileExists(input),
+      template,
+      validate: (filename) => filename !== '' && !this.fileExists(filename),
     });
-    let name = await dialog.open();
-    if (name) {
-      name = collection.uri + '/' + name;
-      const params = {};
+    let result = await dialog.open();
+    if (result) {
+      const name = collection.uri + '/' + result.params.name;
       this.openDocument(this.addDocument(collection, collection.connection, {
-        content: template.execute(params),
-        name: name + '.' + template.ext(params),
+        content: template.execute(result.params),
+        name,
         group: '',
         owner: '',
       }, true));
