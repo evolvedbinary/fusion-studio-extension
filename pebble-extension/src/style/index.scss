@@ -2,7 +2,8 @@
 @import "../browser/widget/toolbar.scss";
 @import "../browser/widget/item.scss";
 
-.new-connection-dialog-container {
+.new-connection-dialog-container,
+.new-from-template-dialog-container {
   > div {
     display: flex;
     flex-direction: column;

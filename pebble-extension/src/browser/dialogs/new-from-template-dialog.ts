@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { PebbleTemplate } from "../../classes/template";
-import { IDialogField } from "../../classes/dialog-field";
+import { IDialogField, IDialogFields } from "../../classes/dialog-field";
 
 @injectable()
 export class PebbleNewFromTemplateDialogProps extends DialogProps {
@@ -32,6 +32,7 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
 
   protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
+  protected readonly fields: IDialogFields = {};
 
   constructor(
     @inject(PebbleNewFromTemplateDialogProps) protected readonly props: PebbleNewFromTemplateDialogProps
@@ -44,6 +45,14 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
     
     this.containerDiv.className = 'new-from-template-dialog-container';
     this.contentNode.appendChild(this.containerDiv);
+    
+    if (props.template && props.template.fields) {
+      for (const field in props.template.fields) {
+        this.fields[field] = createField(field + ':', field +'-field');
+        this.fields[field].input.value = props.template.defaults ? props.template.defaults[field] : '';
+        this.containerDiv.appendChild(this.fields[field].container);
+      }
+    }
 
     this.appendAcceptButton('Create');
     this.appendCloseButton('Cancel');

@@ -3,3 +3,6 @@ export interface IDialogField {
   input: HTMLInputElement;
   label: HTMLSpanElement;
 }
+export interface IDialogFields {
+  [key: string]: IDialogField;
+}

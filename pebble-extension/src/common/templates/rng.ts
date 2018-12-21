@@ -5,8 +5,11 @@ export interface PebbleTemplateRNParams {
 }
 export const PebbleTemplateRN: PebbleTemplate<PebbleTemplateRNParams> = {
   name: 'Schematron',
+  fields: {
+    type: 'test',
+  },
   defaults: {
-      type: 'xml',
+    type: 'xml',
   },
   ext: ({ type }: PebbleTemplateRNParams) => type === 'xml' ? 'rng' : 'rnc',
   execute: ({ type }: PebbleTemplateRNParams) => type === 'xml' ? `<?xml version="1.0" encoding="UTF-8"?>
