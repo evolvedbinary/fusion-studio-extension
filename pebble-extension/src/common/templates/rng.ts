@@ -6,7 +6,13 @@ export interface PebbleTemplateRNParams {
 export const PebbleTemplateRN: PebbleTemplate<PebbleTemplateRNParams> = {
   name: 'Schematron',
   fields: {
-    type: 'test',
+    type: {
+        label: 'Document type',
+        options: [
+            { label: 'XML Document', value: 'xml' },
+            { label: 'Compact Document', value: 'compact' },
+        ]
+    },
   },
   defaults: {
     type: 'xml',

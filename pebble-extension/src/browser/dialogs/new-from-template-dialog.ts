@@ -1,27 +1,13 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { PebbleTemplate } from "../../classes/template";
-import { IDialogField, IDialogFields } from "../../classes/dialog-field";
+import { IDialogField, IDialogFields, createField } from "../../classes/dialog-field";
 
 @injectable()
 export class PebbleNewFromTemplateDialogProps extends DialogProps {
   name?: string;
   template?: PebbleTemplate;
   validate?: (filename: string) => boolean;
-}
-
-function createField(label: string, className: string, type ='text'): IDialogField {
-  const result: IDialogField = {
-    container: document.createElement('div'),
-    input: document.createElement('input'),
-    label: document.createElement('span'),
-  };
-  result.input.type = type;
-  result.container.className = className;
-  result.label.innerHTML = label;
-  result.container.appendChild(result.label);
-  result.container.appendChild(result.input);
-  return result;
 }
 
 export interface NewFromTemplateDialogResult {
@@ -47,10 +33,19 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
     this.contentNode.appendChild(this.containerDiv);
     
     if (props.template && props.template.fields) {
-      for (const field in props.template.fields) {
-        this.fields[field] = createField(field + ':', field +'-field');
-        this.fields[field].input.value = props.template.defaults ? props.template.defaults[field] : '';
-        this.containerDiv.appendChild(this.fields[field].container);
+      for (const fieldName in props.template.fields) {
+        const field = props.template.fields[fieldName];
+        let fieldLabel: string;
+        let fieldType: any;
+        if (typeof field === 'string') {
+          fieldLabel = field;
+        } else {
+          fieldLabel = field.label;
+          fieldType = field.options
+        }
+        this.fields[fieldName] = createField(fieldLabel + ':', fieldName +'-field', fieldType);
+        this.fields[fieldName].input.value = props.template.defaults ? props.template.defaults[fieldName] : '';
+        this.containerDiv.appendChild(this.fields[fieldName].container);
       }
     }
 
@@ -60,6 +55,9 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
 
   get value(): NewFromTemplateDialogResult {
     const params: any = {};
+    for (const key in this.fields) {
+      params[key] = this.fields[key].input.value;
+    }
     params.name = this.nameField.input.value + '.' + (this.props.template && this.props.template.ext(params));
     return { params };
   }
@@ -71,6 +69,9 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
     this.addUpdateListener(this.nameField.input, 'input');
+    for (const key in this.fields) {
+      this.addUpdateListener(this.fields[key].input, 'input');
+    }
   }
 
   protected onActivateRequest(msg: Message): void {
