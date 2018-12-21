@@ -10,7 +10,7 @@ import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget/main';
 import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PebbleViewService } from './view-service';
 
-import '../../src/style/index.scss';
+import '../../src/browser/style/index.css';
 import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
 import { CONTEXT_MENU } from "./commands";

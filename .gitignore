@@ -69,3 +69,4 @@ lib
 # ide apps
 *-app/*
 !*-app/package.json
+pebble-extension/src/browser/style/index.css

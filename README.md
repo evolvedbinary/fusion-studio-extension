@@ -11,18 +11,11 @@ $ git clone https://github.com/ccheraa/pebble-extension.git
 $ cd pebble-extension
 $ yarn
 ```
-The build will fail with the next Error:
+To watch style changes and compile css file run:
+```bash
+$ yarn sass:change
 ```
-ERROR in ../pebble-extension/src/style/index.scss 1:0
-Module parse failed: Unexpected token (1:0)
-You may need an appropriate loader to handle this file type.
-> .pebble-view {
-|   .ReactVirtualized__Grid__innerScrollContainer[role=rowgroup] {
-|     > div:first-child {
- @ ../pebble-extension/lib/browser/frontend-module.js 25:0-37
- @ ./src-gen/frontend/index.js
-```
-Because this project uses SASS, unlike the default Theia extensions which only supports CSS, to fix this you need to patch its default Webpack configuration file:
+Or to compile css file run:
 ```bash
 $ yarn run sass
 ```
