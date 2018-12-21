@@ -4,7 +4,7 @@ import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleText
 import { PEBBLE_RESOURCE_SCHEME } from "./resource";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
-import { NewConnectionDialog } from "./new-connection-dialog";
+import { NewConnectionDialog } from "./dialogs/new-connection-dialog";
 import { CommandRegistry } from "@theia/core";
 import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
