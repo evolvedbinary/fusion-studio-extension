@@ -9,8 +9,8 @@ export const PebbleTemplateRN: PebbleTemplate<PebbleTemplateRNParams> = {
     type: {
         label: 'Document type',
         options: [
-            { label: 'XML Document', value: 'xml' },
-            { label: 'Compact Document', value: 'compact' },
+            { label: 'XML', value: 'xml' },
+            { label: 'Compact', value: 'compact' },
         ]
     },
   },

@@ -6,6 +6,10 @@ export interface PebbleTemplateRestXQParams {
 }
 export const PebbleTemplateRestXQ: PebbleTemplate = {
   name: 'XQuery RESTXQ Module',
+  fields: {
+    namespace: 'Namespace',
+    prefix: 'Prefix',
+  },
   defaults: {
     namespace: 'mynamepsace',
     prefix: 'myprefix',

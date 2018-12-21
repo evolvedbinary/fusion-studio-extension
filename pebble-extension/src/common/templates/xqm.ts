@@ -6,6 +6,10 @@ export interface PebbleTemplateXQMParams {
 }
 export const PebbleTemplateXQM: PebbleTemplate<PebbleTemplateXQMParams> = {
   name: 'XQuery Library Module',
+  fields: {
+    namespace: 'Namespace',
+    prefix: 'Prefix',
+  },
   defaults: {
     namespace: 'mynamepsace',
     prefix: 'myprefix',

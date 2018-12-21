@@ -1,6 +1,6 @@
 import { PebbleTemplate } from "../../classes/template";
 
-export type PebbleTemplateXSDVersion = 1 | 1.1;
+export type PebbleTemplateXSDVersion = '1' | '1.1';
 export interface PebbleTemplateXSDParams {
   version: PebbleTemplateXSDVersion;
   namespace: string;
@@ -8,8 +8,18 @@ export interface PebbleTemplateXSDParams {
 
 export const PebbleTemplateXSD: PebbleTemplate<PebbleTemplateXSDParams> = {
   name: 'XML Schema',
+  fields: {
+    namespace: 'Namespace',
+    version: {
+      label: 'Version',
+      options: [
+        { label: '1.0', value: '1' },
+        { label: '1.1', value: '1.1' },
+      ],
+    },
+  },
   defaults: {
-      version: 1,
+      version: '1',
       namespace: 'mynamespace',
   },
   ext: () => 'xsd',
@@ -19,8 +29,8 @@ export const PebbleTemplateXSD: PebbleTemplate<PebbleTemplateXSDParams> = {
     xmlns="${namespace}"
     targetNamespace="${namespace}"
     elementFormDefault="qualified"
-    vc:minVersion="1.${ version === 1 ? '0" vc:maxVersion="1.1' : '1'}"
-    version="1.${ version === 1 ? '0' : '1'}">
+    vc:minVersion="1.${ version === '1' ? '0" vc:maxVersion="1.1' : '1'}"
+    version="1.${ version === '1' ? '0' : '1'}">
     
 </xs:schema>
 `,
