@@ -11,13 +11,13 @@ $ git clone https://github.com/ccheraa/pebble-extension.git
 $ cd pebble-extension
 $ yarn
 ```
-To watch style changes and compile css file run:
-```bash
-$ yarn sass:change
-```
-Or to compile css file run:
+To compile css file run:
 ```bash
 $ yarn run sass
+```
+To compile it upon change run:
+```bash
+$ yarn sass:watch
 ```
 ### Build & run
 Build the extension:
