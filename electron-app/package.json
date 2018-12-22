@@ -3,23 +3,23 @@
   "name": "electron-app",
   "version": "0.0.0",
   "dependencies": {
-    "@theia/core": "next",
-    "@theia/filesystem": "next",
-    "@theia/workspace": "next",
-    "@theia/preferences": "next",
-    "@theia/navigator": "next",
-    "@theia/process": "next",
-    "@theia/terminal": "next",
-    "@theia/editor": "next",
-    "@theia/languages": "next",
-    "@theia/markers": "next",
-    "@theia/monaco": "next",
-    "@theia/typescript": "next",
-    "@theia/messages": "next",
+    "@theia/core": "^0.3.8",
+    "@theia/filesystem": "^0.3.8",
+    "@theia/workspace": "^0.3.8",
+    "@theia/preferences": "^0.3.8",
+    "@theia/navigator": "^0.3.8",
+    "@theia/process": "^0.3.8",
+    "@theia/terminal": "^0.3.8",
+    "@theia/editor": "^0.3.8",
+    "@theia/languages": "^0.3.8",
+    "@theia/markers": "^0.3.8",
+    "@theia/monaco": "^0.3.8",
+    "@theia/typescript": "^0.3.8",
+    "@theia/messages": "^0.3.8",
     "pebble-extension": "0.0.0"
   },
   "devDependencies": {
-    "@theia/cli": "next"
+    "@theia/cli": "^0.3.8"
   },
   "scripts": {
     "prepare": "theia build --mode development",    
