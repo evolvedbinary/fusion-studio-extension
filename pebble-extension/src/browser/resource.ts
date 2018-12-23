@@ -4,7 +4,7 @@ import { injectable, inject } from "inversify";
 import { TextDocumentContentChangeEvent, TextDocument } from "vscode-languageserver-types";
 import { PebbleApi } from "../common/api";
 import { PebbleDocument } from "../classes/item";
-import { PebbleCore } from "./core";
+import { PebbleCore, PEBBLE_RESOURCE_SCHEME } from "./core";
 import { PebbleDocumentNode, PebbleNode } from "../classes/node";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
