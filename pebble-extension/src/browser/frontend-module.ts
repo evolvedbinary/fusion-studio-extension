@@ -39,10 +39,15 @@ export default new ContainerModule(bind => {
   
 });
 
+const TREE_PROPS = {
+  multiSelect: true,
+  contextMenuPath: CONTEXT_MENU,
+}
+
 function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
   const child = createTreeContainer(parent);
 
-  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, contextMenuPath: CONTEXT_MENU });
+  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, ...TREE_PROPS });
 
   child.unbind(TreeWidget);
   child.bind(PebbleViewWidget).toSelf();

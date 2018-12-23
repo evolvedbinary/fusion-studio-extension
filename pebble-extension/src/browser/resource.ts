@@ -7,8 +7,6 @@ import { PebbleDocument } from "../classes/item";
 import { PebbleCore, PEBBLE_RESOURCE_SCHEME } from "./core";
 import { PebbleDocumentNode, PebbleNode } from "../classes/node";
 
-export const PEBBLE_RESOURCE_SCHEME = 'pebble';
-
 @injectable()
 export class PebbleResource implements Resource {
 

@@ -22,10 +22,16 @@ export class PebbleCore {
   public get selected(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0;
   }
+  public get selectedCount(): number {
+    return this._model ? this._model.selectedNodes.length : 0;
+  }
   public get node(): PebbleNode | undefined {
     if (this._model && this._model.selectedNodes.length > 0) {
       return this._model.selectedNodes[0] as any as PebbleNode;
     }
+  }
+  public get selection(): PebbleItemNode[] {
+    return this._model ? this._model.selectedNodes as any : [];
   }
   
   private _model?: TreeModel;
@@ -314,14 +320,46 @@ export class PebbleCore {
   }
   
   public async deleteItem(): Promise<void> {
+    const deleteNode = async function (core: PebbleCore, node: PebbleItemNode) {
+      try {
+        const done = await PebbleApi.remove(node.connection, node.uri, PebbleNode.isCollection(node));
+        if (done) {
+          if (PebbleNode.isDocument(node) && node.editor) {
+            node.editor.closeWithoutSaving();
+            // TODO: keep the file in the editor as a new one
+            // node.editor.saveable.setDirty(true);
+          }
+          core.removeNode(node, node.parent as CompositeTreeNode);
+          core.refresh();
+        }
+      } catch (error) {
+        console.error('caught:', error);
+        core.endLoading(node);
+      }
+    };
     if (!this.selected || !this._model) {
       return;
     }
-    if (this.node && (PebbleNode.isDocument(this.node) || PebbleNode.isCollection(this.node)) && this.startLoading(this.node)) {
+    const collections: any[] = [];
+    const documents: any[] = [];
+    const nodes = this.selection
+      .filter(node => this.node && node.parent === this.node.parent && (PebbleNode.isDocument(node) || PebbleNode.isCollection(node)));
+    nodes.forEach(node => (PebbleNode.isCollection(node) ? collections : documents).push(node));
+    if (nodes.length > 0) {
       const isCollection = PebbleNode.isCollection(this.node);
       const node = this.node as PebbleDocumentNode;
       const msg = document.createElement('p');
-      msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.name + '</strong>?';
+      if (nodes.length === 1) {
+        msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.name + '</strong>?';
+      } else {
+        msg.innerHTML = '<p>Are you sure you want to delete the following items?</p>';
+        if (collections.length > 0) {
+          msg.innerHTML += '<strong>Collection:</strong><ul>' + collections.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
+        }
+        if (nodes.length > 0) {
+          msg.innerHTML += '<strong>Document:</strong><ul>' + nodes.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
+        }
+      }
       const dialog = new ConfirmDialog({
         title: 'Delete ' + (isCollection ? 'collection' : 'document'),
         msg,
@@ -330,21 +368,7 @@ export class PebbleCore {
       });
       const result = await dialog.open();
       if (result) {
-        try {
-          const done = await PebbleApi.remove(node.connection, node.uri, isCollection);
-          if (done) {
-            if (node.editor) {
-              node.editor.closeWithoutSaving();
-              // TODO: keep the file in the editor as a new one
-              // node.editor.saveable.setDirty(true);
-            }
-            this.removeNode(node, node.parent as CompositeTreeNode);
-            this.refresh();
-          }
-        } catch (error) {
-          console.error('caught:', error);
-          this.endLoading(node);
-        }
+        nodes.forEach(node => deleteNode(this, node));
       } else {
         this._model.selectNode(node);
         this.endLoading(node);
@@ -360,7 +384,7 @@ export class PebbleCore {
       title: 'New connection',
       name: 'Localhost',
       server: 'http://localhost:8080',
-      username: '',
+      username: 'admin',
       password: '',
     });
     const result = await dialog.open();

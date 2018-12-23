@@ -17,7 +17,7 @@ $ yarn run sass
 ```
 To compile it upon change run:
 ```bash
-$ yarn sass:watch
+$ yarn run sass:watch
 ```
 ### Build & run
 Build the extension:
