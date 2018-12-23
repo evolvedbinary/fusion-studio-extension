@@ -342,10 +342,13 @@ export class PebbleCore {
     }
     const collections: any[] = [];
     const documents: any[] = [];
-    const nodes = this.selection
+    let nodes = this.selection
       .filter(node => this.node && node.parent === this.node.parent && (PebbleNode.isDocument(node) || PebbleNode.isCollection(node)));
     nodes.forEach(node => (PebbleNode.isCollection(node) ? collections : documents).push(node));
     if (nodes.length > 0) {
+      if (nodes.length === (nodes[0].parent ? nodes[0].parent.children.length : 0)) {
+        nodes = [nodes[0].parent as any];
+      }
       const isCollection = PebbleNode.isCollection(this.node);
       const node = this.node as PebbleDocumentNode;
       const msg = document.createElement('p');
