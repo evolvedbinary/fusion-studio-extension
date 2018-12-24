@@ -1,6 +1,8 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from "../classes/node";
 import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService } from "@theia/core/lib/browser";
+import { WorkspaceService } from "@theia/workspace/lib/browser";
+import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import { CommandRegistry } from "@theia/core";
@@ -15,6 +17,8 @@ export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 @injectable()
 export class PebbleCore {
   @inject(CommandRegistry) protected readonly commands?: CommandRegistry;
+  @inject(WorkspaceService) protected readonly workspace?: WorkspaceService;
+  @inject(FileDialogService) protected readonly fileDialog?: FileDialogService;
   constructor(
     @inject(OpenerService) private readonly openerService: OpenerService,
   ) {}
@@ -436,6 +440,23 @@ export class PebbleCore {
     }
     return doc;
   }
+
+  public async uploadItem(): Promise<boolean> {
+    if (this.workspace && this.fileDialog) {
+      const props: OpenFileDialogProps = {
+        title: 'Upload file',
+        canSelectFolders: true,
+        canSelectFiles: true,
+      };
+      const [rootStat] = await this.workspace.roots;
+      const file: any = await this.fileDialog.showOpenDialog(props, rootStat);
+      if (file) {
+        console.log('uploading file:', file.toString());
+        console.log(file);
+        return true;
+      }
+    }
+    return true;
   }
 
   public async newItem(isCollection?: boolean): Promise<boolean> {

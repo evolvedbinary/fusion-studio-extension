@@ -69,6 +69,16 @@ export const actNewDocument: PebbleAction = {
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 };
+export const actUploadDocument: PebbleAction = {
+  id: 'upload-document',
+  order: 'c2',
+  label: 'Upload document',
+  contextMenu: CONTEXT_MENU_NEW,
+  icon: 'fa fa-upload',
+  execute: core => () => core && core.uploadItem(),
+  enabled: core => () => check.collection(core) && !check.loading(core),
+  visible: core => () => check.collection(core) && !check.connection(core),
+};
 const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate) => ({
   id: 'new-document-template:' + template.name,
   label: template.name,
@@ -98,7 +108,15 @@ export const actDelete: PebbleAction = {
   enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
   visible: core => () => check.selected(core) && !check.connection(core),
 };
-export const PEBBLE_COMMANDS: PebbleAction[] = [actConnect, actDisconnect, actNewCollection, actNewDocument, actRefresh, actDelete, ...templates];
+export const PEBBLE_COMMANDS: PebbleAction[] = [
+  actConnect,
+  actDisconnect,
+  actNewCollection,
+  actNewDocument,
+  actUploadDocument,
+  actRefresh,
+  actDelete,
+  ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New from template...',
   menu: CONTEXT_MENU_NEW_FROM_TEMPLATE,
