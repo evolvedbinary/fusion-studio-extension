@@ -416,12 +416,14 @@ export class PebbleCore {
     if (result) {
       const name = collection.uri + '/' + result.params.name;
       const text = template.execute(result.params);
-      const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
-        content: text,
-        name,
-        group: '',
-        owner: '',
-      }, true));
+      await this.createDocument(collection, name, text);
+    }
+    return false;
+  }
+
+  public async createDocument(collection: PebbleCollectionNode, name: string, content = '', group = '', owner = '') {
+    const doc = await this.openDocument(this.addDocument(collection, collection.connection, { content, name, group, owner }, true));
+    if (content !== '') {
       doc.editor.document.setDirty(true);
       doc.editor.document.contentChanges.push({
         range: {
@@ -429,10 +431,11 @@ export class PebbleCore {
           end: { line: 0, character: 0 }
         },
         rangeLength: 0,
-        text,
+        content,
       });
     }
-    return false;
+    return doc;
+  }
   }
 
   public async newItem(isCollection?: boolean): Promise<boolean> {
@@ -454,12 +457,7 @@ export class PebbleCore {
           this.addCollection(collection, collection.connection, result);
         }
       } else {
-        this.openDocument(this.addDocument(collection, collection.connection, {
-          content: '',
-          name,
-          group: '',
-          owner: '',
-        }, true));
+        this.createDocument(collection, name);
       }
     }
     return false;
