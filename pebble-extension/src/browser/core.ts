@@ -12,6 +12,7 @@ import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
 import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
+import { PebbleFiles } from "../common/files";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 @injectable()
@@ -19,9 +20,12 @@ export class PebbleCore {
   @inject(CommandRegistry) protected readonly commands?: CommandRegistry;
   @inject(WorkspaceService) protected readonly workspace?: WorkspaceService;
   @inject(FileDialogService) protected readonly fileDialog?: FileDialogService;
+  @inject(PebbleFiles) protected readonly files?: PebbleFiles;
   constructor(
     @inject(OpenerService) private readonly openerService: OpenerService,
-  ) {}
+  ) {
+    console.log('got:', this.files);
+  }
   
   public get selected(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0;
