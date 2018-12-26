@@ -343,7 +343,18 @@ export class PebbleCore {
     const collections: any[] = [];
     const documents: any[] = [];
     let nodes = this.selection
-      .filter(node => this.node && node.parent === this.node.parent && (PebbleNode.isDocument(node) || PebbleNode.isCollection(node)));
+      .filter(node => {
+        if (this.node && (PebbleNode.isDocument(node) || PebbleNode.isCollection(node))) {
+          let parent = node.parent
+          while (parent && PebbleNode.isCollection(parent)) {
+            if (this.selection.indexOf(parent as any) > -1) {
+              return false;
+            }
+            parent = parent.parent;
+          }
+        }
+        return true;
+      });
     nodes.forEach(node => (PebbleNode.isCollection(node) ? collections : documents).push(node));
     if (nodes.length > 0) {
       if (nodes.length === (nodes[0].parent ? nodes[0].parent.children.length : 0)) {
