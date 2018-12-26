@@ -407,13 +407,16 @@ export class PebbleCore {
       return false;
     }
     const collection = this.node as PebbleCollectionNode;
+    const validator = (filename: string) => filename !== '' && !this.fileExists(filename);
     const dialog = new NewFromTemplateDialog({
       title: 'New ' + template.name,
+      initialValue: this.newName(validator, template.ext({})),
       template,
-      validate: (filename) => filename !== '' && !this.fileExists(filename),
+      validate: validator,
     });
     let result = await dialog.open();
     if (result) {
+      this.nextName(result.params.name);
       const name = collection.uri + '/' + result.params.name;
       const text = template.execute(result.params);
       const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
@@ -435,18 +438,40 @@ export class PebbleCore {
     return false;
   }
 
+  public lastNameID: number = 1;
+  public nextName(check?: string) {
+    if (check && check != this.lastName()) {
+      return;
+    }
+    this.lastNameID++;
+  }
+  public lastName(ext?: string): string {
+    return 'untitled-' + this.lastNameID.toString() + (ext ? '.' + ext : '');
+  }
+  public newName(validator?: (input: string) => boolean, ext?: string): string {
+    if (validator) {
+      while (!validator(this.lastName(ext))) {
+        this.nextName();
+      }
+    }
+    return this.lastName();
+  }
+
   public async newItem(isCollection?: boolean): Promise<boolean> {
     if (!this.node) {
       return false;
     }
     const collection = this.node as PebbleCollectionNode;
+    const validator = (input: string) => input !== '' && !this.fileExists(input);
     const dialog = new SingleTextInputDialog({
+      initialValue: this.newName(validator),
       title: 'New ' + (isCollection ? 'collection' : 'document'),
       confirmButtonLabel: 'Create',
-      validate: (input) => input !== '' && !this.fileExists(input),
+      validate: validator,
     });
     let name = await dialog.open();
     if (name) {
+      this.nextName(name);
       name = collection.uri + '/' + name;
       if (isCollection) {
         const result = await PebbleApi.newCollection(collection.connection, name);

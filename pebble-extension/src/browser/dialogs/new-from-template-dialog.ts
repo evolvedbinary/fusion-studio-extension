@@ -5,7 +5,7 @@ import { IDialogField, IDialogFields, createField } from "../../classes/dialog-f
 
 @injectable()
 export class PebbleNewFromTemplateDialogProps extends DialogProps {
-  name?: string;
+  initialValue?: string;
   template?: PebbleTemplate;
   validate?: (filename: string) => boolean;
 }
@@ -26,7 +26,7 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
     super(props);
 
     this.nameField = createField('Name:', 'name-field');
-    this.nameField.input.value = props.name || '';
+    this.nameField.input.value = props.initialValue || '';
     this.containerDiv.appendChild(this.nameField.container);
     
     this.containerDiv.className = 'new-from-template-dialog-container';
