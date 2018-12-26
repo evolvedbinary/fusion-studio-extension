@@ -367,8 +367,8 @@ export class PebbleCore {
         if (collections.length > 0) {
           msg.innerHTML += '<strong>Collection:</strong><ul>' + collections.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
         }
-        if (nodes.length > 0) {
-          msg.innerHTML += '<strong>Document:</strong><ul>' + nodes.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
+        if (documents.length > 0) {
+          msg.innerHTML += '<strong>Document:</strong><ul>' + documents.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
         }
       }
       const dialog = new ConfirmDialog({
