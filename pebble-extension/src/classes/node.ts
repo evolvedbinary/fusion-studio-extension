@@ -1,16 +1,18 @@
 import { TreeNode, ExpandableTreeNode, SelectableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
 import { PebbleConnection } from "./connection";
+import { PebbleDocument, PebbleCollection } from "./item";
 
 export interface PebbleNode extends TreeNode {
   type: 'connection' | 'toolbar' | 'item';
   connection?: PebbleConnection;
-  uri?: string;
+  uri: string;
+  loading?: boolean;
 }
+export interface PebblecontainerNode extends CompositeTreeNode, ExpandableTreeNode {}
 
-export interface PebbleConnectionNode extends PebbleNode, CompositeTreeNode, SelectableTreeNode,  ExpandableTreeNode {
+export interface PebbleConnectionNode extends PebbleNode, PebblecontainerNode, SelectableTreeNode {
   type: 'connection';
   connection: PebbleConnection;
-  loading?: boolean;
   loaded?: boolean;
 }
 export interface PebbleToolbarNode extends PebbleNode {
@@ -22,35 +24,36 @@ export interface PebbleItemNode extends PebbleNode, SelectableTreeNode {
   connection: PebbleConnection;
   link: string;
   loaded?: boolean;
-  loading?: boolean;
-  collection: boolean;
+  isCollection: boolean;
 }
-export interface PebbleCollectionNode extends PebbleItemNode, CompositeTreeNode, ExpandableTreeNode {
-  collection: true;
+export interface PebbleCollectionNode extends PebbleItemNode, PebblecontainerNode {
+  collection: PebbleCollection;
+  isCollection: true;
 }
 export interface PebbleDocumentNode extends PebbleItemNode {
-  collection: false;
+  document: PebbleDocument;
+  isCollection: false;
   isNew: boolean;
   editor?: any;
 }
 
 export namespace PebbleNode {
-  export function is(node: TreeNode): node is PebbleNode {
+  export function is(node?: TreeNode): node is PebbleNode {
     return !!node && 'type' in node;
   }
-  export function isConnection(node: TreeNode): node is PebbleConnectionNode {
+  export function isConnection(node?: TreeNode): node is PebbleConnectionNode {
     return PebbleNode.is(node) && node.type === 'connection';
   }
-  export function isToolbar(node: TreeNode): node is PebbleToolbarNode {
+  export function isToolbar(node?: TreeNode): node is PebbleToolbarNode {
     return PebbleNode.is(node) && node.type === 'toolbar';
   }
-  export function isItem(node: TreeNode): node is PebbleCollectionNode {
+  export function isItem(node?: TreeNode): node is PebbleCollectionNode {
     return PebbleNode.is(node) && node.type === 'item';
   }
-  export function isCollection(node: TreeNode): node is PebbleCollectionNode {
-    return PebbleNode.isItem(node) && node.collection;
+  export function isCollection(node?: TreeNode): node is PebbleCollectionNode {
+    return PebbleNode.isItem(node) && node.isCollection;
   }
-  export function isDocument(node: TreeNode): node is PebbleDocumentNode {
-    return PebbleNode.isItem(node) && !node.collection;
+  export function isDocument(node?: TreeNode): node is PebbleDocumentNode {
+    return PebbleNode.isItem(node) && !node.isCollection;
   }
 }

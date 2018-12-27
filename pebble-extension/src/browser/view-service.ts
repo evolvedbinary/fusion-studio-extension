@@ -1,11 +1,8 @@
-import { WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
+import { WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode } from "@theia/core/lib/browser";
 import { injectable, inject } from "inversify";
 import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget/main";
-import { PebbleNode, PebbleConnectionNode, PebbleDocumentNode } from "../classes/node";
+import { PebbleNode, PebbleDocumentNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
-import { PebbleApi } from "../common/api";
-import { PebbleItem, PebbleCollection } from "../classes/item";
-import { PebbleConnection } from "../classes/connection";
 import { PebbleCore } from "./core";
 // import { EditorWidget } from "@theia/editor/lib/browser";
 
@@ -31,45 +28,6 @@ export class PebbleViewService implements WidgetFactory {
   //     // this.onDidChangeOutlineEmitter.fire(roots);
   //   }
   // }
-  async connect(node: CompositeTreeNode, connection: PebbleConnection) {
-    if (!this.widget) {
-      return;
-    }
-    if (this.core.laod(node)) {
-      try {
-        const result = await PebbleApi.connect(connection);
-        (node as PebbleConnectionNode).loaded = true;
-        const collection = result as PebbleCollection;
-        collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
-        collection.documents.forEach(document => this.core.addDocument(node, connection, document));
-      } catch (e) {
-        (node as PebbleConnectionNode).expanded = false;
-        console.error(e);
-      }
-      this.core.unlaod(node);
-    }
-  }
-  
-  async load(node: CompositeTreeNode, connection: PebbleConnection, uri: string) {
-    if (!this.widget) {
-      return;
-    }
-    if (this.core.laod(node)) {
-      try {
-        const result = await PebbleApi.load(connection, uri);
-        if (PebbleItem.isDocument(result)) {} else {
-          (node as PebbleConnectionNode).loaded = true;
-          const collection = result as PebbleCollection;
-          collection.collections.forEach(subCollection => this.core.addCollection(node, connection, subCollection));
-          collection.documents.forEach(document => this.core.addDocument(node, connection, document));
-        }
-      } catch (e) {
-        (node as PebbleConnectionNode).expanded = false;
-        console.error(e);
-      }
-      this.core.unlaod(node);
-    }
-  }
   
   async onOpen(node: Readonly<any>): Promise<void> {
     if (PebbleNode.isDocument(node as any)) {
@@ -77,7 +35,7 @@ export class PebbleViewService implements WidgetFactory {
       document.editor = await this.core.openDocument(document);
       this.widget && this.widget.model.refresh();
     } else if (PebbleNode.isCollection(node as any)) {
-      this.core.refresh(node as any);//.then(() => this.onExpansionChanged(node as any));
+      this.core.refresh(node as any);
     }
   }
   
@@ -86,11 +44,7 @@ export class PebbleViewService implements WidgetFactory {
       return;
     }
     if (node.expanded) {
-      if (PebbleNode.isConnection(node) && !node.loaded) {
-        this.connect(node, node.connection);
-      } else if (PebbleNode.isCollection(node) && !node.loaded) {
-        this.load(node, node.connection, node.uri || '');
-      }
+      this.core.expanded(node);
     }
   }
   
@@ -98,7 +52,6 @@ export class PebbleViewService implements WidgetFactory {
     if (!this.widget) {
       return;
     }
-    // this.session.selected = nodes.length > 0 ? nodes[0] : undefined;
     const toolbar = nodes.find(node => PebbleNode.isToolbar(node));
     if (toolbar) {
       this.widget.model.toggleNode(toolbar);

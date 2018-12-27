@@ -7,14 +7,15 @@
   },
   "homepage": "https://github.com/evolvedbinary/pebble-extension#readme",
   "scripts": {
-    "sass": "node sass",
+    "postinstall": "yarn sass",
+    "sass" : "node-sass ./pebble-extension/src/browser/style/index.scss ./pebble-extension/src/browser/style/index.css",
+    "sass:watch" : "node-sass ./pebble-extension/src/browser/style/index.scss ./pebble-extension/src/browser/style/index.css --watch",
     "prepare": "lerna run prepare",
     "rebuild:browser": "theia rebuild:browser",
     "rebuild:electron": "theia rebuild:electron"
   },
   "devDependencies": {
     "lerna": "2.4.0",
-    "sass-loader": "^7.1.0",
     "node-sass": "^4.9.4"
   },
   "workspaces": [

@@ -4,10 +4,8 @@ import { injectable, inject } from "inversify";
 import { TextDocumentContentChangeEvent, TextDocument } from "vscode-languageserver-types";
 import { PebbleApi } from "../common/api";
 import { PebbleDocument } from "../classes/item";
-import { PebbleCore } from "./core";
+import { PebbleCore, PEBBLE_RESOURCE_SCHEME } from "./core";
 import { PebbleDocumentNode, PebbleNode } from "../classes/node";
-
-export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 
 @injectable()
 export class PebbleResource implements Resource {
@@ -44,10 +42,10 @@ export class PebbleResource implements Resource {
   async readContents(options?: { encoding?: string }): Promise<string> {
     const document = this.getDocument();
     if (!document.isNew && document.connection) {
-      const result = await PebbleApi.load(document.connection, document.uri || '') as PebbleDocument;
+      const result = await PebbleApi.load(document.connection, document.uri) as PebbleDocument;
       return result.content;
     }
-    return '';
+    return document.document ? document.document.content : '';
   }
   async saveContentChanges(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void> {
     const content = await this.readContents(options);
@@ -57,12 +55,11 @@ export class PebbleResource implements Resource {
     }
   }
   async saveContents(content: string, options?: { encoding?: string }): Promise<void> {
-    const document = this.getDocument();
-    const result = await PebbleApi.save(document.connection, document.uri || '', content);
-    if (result) {
-      document.isNew = false;
-      this.core && this.core.refresh();
+    if (!this.core) {
+      return;
     }
+    const document = this.getDocument();
+    this.core.save(document, content);
   }
 
   dispose(): void { }

@@ -10,10 +10,11 @@ import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget/main';
 import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { PebbleViewService } from './view-service';
 
-import '../../src/style/index.scss';
+import '../../src/browser/style/index.css';
 import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
 import { CONTEXT_MENU } from "./commands";
+import { DragController } from "./widget/drag";
 
 export default new ContainerModule(bind => {
 
@@ -31,16 +32,22 @@ export default new ContainerModule(bind => {
   bind(FrontendApplicationContribution).toService(PebbleContribution);
 
   bind(PebbleCore).toSelf().inSingletonScope();
+  bind(DragController).toSelf().inSingletonScope();
   
   bind(PebbleResourceResolver).toSelf().inSingletonScope();
   bind(ResourceResolver).toService(PebbleResourceResolver);
   
 });
 
+const TREE_PROPS = {
+  multiSelect: true,
+  contextMenuPath: CONTEXT_MENU,
+}
+
 function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
   const child = createTreeContainer(parent);
 
-  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, contextMenuPath: CONTEXT_MENU });
+  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, ...TREE_PROPS });
 
   child.unbind(TreeWidget);
   child.bind(PebbleViewWidget).toSelf();

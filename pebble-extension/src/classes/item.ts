@@ -37,7 +37,7 @@ export namespace PebbleItem {
   export function isCollection(obj: any): obj is PebbleItem {
     return PebbleItem.is(obj)
       && 'collections' in obj
-      && 'Documents' in obj;
+      && 'documents' in obj;
   }
   export function isDocument(obj: any): obj is PebbleItem {
     return PebbleItem.is(obj)

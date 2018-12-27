@@ -12,7 +12,7 @@ export class PebbleToolbar extends React.Component<PebbleToolbarProps, any> {
   protected button(id: string, text:string, icon: string, action: string, color?: string): React.ReactNode;
   protected button(id: string, action: PebbleAction, color?: string): React.ReactNode;
   protected button(id: string, text:string | PebbleAction, icon: string = '', action?: string | React.MouseEventHandler<any>, color = ''): React.ReactNode {
-    let click: React.MouseEventHandler<any>;
+    let click: React.MouseEventHandler<any> | undefined;
     if (PebbleAction.is(text)) {
       action = text.id;
       icon = text.icon || '';

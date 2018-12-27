@@ -11,6 +11,10 @@ export namespace PebbleAction {
       && 'execute' in action;
   }
 }
+export interface PebbleSubMenu {
+  menu: string[];
+  label: string;
+}
 export interface PebbleAction {
   id: string,
   label: string,
@@ -51,6 +55,9 @@ export function registerCommands(core: PebbleCore | undefined, commands: Command
     }
     commands.registerCommand(command, handler);
   });
+}
+export function registerSubMenus(menus: MenuModelRegistry, ...submenus: PebbleSubMenu[]) {
+  submenus.forEach(submenu => menus.registerSubmenu(submenu.menu, submenu.label));
 }
 export function registerMenus(menus: MenuModelRegistry, ...actions: PebbleAction[]) {
   actions.forEach(action => {
