@@ -7,7 +7,7 @@ import { ResourceResolver } from "@theia/core/lib/common";
 import { ContainerModule, interfaces } from "inversify";
 import { PebbleResourceResolver } from '../browser/resource';
 import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget/main';
-import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution, WebSocketConnectionProvider } from '@theia/core/lib/browser';
 import { PebbleViewService } from './view-service';
 
 import '../../src/browser/style/index.css';
@@ -15,8 +15,14 @@ import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
 import { CONTEXT_MENU } from "./commands";
 import { DragController } from "./widget/drag";
+import { PebbleFiles, pebbleFilesePath } from "../common/files";
 
 export default new ContainerModule(bind => {
+
+  bind(PebbleFiles).toDynamicValue(ctx => {
+    const provider = ctx.container.get(WebSocketConnectionProvider);
+    return provider.createProxy<PebbleFiles>(pebbleFilesePath);
+  }).inSingletonScope();
 
   bind(PebbleViewWidgetFactory).toFactory(ctx =>
     () => createPebbleViewWidget(ctx.container)

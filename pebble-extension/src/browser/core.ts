@@ -108,13 +108,21 @@ export class PebbleCore {
 
   async save(document: PebbleDocumentNode, content: string) {
     try {
-      const result = await PebbleApi.save(document.connection, document.uri, content);
-      if (result) {
+      if (await PebbleApi.save(document.connection, document.uri, content)) {
         document.isNew = false;
         this.refresh();
       }
     } catch (error) {
       console.error('caught:', error);
+    }
+  }
+
+  async saveDocument(connection: PebbleConnection, uri: string, content: string): Promise<boolean> {
+    try {
+      return await PebbleApi.save(connection, uri, content);
+    } catch (error) {
+      console.error('caught:', error);
+      return false;
     }
   }
 
@@ -446,17 +454,20 @@ export class PebbleCore {
   }
 
   public async uploadItem(): Promise<boolean> {
-    if (this.workspace && this.fileDialog) {
+    if (this.workspace && this.files && this.fileDialog) {
       const props: OpenFileDialogProps = {
         title: 'Upload file',
         canSelectFolders: true,
         canSelectFiles: true,
       };
       const [rootStat] = await this.workspace.roots;
-      const file: any = await this.fileDialog.showOpenDialog(props, rootStat);
-      if (file) {
+      const file = await this.fileDialog.showOpenDialog(props, rootStat);
+      if (file && this.node) {
+        const collection = this.node as PebbleCollectionNode;
         console.log('uploading file:', file.toString());
-        console.log(file);
+        console.log(await this.files.upload(collection.connection, file, collection.uri + '/' + file.path.base));
+        // this.saveDocument(collection.connection, collection.uri + '/' + file.path.base, await this.files.test());
+        // console.log(file);
         return true;
       }
     }
