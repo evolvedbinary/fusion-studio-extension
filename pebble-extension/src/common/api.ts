@@ -61,15 +61,18 @@ async function remove(connection: PebbleConnection, uri: string): Promise<Respon
   }
   return fetch(connection.server + uri, options);
 }
-async function put(connection: PebbleConnection, uri: string, body: any = ''): Promise<Response> {
-  const headers:any = typeof body !== 'string' ? body : {};
+async function put(connection: PebbleConnection, uri: string, body: any = '', binary = false): Promise<Response> {
+  const headers:any = (typeof body !== 'string') && !(body instanceof Blob) ? body : {};
   if (connection.username !== '') {
     headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
+  }
+  if (binary) {
+    headers['Content-Type'] = 'application/octet-stream';
   }
   return fetch(connection.server + uri, {
     headers,
     method: 'PUT',
-    body: typeof body === 'string' ? body : undefined,
+    body: typeof (body === 'string') || (body instanceof Blob) ? body : undefined,
   });
 }
 async function readDocument(data: any, connection: PebbleConnection, uri: string): Promise<PebbleDocument> {
@@ -102,9 +105,9 @@ async function load(connection: PebbleConnection, uri: string): Promise<PebbleCo
   }
 }
 
-async function save(connection: PebbleConnection, uri: string, content: string): Promise<boolean> {
+async function save(connection: PebbleConnection, uri: string, content: string | Blob, binary = false): Promise<boolean> {
   try {
-    const result = await put(connection, '/exist/restxq/pebble/document?uri=' + uri, content);
+    const result = await put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, binary);
     switch (result.status) {
       case 201: return true;
       case 401: throw createError(Error.permissionDenied, result);

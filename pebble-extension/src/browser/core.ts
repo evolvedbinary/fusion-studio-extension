@@ -117,9 +117,9 @@ export class PebbleCore {
     }
   }
 
-  async saveDocument(connection: PebbleConnection, uri: string, content: string): Promise<boolean> {
+  async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, binary = false): Promise<boolean> {
     try {
-      return await PebbleApi.save(connection, uri, content);
+      return await PebbleApi.save(connection, uri, content, binary);
     } catch (error) {
       console.error('caught:', error);
       return false;
@@ -453,6 +453,10 @@ export class PebbleCore {
     return doc;
   }
 
+  public blob(text: string): Blob {
+    return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], {type : 'application/octet-stream '});
+  }
+
   public async uploadItem(): Promise<boolean> {
     if (this.workspace && this.files && this.fileDialog) {
       const props: OpenFileDialogProps = {
@@ -464,10 +468,7 @@ export class PebbleCore {
       const file = await this.fileDialog.showOpenDialog(props, rootStat);
       if (file && this.node) {
         const collection = this.node as PebbleCollectionNode;
-        console.log('uploading file:', file.toString());
-        console.log(await this.files.upload(collection.connection, file, collection.uri + '/' + file.path.base));
-        // this.saveDocument(collection.connection, collection.uri + '/' + file.path.base, await this.files.test());
-        // console.log(file);
+        this.saveDocument(collection.connection, collection.uri + '/' + file.path.base, this.blob(await this.files.read(file.path.toString())));
         return true;
       }
     }
