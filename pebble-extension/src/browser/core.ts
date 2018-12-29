@@ -13,6 +13,7 @@ import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
 import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
 import { PebbleFiles } from "../common/files";
+import { isArray } from "util";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 @injectable()
@@ -456,21 +457,23 @@ export class PebbleCore {
   public blob(text: string): Blob {
     return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], {type : 'application/octet-stream '});
   }
-
   public async uploadItem(): Promise<boolean> {
     if (this.workspace && this.files && this.fileDialog) {
       const props: OpenFileDialogProps = {
         title: 'Upload file',
         canSelectFolders: true,
         canSelectFiles: true,
+        canSelectMany: true,
       };
       const [rootStat] = await this.workspace.roots;
-      const file = await this.fileDialog.showOpenDialog(props, rootStat);
-      if (file && this.node) {
-        const collection = this.node as PebbleCollectionNode;
-        this.saveDocument(collection.connection, collection.uri + '/' + file.path.base, this.blob(await this.files.read(file.path.toString())));
-        return true;
+      const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
+      const files = await this.files.getFiles({ file: (isArray(file) ? file : [file]).map(f => f.path.toString()) });
+      if (files.length > 1) {
+        console.log('multi upload');
+      } else {
+        console.log('single upload');
       }
+      console.log(files);
     }
     return true;
   }
