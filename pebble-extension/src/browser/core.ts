@@ -467,7 +467,10 @@ export class PebbleCore {
   }
   public async uploadItem(): Promise<boolean> {
     const trailingSymbol = '/';
-    function clean(array: string[]) {
+    function clean(array: string[], topDir: string = '') {
+      if (topDir !== '') {
+        return array.map(i => i.substr(topDir.length));
+      }
       const testArray: (string | undefined)[][] = array.map(i => i.split(trailingSymbol));
       if (array.length > 0) {
         if (array.length === 1) {
@@ -485,9 +488,30 @@ export class PebbleCore {
       }
       return testArray.map(i => i.join(trailingSymbol));
     }
-    function cleanObject(object: PebbleFilesBlobsList): PebbleFilesBlobsList {
+    function getTopDir(array: string[]): string {
+      let result = '';
+      const testArray: (string | undefined)[][] = array.map(i => i.split(trailingSymbol));
+      if (array.length > 0) {
+        if (array.length === 1) {
+          testArray[0].pop();
+          result = testArray[0].join(trailingSymbol) + trailingSymbol;
+        } else {
+          while (testArray[0].length > 1) {
+            const test = testArray[0][0];
+            let check = true;
+            testArray.forEach(i => check = check && i[0] === test);
+            if (check) {
+              testArray.forEach(i => i.shift());
+              result += test + trailingSymbol;
+            }
+          }
+        }
+      }
+      return result;
+    }
+    function cleanObject(object: PebbleFilesBlobsList, topDir: string = ''): PebbleFilesBlobsList {
       const keys = Object.keys(object);
-      const array = clean(keys);
+      const array = clean(keys, topDir);
       keys.forEach((key, index) => {
         object[array[index]] = object[key];
         delete(object[key]);
@@ -510,11 +534,14 @@ export class PebbleCore {
       };
       const [rootStat] = await this.workspace.roots;
       const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
-      const files = await this.files.getFiles({ file: (isArray(file) ? file : [file]).map(f => f.path.toString()) });
+      const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
+      console.log(selectedFiles);
+      const top = getTopDir(selectedFiles);
+      const files = await this.files.getFiles({ file: selectedFiles });
       const collection = this.node as PebbleCollectionNode;
       if (files.length > 1) {
         const formData: any = await this.files.readMulti({ files });
-        cleanObject(formData);
+        cleanObject(formData, top);
         for (let i in formData) {
           formData[collectionDir(collection.uri, i)] = this.blob(formData[i]);
           delete(formData[i]);
@@ -522,7 +549,7 @@ export class PebbleCore {
         console.log(formData);
         this.saveDocuments(collection.connection, formData);
       } else {
-        this.saveDocument(collection.connection, collectionDir(collection.uri, clean(files)[0]), this.blob(await this.files.read(files[0])));
+        this.saveDocument(collection.connection, collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
       }
     }
     return true;
