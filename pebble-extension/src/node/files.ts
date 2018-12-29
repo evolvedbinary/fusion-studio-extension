@@ -24,20 +24,24 @@ function getFiles(files: string | string[], result?: string[]): string[] {
   return result;
 }
 
+function read(file: string): string {
+  try {
+    const content = readFileSync(file).toString('binary');
+    return content;
+  } catch (e) {
+    throw createError(Error.unknown);
+  }
+}
+
 @injectable()
 export class PebbleFilesClass implements PebbleFiles {
   dispose() {}
   async read(file: string): Promise<string> {
-    try {
-      const content = readFileSync(file).toString('binary');
-      return content;
-    } catch (e) {
-      throw createError(Error.unknown);
-    }
+    return read(file);
   }
-  async readMulti(files: string[]): Promise<PebbleFilesList> {
+  async readMulti(params: { files: string[] }): Promise<PebbleFilesList> {
     const result: PebbleFilesList = {};
-    await files.map(async file => result[file] = await this.read(file));
+    params.files.map(file => result[file] = read(file));
     return result;
   }
   async isDir(file: string): Promise<boolean> {

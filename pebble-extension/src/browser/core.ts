@@ -12,7 +12,7 @@ import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
 import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
-import { PebbleFiles } from "../common/files";
+import { PebbleFiles, PebbleFilesBlobsList } from "../common/files";
 import { isArray } from "util";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
@@ -121,6 +121,14 @@ export class PebbleCore {
   async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, binary = false): Promise<boolean> {
     try {
       return await PebbleApi.save(connection, uri, content, binary);
+    } catch (error) {
+      console.error('caught:', error);
+      return false;
+    }
+  }
+  async saveDocuments(connection: PebbleConnection, documents: PebbleFilesBlobsList): Promise<boolean> {
+    try {
+      return await PebbleApi.saveDocuments(connection, documents);
     } catch (error) {
       console.error('caught:', error);
       return false;
@@ -458,6 +466,41 @@ export class PebbleCore {
     return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], {type : 'application/octet-stream '});
   }
   public async uploadItem(): Promise<boolean> {
+    const trailingSymbol = '/';
+    function clean(array: string[]) {
+      const testArray: (string | undefined)[][] = array.map(i => i.split(trailingSymbol));
+      if (array.length > 0) {
+        if (array.length === 1) {
+          testArray[0] = [testArray[0].pop()];
+        } else {
+          while (testArray[0].length > 1) {
+            const test = testArray[0][0];
+            let check = true;
+            testArray.forEach(i => check = check && i[0] === test);
+            if (check) {
+              testArray.forEach(i => i.shift());
+            }
+          }
+        }
+      }
+      return testArray.map(i => i.join(trailingSymbol));
+    }
+    function cleanObject(object: PebbleFilesBlobsList): PebbleFilesBlobsList {
+      const keys = Object.keys(object);
+      const array = clean(keys);
+      keys.forEach((key, index) => {
+        object[array[index]] = object[key];
+        delete(object[key]);
+      });
+      return object;
+    }
+    function collectionDir(collection: string, document: string): string {
+      if ((collection[collection.length - 1] != trailingSymbol) &&
+          (document[0] != trailingSymbol)) {
+            collection += trailingSymbol;
+          }
+      return collection + document;
+    }
     if (this.workspace && this.files && this.fileDialog) {
       const props: OpenFileDialogProps = {
         title: 'Upload file',
@@ -468,12 +511,19 @@ export class PebbleCore {
       const [rootStat] = await this.workspace.roots;
       const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
       const files = await this.files.getFiles({ file: (isArray(file) ? file : [file]).map(f => f.path.toString()) });
+      const collection = this.node as PebbleCollectionNode;
       if (files.length > 1) {
-        console.log('multi upload');
+        const formData: any = await this.files.readMulti({ files });
+        cleanObject(formData);
+        for (let i in formData) {
+          formData[collectionDir(collection.uri, i)] = this.blob(formData[i]);
+          delete(formData[i]);
+        }
+        console.log(formData);
+        this.saveDocuments(collection.connection, formData);
       } else {
-        console.log('single upload');
+        this.saveDocument(collection.connection, collectionDir(collection.uri, clean(files)[0]), this.blob(await this.files.read(files[0])));
       }
-      console.log(files);
     }
     return true;
   }
