@@ -368,7 +368,18 @@ export class PebbleCore {
     const collections: any[] = [];
     const documents: any[] = [];
     let nodes = this.selection
-      .filter(node => this.node && node.parent === this.node.parent && (PebbleNode.isDocument(node) || PebbleNode.isCollection(node)));
+      .filter(node => {
+        if (this.node && (PebbleNode.isDocument(node) || PebbleNode.isCollection(node))) {
+          let parent = node.parent
+          while (parent && PebbleNode.isCollection(parent)) {
+            if (this.selection.indexOf(parent as any) > -1) {
+              return false;
+            }
+            parent = parent.parent;
+          }
+        }
+        return true;
+      });
     nodes.forEach(node => (PebbleNode.isCollection(node) ? collections : documents).push(node));
     if (nodes.length > 0) {
       if (nodes.length === (nodes[0].parent ? nodes[0].parent.children.length : 0)) {
@@ -432,13 +443,16 @@ export class PebbleCore {
       return false;
     }
     const collection = this.node as PebbleCollectionNode;
+    const validator = (filename: string) => filename !== '' && !this.fileExists(filename);
     const dialog = new NewFromTemplateDialog({
       title: 'New ' + template.name,
+      initialValue: this.newName(validator, template.ext({})),
       template,
-      validate: (filename) => filename !== '' && !this.fileExists(filename),
+      validate: validator,
     });
     let result = await dialog.open();
     if (result) {
+      this.nextName(result.params.name);
       const name = collection.uri + '/' + result.params.name;
       const text = template.execute(result.params);
       await this.createDocument(collection, name, text);
@@ -555,18 +569,40 @@ export class PebbleCore {
     return true;
   }
 
+  public lastNameID: number = 1;
+  public nextName(check?: string) {
+    if (check && check != this.lastName()) {
+      return;
+    }
+    this.lastNameID++;
+  }
+  public lastName(ext?: string): string {
+    return 'untitled-' + this.lastNameID.toString() + (ext ? '.' + ext : '');
+  }
+  public newName(validator?: (input: string) => boolean, ext?: string): string {
+    if (validator) {
+      while (!validator(this.lastName(ext))) {
+        this.nextName();
+      }
+    }
+    return this.lastName();
+  }
+
   public async newItem(isCollection?: boolean): Promise<boolean> {
     if (!this.node) {
       return false;
     }
     const collection = this.node as PebbleCollectionNode;
+    const validator = (input: string) => input !== '' && !this.fileExists(input);
     const dialog = new SingleTextInputDialog({
+      initialValue: this.newName(validator),
       title: 'New ' + (isCollection ? 'collection' : 'document'),
       confirmButtonLabel: 'Create',
-      validate: (input) => input !== '' && !this.fileExists(input),
+      validate: validator,
     });
     let name = await dialog.open();
     if (name) {
+      this.nextName(name);
       name = collection.uri + '/' + name;
       if (isCollection) {
         const result = await PebbleApi.newCollection(collection.connection, name);

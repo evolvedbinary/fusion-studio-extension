@@ -26,7 +26,7 @@ export const CONTEXT_MENU = ['pebble-context-menu'];
 export const CONTEXT_MENU_CONNECTION = [...CONTEXT_MENU, 'a_connection'];
 export const CONTEXT_MENU_NEW = [...CONTEXT_MENU, 'b_new'];
 export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_new'];
-export const CONTEXT_MENU_NEW_FROM_TEMPLATE = [...CONTEXT_MENU_NEW, 'z_from_template'];
+export const CONTEXT_MENU_NEW_SUBMENU = [...CONTEXT_MENU_NEW, 'a_from_template'];
 export const CONTEXT_MENU_EDIT = [...CONTEXT_MENU, 'd_edit'];
 export const MENU = CommonMenus.FILE;
 export const actConnect: PebbleAction = {
@@ -61,9 +61,9 @@ export const actNewCollection: PebbleAction = {
 };
 export const actNewDocument: PebbleAction = {
   id: 'new-document',
-  order: 'c',
-  label: 'New document',
-  contextMenu: CONTEXT_MENU_NEW,
+  order: 'a',
+  label: 'Empty document',
+  contextMenu: CONTEXT_MENU_NEW_SUBMENU,
   icon: 'fa fa-file-o',
   execute: core => () => core && core.newItem(),
   enabled: core => () => check.collection(core) && !check.loading(core),
@@ -79,15 +79,16 @@ export const actUploadDocument: PebbleAction = {
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 };
-const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate) => ({
+const templates: PebbleAction[] = [actNewDocument].concat(TEMPLATES.map((template: PebbleTemplate, i: number) => ({
   id: 'new-document-template:' + template.name,
   label: template.name,
-  contextMenu: CONTEXT_MENU_NEW_FROM_TEMPLATE,
+  order: 'b' + i.toString(),
+  contextMenu: CONTEXT_MENU_NEW_SUBMENU,
   icon: 'fa fa-file-o',
   execute: core => () => core && core.newItemFromTemplate(template),
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
-} as PebbleAction));
+} as PebbleAction)));
 export const actRefresh: PebbleAction = {
   id: 'refresh',
   order: 'e',
@@ -118,6 +119,6 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actDelete,
   ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
-  label: 'New from template...',
-  menu: CONTEXT_MENU_NEW_FROM_TEMPLATE,
+  label: 'New document...',
+  menu: CONTEXT_MENU_NEW_SUBMENU,
 }];

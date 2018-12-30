@@ -15,11 +15,11 @@ export * from './xsd';
 export * from './xslt';
 
 export const TEMPLATES: PebbleTemplate[] = [
-  PebbleTemplateRN,
-  PebbleTemplateRestXQ,
-  PebbleTemplateXLST,
   PebbleTemplateXML,
   PebbleTemplateXQ,
   PebbleTemplateXQM,
+  PebbleTemplateRestXQ,
+  PebbleTemplateXLST,
   PebbleTemplateXSD,
+  PebbleTemplateRN,
 ];

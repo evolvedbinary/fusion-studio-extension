@@ -4,6 +4,8 @@
     "theia-extension"
   ],
   "version": "0.0.0",
+  "author": "Evolved Binary <tech@evolvedbinary.com>",
+  "license": "GPL-3.0",
   "files": [
     "lib",
     "src"

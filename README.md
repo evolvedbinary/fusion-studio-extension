@@ -1,5 +1,11 @@
-# pebble-extension
-Pebble's extension for Theia IDE
+# Pebble Theia Extension
+[![Build Status](https://travis-ci.com/evolvedbinary/pebble-extension.svg?branch=master)](https://travis-ci.com/evolvedbinary/pebble-extension)
+
+Pebble's extension for [Theia IDE](https://theia-ide.org).
+If you don't know what Theia is, then you likely want the full [Pebble IDE application](https://github.com/evolvedbinary/pebble).
+
+
+
 ## Getting started:
 ### Requirements:
 * [Yarn](https://yarnpkg.com/lang/en/docs/install/#install-via-chocolatey)
