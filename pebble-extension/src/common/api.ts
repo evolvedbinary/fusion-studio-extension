@@ -63,13 +63,21 @@ async function remove(connection: PebbleConnection, uri: string): Promise<Respon
   return fetch(connection.server + uri, options);
 }
 async function put(connection: PebbleConnection, uri: string, body: any = '', binary = false): Promise<Response> {
-  // const useBody = (typeof body === 'string') || (body instanceof Blob);
+  const useBody = (typeof body === 'string') || (body instanceof Blob);
   const headers: any = {};
   if (connection.username !== '') {
     headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
   }
   if (binary) {
     headers['Content-Type'] = 'application/octet-stream';
+  }
+  if (!useBody) {
+    headers['Content-Type'] = 'multipart/form-data';
+    const formData = new FormData();
+    for (let i in body) {
+      formData.append(i, body[i]);
+    }
+    body = formData;
   }
   return fetch(connection.server + uri, {
     headers,
