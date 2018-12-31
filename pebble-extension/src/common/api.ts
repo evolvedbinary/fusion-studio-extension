@@ -1,7 +1,7 @@
 import { PebbleCollection, PebblePermission, PebblePermissions, PebbleDocument, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import { createError, Error } from "./error";
-import { PebbleFilesBlobsList } from "./files";
+import { PebbleFileList } from "./files";
 // import { xml2js } from 'xml-js';
 
 // const TEMP = '';
@@ -129,7 +129,7 @@ async function save(connection: PebbleConnection, uri: string, content: string |
   return false;
 }
 
-async function saveDocuments(connection: PebbleConnection, documents: PebbleFilesBlobsList): Promise<boolean> {
+async function saveDocuments(connection: PebbleConnection, documents: PebbleFileList): Promise<boolean> {
   try {
     const result = await put(connection, '/exist/restxq/pebble/documents', documents);
     switch (result.status) {

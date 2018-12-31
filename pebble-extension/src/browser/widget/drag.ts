@@ -5,6 +5,7 @@ import { PebbleNode, PebbleCollectionNode, PebbleConnectionNode, PebbleItemNode 
 import { DisposableCollection } from "@theia/core";
 import { Disposable } from "vscode-jsonrpc";
 import { TreeNode } from "@theia/core/lib/browser";
+import { PebbleFileList } from "../../common/files";
 
 export interface PebbleDragOperation {
   destinationContainer: PebbleCollectionNode;
@@ -105,6 +106,24 @@ export class DragController {
     event.stopPropagation();
     this.toCancelNodeExpansion.dispose();
   }
+  public async listFiles(list: WebKitEntry[], root: string): Promise<PebbleFileList> {
+    const files: PebbleFileList = {};
+    await Promise.all(list.map(entry => this.listFile(entry, root, files)));
+    return files;
+  }
+  public async getFile(item: WebKitFileEntry): Promise<File> {
+    return new Promise<any>(resolve => (item as WebKitFileEntry).file(f => resolve(f)));
+  }
+  public async listFile(item: WebKitEntry, root: string, files: PebbleFileList): Promise<any> {
+    if (item.isDirectory) {
+      const reader = (item as WebKitDirectoryEntry).createReader();
+      const entries = await new Promise<WebKitEntry[]>(resolve => reader.readEntries(entries => resolve(entries)));
+      await Promise.all(entries.map(entry => this.listFile(entry, root, files)));
+    } else {
+      files[this.core.collectionDir(root, item.fullPath)] = await this.getFile(item as WebKitFileEntry);
+    }
+    return Promise.resolve;
+  }
   public onDrop(node: TreeNode | undefined, event: React.DragEvent<HTMLElement>): void {
     if (!node) {
       return;
@@ -114,7 +133,18 @@ export class DragController {
     this.dragOperation(event);
     const container = this.checkOperation(node, event);
     if (container) {
-      this.core.move(container);
+      if (event.dataTransfer.items.length) {
+        const entries: WebKitEntry[] = [];
+        for (let i = 0; i < event.dataTransfer.items.length; i++) {
+          const entry = event.dataTransfer.items[i].webkitGetAsEntry();
+          if (entry) {
+            entries.push(entry);
+          }
+        }
+        this.listFiles(entries, container.destinationContainer.uri).then(files =>  this.core.saveDocuments(container.destinationContainer.connection, files));
+      } else {
+        this.core.move(container);
+      }
     }
   }
 }
