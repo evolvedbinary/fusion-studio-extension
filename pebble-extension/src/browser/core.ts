@@ -18,15 +18,13 @@ import { isArray } from "util";
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 @injectable()
 export class PebbleCore {
-  @inject(CommandRegistry) protected readonly commands?: CommandRegistry;
-  @inject(WorkspaceService) protected readonly workspace?: WorkspaceService;
-  @inject(FileDialogService) protected readonly fileDialog?: FileDialogService;
-  @inject(PebbleFiles) protected readonly files?: PebbleFiles;
   constructor(
+    @inject(CommandRegistry) protected readonly commands: CommandRegistry,
+    @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
+    @inject(FileDialogService) protected readonly fileDialog: FileDialogService,
+    @inject(PebbleFiles) protected readonly files: PebbleFiles,
     @inject(OpenerService) private readonly openerService: OpenerService,
-  ) {
-    console.log('got:', this.files);
-  }
+  ) {}
   
   public get selected(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0;
@@ -177,7 +175,7 @@ export class PebbleCore {
   }
 
   execute(action: string) {
-    this.commands && this.commands.executeCommand(actionID(action));
+    this.commands.executeCommand(actionID(action));
   }
   
   protected getName(id: string): string {
@@ -539,32 +537,30 @@ export class PebbleCore {
           }
       return collection + document;
     }
-    if (this.workspace && this.files && this.fileDialog) {
-      const props: OpenFileDialogProps = {
-        title: 'Upload file',
-        canSelectFolders: true,
-        canSelectFiles: true,
-        canSelectMany: true,
-      };
-      const [rootStat] = await this.workspace.roots;
-      const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
-      const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
-      console.log(selectedFiles);
-      const top = getTopDir(selectedFiles);
-      const files = await this.files.getFiles({ file: selectedFiles });
-      const collection = this.node as PebbleCollectionNode;
-      if (files.length > 1) {
-        const formData: any = await this.files.readMulti({ files });
-        cleanObject(formData, top);
-        for (let i in formData) {
-          formData[collectionDir(collection.uri, i)] = this.blob(formData[i]);
-          delete(formData[i]);
-        }
-        console.log(formData);
-        this.saveDocuments(collection.connection, formData);
-      } else {
-        this.saveDocument(collection.connection, collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
+    const props: OpenFileDialogProps = {
+      title: 'Upload file',
+      canSelectFolders: true,
+      canSelectFiles: true,
+      canSelectMany: true,
+    };
+    const [rootStat] = await this.workspace.roots;
+    const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
+    const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
+    console.log(selectedFiles);
+    const top = getTopDir(selectedFiles);
+    const files = await this.files.getFiles({ file: selectedFiles });
+    const collection = this.node as PebbleCollectionNode;
+    if (files.length > 1) {
+      const formData: any = await this.files.readMulti({ files });
+      cleanObject(formData, top);
+      for (let i in formData) {
+        formData[collectionDir(collection.uri, i)] = this.blob(formData[i]);
+        delete(formData[i]);
       }
+      console.log(formData);
+      this.saveDocuments(collection.connection, formData);
+    } else {
+      this.saveDocument(collection.connection, collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
     }
     return true;
   }
