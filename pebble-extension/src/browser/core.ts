@@ -581,7 +581,7 @@ export class PebbleCore {
         this.nextName();
       }
     }
-    return this.lastName();
+    return this.lastName(ext);
   }
 
   public async newItem(isCollection?: boolean): Promise<boolean> {
