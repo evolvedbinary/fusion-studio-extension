@@ -9,9 +9,10 @@ import { PEBBLE_COMMANDS, PEBBLE_SUBMENUES } from "./commands";
 export const PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID = 'pebble-view';
 @injectable()
 export class PebbleContribution extends AbstractViewContribution<PebbleViewWidget> {
-  @inject(PebbleCore) protected readonly core?: PebbleCore;
 
-  constructor() {
+  constructor(
+    @inject(PebbleCore) protected readonly core: PebbleCore,
+  ) {
     super({
       widgetId: PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID,
       widgetName: 'Pebble Connections',

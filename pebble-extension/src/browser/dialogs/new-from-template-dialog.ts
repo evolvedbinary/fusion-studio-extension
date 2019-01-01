@@ -58,7 +58,7 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
     for (const key in this.fields) {
       params[key] = this.fields[key].input.value;
     }
-    params.name = this.nameField.input.value + '.' + (this.props.template && this.props.template.ext(params));
+    params.name = this.nameField.input.value;
     return { params };
   }
   

@@ -5,20 +5,20 @@ import { PebbleTemplate } from "../classes/template";
 import { PebbleCore } from "./core";
 
 namespace check {
-  export function connection(core?: PebbleCore): boolean {
-    return !!core && core.isConnection();
+  export function connection(core: PebbleCore): boolean {
+    return core.isConnection();
   }
-  export function collection(core?: PebbleCore): boolean {
-    return !!core && core.isCollection();
+  export function collection(core: PebbleCore): boolean {
+    return core.isCollection();
   }
-  export function document(core?: PebbleCore): boolean {
-    return !!core && core.isDocument();
+  export function document(core: PebbleCore): boolean {
+    return core.isDocument();
   }
-  export function selected(core?: PebbleCore, count = 0): boolean {
-    return !!core && !!core.node;
+  export function selected(core: PebbleCore, count = 0): boolean {
+    return !!core.node;
   }
-  export function loading(core?: PebbleCore): boolean {
-    return !!core && !!core.node && !!core.node.loading;
+  export function loading(core: PebbleCore): boolean {
+    return !!core.node && !!core.node.loading;
   }
 }
 
@@ -37,7 +37,7 @@ export const actConnect: PebbleAction = {
   menuLabel: 'Connect...',
   keys: 'ctrlcmd+alt+c',
   icon: 'fa fa-plug',
-  execute: core => () => core && core.newConnection(),
+  execute: core => () => core.newConnection(),
 };
 export const actDisconnect: PebbleAction = {
   id: 'disconnect',
@@ -45,7 +45,7 @@ export const actDisconnect: PebbleAction = {
   label: 'Remove connection',
   contextMenu: CONTEXT_MENU_CONNECTION,
   icon: 'fa fa-minus',
-  execute: core => () => core && core.deleteConnection(),
+  execute: core => () => core.deleteConnection(),
   enabled: core => () => check.connection(core),
   visible: core => () => check.connection(core),
 };
@@ -55,7 +55,7 @@ export const actNewCollection: PebbleAction = {
   label: 'New collection',
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-folder-o',
-  execute: core => () => core && core.newItem(true),
+  execute: core => () => core.newItem(true),
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 };
@@ -65,27 +65,37 @@ export const actNewDocument: PebbleAction = {
   label: 'Empty document',
   contextMenu: CONTEXT_MENU_NEW_SUBMENU,
   icon: 'fa fa-file-o',
-  execute: core => () => core && core.newItem(),
+  execute: core => () => core.newItem(),
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 };
-const templates: PebbleAction[] = [actNewDocument].concat(TEMPLATES.map((template: PebbleTemplate, i: number) => ({
+export const actUploadDocument: PebbleAction = {
+  id: 'upload-document',
+  order: 'c2',
+  label: 'Upload document',
+  contextMenu: CONTEXT_MENU_NEW,
+  icon: 'fa fa-upload',
+  execute: core => () => core.uploadItem(),
+  enabled: core => () => check.collection(core) && !check.loading(core),
+  visible: core => () => check.collection(core) && !check.connection(core),
+};
+const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: number) => ({
   id: 'new-document-template:' + template.name,
   label: template.name,
   order: 'b' + i.toString(),
   contextMenu: CONTEXT_MENU_NEW_SUBMENU,
   icon: 'fa fa-file-o',
-  execute: core => () => core && core.newItemFromTemplate(template),
+  execute: core => () => core.newItemFromTemplate(template),
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
-} as PebbleAction)));
+} as PebbleAction));
 export const actRefresh: PebbleAction = {
   id: 'refresh',
   order: 'e',
   label: 'Refresh',
   contextMenu: CONTEXT_MENU_REFRESH,
   icon: 'fa fa-refresh',
-  execute: core => () => core && core.refresh(core.node as any),
+  execute: core => () => core.refresh(core.node as any),
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 };
@@ -95,11 +105,19 @@ export const actDelete: PebbleAction = {
   label: 'Delete',
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-trash',
-  execute: core => () => core && core.deleteItem(),
+  execute: core => () => core.deleteItem(),
   enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
   visible: core => () => check.selected(core) && !check.connection(core),
 };
-export const PEBBLE_COMMANDS: PebbleAction[] = [actConnect, actDisconnect, actNewCollection, actRefresh, actDelete, ...templates];
+export const PEBBLE_COMMANDS: PebbleAction[] = [
+  actConnect,
+  actDisconnect,
+  actNewCollection,
+  actNewDocument,
+  actUploadDocument,
+  actRefresh,
+  actDelete,
+  ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New document...',
   menu: CONTEXT_MENU_NEW_SUBMENU,
