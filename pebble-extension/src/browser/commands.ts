@@ -69,7 +69,17 @@ export const actNewDocument: PebbleAction = {
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 };
-const templates: PebbleAction[] = [actNewDocument].concat(TEMPLATES.map((template: PebbleTemplate, i: number) => ({
+export const actUploadDocument: PebbleAction = {
+  id: 'upload-document',
+  order: 'c2',
+  label: 'Upload document',
+  contextMenu: CONTEXT_MENU_NEW,
+  icon: 'fa fa-upload',
+  execute: core => () => core && core.uploadItem(),
+  enabled: core => () => check.collection(core) && !check.loading(core),
+  visible: core => () => check.collection(core) && !check.connection(core),
+};
+const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: number) => ({
   id: 'new-document-template:' + template.name,
   label: template.name,
   order: 'b' + i.toString(),
@@ -78,7 +88,7 @@ const templates: PebbleAction[] = [actNewDocument].concat(TEMPLATES.map((templat
   execute: core => () => core && core.newItemFromTemplate(template),
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
-} as PebbleAction)));
+} as PebbleAction));
 export const actRefresh: PebbleAction = {
   id: 'refresh',
   order: 'e',
@@ -99,7 +109,15 @@ export const actDelete: PebbleAction = {
   enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
   visible: core => () => check.selected(core) && !check.connection(core),
 };
-export const PEBBLE_COMMANDS: PebbleAction[] = [actConnect, actDisconnect, actNewCollection, actRefresh, actDelete, ...templates];
+export const PEBBLE_COMMANDS: PebbleAction[] = [
+  actConnect,
+  actDisconnect,
+  actNewCollection,
+  actNewDocument,
+  actUploadDocument,
+  actRefresh,
+  actDelete,
+  ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New document...',
   menu: CONTEXT_MENU_NEW_SUBMENU,

@@ -1,6 +1,8 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from "../classes/node";
 import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService } from "@theia/core/lib/browser";
+import { WorkspaceService } from "@theia/workspace/lib/browser";
+import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import { CommandRegistry } from "@theia/core";
@@ -10,14 +12,22 @@ import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
 import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
+import { PebbleFiles, PebbleFileList } from "../common/files";
+import { isArray } from "util";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
+const TRAILING_SYMBOL = '/';
 @injectable()
 export class PebbleCore {
   @inject(CommandRegistry) protected readonly commands?: CommandRegistry;
+  @inject(WorkspaceService) protected readonly workspace?: WorkspaceService;
+  @inject(FileDialogService) protected readonly fileDialog?: FileDialogService;
+  @inject(PebbleFiles) protected readonly files?: PebbleFiles;
   constructor(
     @inject(OpenerService) private readonly openerService: OpenerService,
-  ) {}
+  ) {
+    console.log('got:', this.files);
+  }
   
   public get selected(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0;
@@ -100,13 +110,29 @@ export class PebbleCore {
 
   async save(document: PebbleDocumentNode, content: string) {
     try {
-      const result = await PebbleApi.save(document.connection, document.uri, content);
-      if (result) {
+      if (await PebbleApi.save(document.connection, document.uri, content)) {
         document.isNew = false;
         this.refresh();
       }
     } catch (error) {
       console.error('caught:', error);
+    }
+  }
+
+  async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, binary = false): Promise<boolean> {
+    try {
+      return await PebbleApi.save(connection, uri, content, binary);
+    } catch (error) {
+      console.error('caught:', error);
+      return false;
+    }
+  }
+  async saveDocuments(connection: PebbleConnection, documents: PebbleFileList): Promise<boolean> {
+    try {
+      return await PebbleApi.saveDocuments(connection, documents);
+    } catch (error) {
+      console.error('caught:', error);
+      return false;
     }
   }
 
@@ -430,12 +456,14 @@ export class PebbleCore {
       this.nextName(result.params.name);
       const name = collection.uri + '/' + result.params.name;
       const text = template.execute(result.params);
-      const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
-        content: text,
-        name,
-        group: '',
-        owner: '',
-      }, true));
+      await this.createDocument(collection, name, text);
+    }
+    return false;
+  }
+
+  public async createDocument(collection: PebbleCollectionNode, name: string, content = '', group = '', owner = '') {
+    const doc = await this.openDocument(this.addDocument(collection, collection.connection, { content, name, group, owner }, true));
+    if (content !== '') {
       doc.editor.document.setDirty(true);
       doc.editor.document.contentChanges.push({
         range: {
@@ -443,10 +471,100 @@ export class PebbleCore {
           end: { line: 0, character: 0 }
         },
         rangeLength: 0,
-        text,
+        content,
       });
     }
-    return false;
+    return doc;
+  }
+
+  public blob(text: string): Blob {
+    return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], {type : 'application/octet-stream '});
+  }
+  public collectionDir(collection: string, document: string): string {
+    if ((collection[collection.length - 1] != TRAILING_SYMBOL) &&
+        (document[0] != TRAILING_SYMBOL)) {
+          collection += TRAILING_SYMBOL;
+        }
+    return collection + document;
+  }
+  public async uploadItem(): Promise<boolean> {
+    function clean(array: string[], topDir: string = '') {
+      if (topDir !== '') {
+        return array.map(i => i.substr(topDir.length));
+      }
+      const testArray: (string | undefined)[][] = array.map(i => i.split(TRAILING_SYMBOL));
+      if (array.length > 0) {
+        if (array.length === 1) {
+          testArray[0] = [testArray[0].pop()];
+        } else {
+          while (testArray[0].length > 1) {
+            const test = testArray[0][0];
+            let check = true;
+            testArray.forEach(i => check = check && i[0] === test);
+            if (check) {
+              testArray.forEach(i => i.shift());
+            }
+          }
+        }
+      }
+      return testArray.map(i => i.join(TRAILING_SYMBOL));
+    }
+    function getTopDir(array: string[]): string {
+      let result = '';
+      const testArray: (string | undefined)[][] = array.map(i => i.split(TRAILING_SYMBOL));
+      if (array.length > 0) {
+        if (array.length === 1) {
+          testArray[0].pop();
+          result = testArray[0].join(TRAILING_SYMBOL) + TRAILING_SYMBOL;
+        } else {
+          while (testArray[0].length > 1) {
+            const test = testArray[0][0];
+            let check = true;
+            testArray.forEach(i => check = check && i[0] === test);
+            if (check) {
+              testArray.forEach(i => i.shift());
+              result += test + TRAILING_SYMBOL;
+            }
+          }
+        }
+      }
+      return result;
+    }
+    function cleanObject(object: PebbleFileList, topDir: string = ''): PebbleFileList {
+      const keys = Object.keys(object);
+      const array = clean(keys, topDir);
+      keys.forEach((key, index) => {
+        object[array[index]] = object[key];
+        delete(object[key]);
+      });
+      return object;
+    }
+    if (this.workspace && this.files && this.fileDialog) {
+      const props: OpenFileDialogProps = {
+        title: 'Upload file',
+        canSelectFolders: true,
+        canSelectFiles: true,
+        canSelectMany: true,
+      };
+      const [rootStat] = await this.workspace.roots;
+      const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
+      const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
+      const top = getTopDir(selectedFiles);
+      const files = await this.files.getFiles({ file: selectedFiles });
+      const collection = this.node as PebbleCollectionNode;
+      if (files.length > 1) {
+        const formData: any = await this.files.readMulti({ files });
+        cleanObject(formData, top);
+        for (let i in formData) {
+          formData[this.collectionDir(collection.uri, i)] = this.blob(formData[i]);
+          delete(formData[i]);
+        }
+        this.saveDocuments(collection.connection, formData);
+      } else {
+        this.saveDocument(collection.connection, this.collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
+      }
+    }
+    return true;
   }
 
   public lastNameID: number = 1;
@@ -490,12 +608,7 @@ export class PebbleCore {
           this.addCollection(collection, collection.connection, result);
         }
       } else {
-        this.openDocument(this.addDocument(collection, collection.connection, {
-          content: '',
-          name,
-          group: '',
-          owner: '',
-        }, true));
+        this.createDocument(collection, name);
       }
     }
     return false;
