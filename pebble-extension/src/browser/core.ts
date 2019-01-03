@@ -12,10 +12,11 @@ import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
 import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
-import { PebbleFiles, PebbleFilesBlobsList } from "../common/files";
+import { PebbleFiles, PebbleFileList } from "../common/files";
 import { isArray } from "util";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
+const TRAILING_SYMBOL = '/';
 @injectable()
 export class PebbleCore {
   @inject(CommandRegistry) protected readonly commands?: CommandRegistry;
@@ -126,7 +127,7 @@ export class PebbleCore {
       return false;
     }
   }
-  async saveDocuments(connection: PebbleConnection, documents: PebbleFilesBlobsList): Promise<boolean> {
+  async saveDocuments(connection: PebbleConnection, documents: PebbleFileList): Promise<boolean> {
     try {
       return await PebbleApi.saveDocuments(connection, documents);
     } catch (error) {
@@ -479,13 +480,19 @@ export class PebbleCore {
   public blob(text: string): Blob {
     return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], {type : 'application/octet-stream '});
   }
+  public collectionDir(collection: string, document: string): string {
+    if ((collection[collection.length - 1] != TRAILING_SYMBOL) &&
+        (document[0] != TRAILING_SYMBOL)) {
+          collection += TRAILING_SYMBOL;
+        }
+    return collection + document;
+  }
   public async uploadItem(): Promise<boolean> {
-    const trailingSymbol = '/';
     function clean(array: string[], topDir: string = '') {
       if (topDir !== '') {
         return array.map(i => i.substr(topDir.length));
       }
-      const testArray: (string | undefined)[][] = array.map(i => i.split(trailingSymbol));
+      const testArray: (string | undefined)[][] = array.map(i => i.split(TRAILING_SYMBOL));
       if (array.length > 0) {
         if (array.length === 1) {
           testArray[0] = [testArray[0].pop()];
@@ -500,15 +507,15 @@ export class PebbleCore {
           }
         }
       }
-      return testArray.map(i => i.join(trailingSymbol));
+      return testArray.map(i => i.join(TRAILING_SYMBOL));
     }
     function getTopDir(array: string[]): string {
       let result = '';
-      const testArray: (string | undefined)[][] = array.map(i => i.split(trailingSymbol));
+      const testArray: (string | undefined)[][] = array.map(i => i.split(TRAILING_SYMBOL));
       if (array.length > 0) {
         if (array.length === 1) {
           testArray[0].pop();
-          result = testArray[0].join(trailingSymbol) + trailingSymbol;
+          result = testArray[0].join(TRAILING_SYMBOL) + TRAILING_SYMBOL;
         } else {
           while (testArray[0].length > 1) {
             const test = testArray[0][0];
@@ -516,14 +523,14 @@ export class PebbleCore {
             testArray.forEach(i => check = check && i[0] === test);
             if (check) {
               testArray.forEach(i => i.shift());
-              result += test + trailingSymbol;
+              result += test + TRAILING_SYMBOL;
             }
           }
         }
       }
       return result;
     }
-    function cleanObject(object: PebbleFilesBlobsList, topDir: string = ''): PebbleFilesBlobsList {
+    function cleanObject(object: PebbleFileList, topDir: string = ''): PebbleFileList {
       const keys = Object.keys(object);
       const array = clean(keys, topDir);
       keys.forEach((key, index) => {
@@ -531,13 +538,6 @@ export class PebbleCore {
         delete(object[key]);
       });
       return object;
-    }
-    function collectionDir(collection: string, document: string): string {
-      if ((collection[collection.length - 1] != trailingSymbol) &&
-          (document[0] != trailingSymbol)) {
-            collection += trailingSymbol;
-          }
-      return collection + document;
     }
     if (this.workspace && this.files && this.fileDialog) {
       const props: OpenFileDialogProps = {
@@ -549,7 +549,6 @@ export class PebbleCore {
       const [rootStat] = await this.workspace.roots;
       const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
       const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
-      console.log(selectedFiles);
       const top = getTopDir(selectedFiles);
       const files = await this.files.getFiles({ file: selectedFiles });
       const collection = this.node as PebbleCollectionNode;
@@ -557,13 +556,12 @@ export class PebbleCore {
         const formData: any = await this.files.readMulti({ files });
         cleanObject(formData, top);
         for (let i in formData) {
-          formData[collectionDir(collection.uri, i)] = this.blob(formData[i]);
+          formData[this.collectionDir(collection.uri, i)] = this.blob(formData[i]);
           delete(formData[i]);
         }
-        console.log(formData);
         this.saveDocuments(collection.connection, formData);
       } else {
-        this.saveDocument(collection.connection, collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
+        this.saveDocument(collection.connection, this.collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
       }
     }
     return true;

@@ -1,4 +1,4 @@
-import { PebbleFiles, PebbleFilesList } from "../common/files";
+import { PebbleFiles, PebbleFilenameList } from "../common/files";
 import { injectable } from "inversify";
 import { readFileSync, statSync, readdirSync } from "fs";
 import { createError, Error } from "../common/error";
@@ -39,8 +39,8 @@ export class PebbleFilesClass implements PebbleFiles {
   async read(file: string): Promise<string> {
     return read(file);
   }
-  async readMulti(params: { files: string[] }): Promise<PebbleFilesList> {
-    const result: PebbleFilesList = {};
+  async readMulti(params: { files: string[] }): Promise<PebbleFilenameList> {
+    const result: PebbleFilenameList = {};
     params.files.map(file => result[file] = read(file));
     return result;
   }
