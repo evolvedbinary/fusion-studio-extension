@@ -14,6 +14,7 @@ import { PebbleTemplate } from "../classes/template";
 import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
 import { PebbleFiles, PebbleFileList } from "../common/files";
 import { isArray } from "util";
+import { lookup } from "mime-types";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -127,9 +128,9 @@ export class PebbleCore {
       return false;
     }
   }
-  async saveDocuments(connection: PebbleConnection, documents: PebbleFileList): Promise<boolean> {
+  async saveDocuments(node: PebbleCollectionNode, documents: PebbleFileList | FormData): Promise<boolean> {
     try {
-      return await PebbleApi.saveDocuments(connection, documents);
+      return await PebbleApi.saveDocuments(node.connection, node.collection, documents);
     } catch (error) {
       console.error('caught:', error);
       return false;
@@ -477,8 +478,8 @@ export class PebbleCore {
     return doc;
   }
 
-  public blob(text: string): Blob {
-    return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], {type : 'application/octet-stream '});
+  public blob(text: string, type: string): Blob {
+    return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], { type });
   }
   public collectionDir(collection: string, document: string): string {
     if ((collection[collection.length - 1] != TRAILING_SYMBOL) &&
@@ -551,17 +552,18 @@ export class PebbleCore {
       const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
       const top = getTopDir(selectedFiles);
       const files = await this.files.getFiles({ file: selectedFiles });
-      const collection = this.node as PebbleCollectionNode;
+      const collectionNode = this.node as PebbleCollectionNode;
       if (files.length > 1) {
-        const formData: any = await this.files.readMulti({ files });
-        cleanObject(formData, top);
-        for (let i in formData) {
-          formData[this.collectionDir(collection.uri, i)] = this.blob(formData[i]);
-          delete(formData[i]);
+        const filenameList: any = await this.files.readMulti({ files });
+        const formData = new FormData();
+        cleanObject(filenameList, top);
+        let counter = 1;
+        for (let i in filenameList) {
+          formData.append('file-upload-' + counter++, this.blob(filenameList[i], lookup(i) || 'application/octet-stream'), i);
         }
-        this.saveDocuments(collection.connection, formData);
+        this.saveDocuments(collectionNode, formData);
       } else {
-        this.saveDocument(collection.connection, this.collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
+        this.saveDocument(collectionNode.connection, clean(files, top)[0], this.blob(await this.files.read(files[0]), 'bla'));
       }
     }
     return true;
