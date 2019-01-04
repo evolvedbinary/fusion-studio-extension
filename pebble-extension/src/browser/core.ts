@@ -559,12 +559,11 @@ export class PebbleCore {
         cleanObject(filenameList, top);
         let counter = 1;
         for (let i in filenameList) {
-          formData.append('file-upload-' + counter++, this.blob(filenameList[i], lookup(i) || 'application/octet-stream'), this.collectionDir(collectionNode.uri, i));
+          formData.append('file-upload-' + counter++, this.blob(filenameList[i], lookup(i) || 'application/octet-stream'), i);
         }
-        // console.log(formData);
         this.saveDocuments(collectionNode, formData);
       } else {
-        this.saveDocument(collectionNode.connection, this.collectionDir(collectionNode.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0]), 'bla'));
+        this.saveDocument(collectionNode.connection, clean(files, top)[0], this.blob(await this.files.read(files[0]), 'bla'));
       }
     }
     return true;

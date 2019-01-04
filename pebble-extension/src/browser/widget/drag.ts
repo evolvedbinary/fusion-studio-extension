@@ -106,21 +106,25 @@ export class DragController {
     event.stopPropagation();
     this.toCancelNodeExpansion.dispose();
   }
-  public async listFiles(list: WebKitEntry[], root: string): Promise<PebbleFileList> {
+  public async listFiles(list: WebKitEntry[]): Promise<PebbleFileList> {
     const files: PebbleFileList = {};
-    await Promise.all(list.map(entry => this.listFile(entry, root, files)));
+    await Promise.all(list.map(entry => this.listFile(entry, files)));
     return files;
   }
   public async getFile(item: WebKitFileEntry): Promise<File> {
     return new Promise<any>(resolve => (item as WebKitFileEntry).file(f => resolve(f)));
   }
-  public async listFile(item: WebKitEntry, root: string, files: PebbleFileList): Promise<any> {
+  public async listFile(item: WebKitEntry, files: PebbleFileList): Promise<any> {
     if (item.isDirectory) {
       const reader = (item as WebKitDirectoryEntry).createReader();
       const entries = await new Promise<WebKitEntry[]>(resolve => reader.readEntries(entries => resolve(entries)));
-      await Promise.all(entries.map(entry => this.listFile(entry, root, files)));
+      await Promise.all(entries.map(entry => this.listFile(entry, files)));
     } else {
-      files[this.core.collectionDir(root, item.fullPath)] = await this.getFile(item as WebKitFileEntry);
+      let path = item.fullPath;
+      if (path[0] === '/') {
+        path = path.substr(1);
+      }
+      files[path] = await this.getFile(item as WebKitFileEntry);
     }
     return Promise.resolve;
   }
@@ -141,7 +145,7 @@ export class DragController {
             entries.push(entry);
           }
         }
-        this.listFiles(entries, container.destinationContainer.uri).then(files =>  this.core.saveDocuments(container.destinationContainer, files));
+        this.listFiles(entries).then(files =>  this.core.saveDocuments(container.destinationContainer, files));
       } else {
         this.core.move(container);
       }
