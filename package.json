@@ -1,5 +1,11 @@
 {
   "private": true,
+  "author": "Evolved Binary <tech@evolvedbinary.com>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/evolvedbinary/pebble-extension/issues"
+  },
+  "homepage": "https://github.com/evolvedbinary/pebble-extension#readme",
   "scripts": {
     "postinstall": "yarn sass",
     "sass" : "node-sass ./pebble-extension/src/browser/style/index.scss ./pebble-extension/src/browser/style/index.css",

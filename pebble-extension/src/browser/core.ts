@@ -12,10 +12,13 @@ import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
 import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
-import { PebbleFiles, PebbleFilesBlobsList } from "../common/files";
+import { PebbleFiles, PebbleFileList } from "../common/files";
 import { isArray } from "util";
+import { lookup } from "mime-types";
+import { createError, PebbleError } from "../common/error";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
+const TRAILING_SYMBOL = '/';
 @injectable()
 export class PebbleCore {
   constructor(
@@ -124,12 +127,16 @@ export class PebbleCore {
       return false;
     }
   }
-  async saveDocuments(connection: PebbleConnection, documents: PebbleFilesBlobsList): Promise<boolean> {
+  async saveDocuments(node: PebbleCollectionNode, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {
     try {
-      return await PebbleApi.saveDocuments(connection, documents);
+      const docs = await PebbleApi.saveDocuments(node.connection, node.collection, documents);
+      for (let i = 0; i < docs.length; i++) {
+        await this.addDocumentRecursive(node, node.connection, docs[i]);
+      };
+      return docs;
     } catch (error) {
       console.error('caught:', error);
-      return false;
+      return [];
     }
   }
 
@@ -241,6 +248,51 @@ export class PebbleCore {
   public removeNode(child: PebbleNode, parent?: TreeNode): void {
     CompositeTreeNode.removeChild(parent as CompositeTreeNode, child);
   }
+  parentCollection(uri: string): string {
+    const parent = uri.split(TRAILING_SYMBOL);
+    parent.pop();
+    return parent.join(TRAILING_SYMBOL);
+  }
+  public async addCollectionRecursive(connection: PebbleConnection, uri: string): Promise<PebbleCollectionNode> {
+    const node = this.getNode(this.connectionID(connection) + uri);
+    if (node) {
+      if (PebbleNode.isCollection(node)) {
+        return node;
+      } else {
+        throw createError(PebbleError.unknown);
+      }
+    } else {
+      const parent = await this.addCollectionRecursive(connection, this.parentCollection(uri));
+      // const collection = await PebbleApi.newCollection(connection, uri);
+      // if (collection) {
+        return this.addCollection(parent, connection, {
+          name: uri,
+          collections: [],
+          documents: [],
+          group: '',
+          owner: '',
+        });
+      // } else {
+      //   throw createError(PebbleError.unknown);
+      // }
+    }
+  }
+  public async addDocumentRecursive(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): Promise<PebbleDocumentNode> {
+    const node = {
+      type: 'item',
+      connection,
+      isCollection: false,
+      id: this.itemID(connection, document),
+      name: this.getName(document.name),
+      parent: parent,
+      isNew,
+      selected: false,
+      uri: document.name,
+      document,
+    } as PebbleDocumentNode;
+    this.addNode(node, await this.addCollectionRecursive(connection, this.parentCollection(document.name)));
+    return node;
+  }
   public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): PebbleDocumentNode {
     const node = {
       type: 'item',
@@ -257,8 +309,8 @@ export class PebbleCore {
     this.addNode(node, parent);
     return node;
   }
-  public addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): void {
-    this.addNode({
+  public addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): PebbleCollectionNode {
+    return this.addNode({
       type: 'item',
       connection,
       isCollection: true,
@@ -271,7 +323,7 @@ export class PebbleCore {
       expanded: false,
       collection,
       uri: collection.name,
-    } as PebbleCollectionNode, parent);
+    } as PebbleCollectionNode, parent) as PebbleCollectionNode;
   }
   public addConnection(connection: PebbleConnection, parent?: TreeNode, expanded?: boolean): void {
     this.addNode({
@@ -471,16 +523,22 @@ export class PebbleCore {
     return doc;
   }
 
-  public blob(text: string): Blob {
-    return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], {type : 'application/octet-stream '});
+  public blob(text: string, type: string): Blob {
+    return new Blob([new Uint8Array(text.split('').map(c => c.charCodeAt(0)))], { type });
+  }
+  public collectionDir(collection: string, document: string): string {
+    if ((collection[collection.length - 1] != TRAILING_SYMBOL) &&
+        (document[0] != TRAILING_SYMBOL)) {
+          collection += TRAILING_SYMBOL;
+        }
+    return collection + document;
   }
   public async uploadItem(): Promise<boolean> {
-    const trailingSymbol = '/';
     function clean(array: string[], topDir: string = '') {
       if (topDir !== '') {
         return array.map(i => i.substr(topDir.length));
       }
-      const testArray: (string | undefined)[][] = array.map(i => i.split(trailingSymbol));
+      const testArray: (string | undefined)[][] = array.map(i => i.split(TRAILING_SYMBOL));
       if (array.length > 0) {
         if (array.length === 1) {
           testArray[0] = [testArray[0].pop()];
@@ -495,15 +553,15 @@ export class PebbleCore {
           }
         }
       }
-      return testArray.map(i => i.join(trailingSymbol));
+      return testArray.map(i => i.join(TRAILING_SYMBOL));
     }
     function getTopDir(array: string[]): string {
       let result = '';
-      const testArray: (string | undefined)[][] = array.map(i => i.split(trailingSymbol));
+      const testArray: (string | undefined)[][] = array.map(i => i.split(TRAILING_SYMBOL));
       if (array.length > 0) {
         if (array.length === 1) {
           testArray[0].pop();
-          result = testArray[0].join(trailingSymbol) + trailingSymbol;
+          result = testArray[0].join(TRAILING_SYMBOL) + TRAILING_SYMBOL;
         } else {
           while (testArray[0].length > 1) {
             const test = testArray[0][0];
@@ -511,14 +569,14 @@ export class PebbleCore {
             testArray.forEach(i => check = check && i[0] === test);
             if (check) {
               testArray.forEach(i => i.shift());
-              result += test + trailingSymbol;
+              result += test + TRAILING_SYMBOL;
             }
           }
         }
       }
       return result;
     }
-    function cleanObject(object: PebbleFilesBlobsList, topDir: string = ''): PebbleFilesBlobsList {
+    function cleanObject(object: PebbleFileList, topDir: string = ''): PebbleFileList {
       const keys = Object.keys(object);
       const array = clean(keys, topDir);
       keys.forEach((key, index) => {
@@ -526,13 +584,6 @@ export class PebbleCore {
         delete(object[key]);
       });
       return object;
-    }
-    function collectionDir(collection: string, document: string): string {
-      if ((collection[collection.length - 1] != trailingSymbol) &&
-          (document[0] != trailingSymbol)) {
-            collection += trailingSymbol;
-          }
-      return collection + document;
     }
     const props: OpenFileDialogProps = {
       title: 'Upload file',
@@ -543,21 +594,29 @@ export class PebbleCore {
     const [rootStat] = await this.workspace.roots;
     const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
     const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
-    console.log(selectedFiles);
     const top = getTopDir(selectedFiles);
     const files = await this.files.getFiles({ file: selectedFiles });
-    const collection = this.node as PebbleCollectionNode;
+    const collectionNode = this.node as PebbleCollectionNode;
     if (files.length > 1) {
-      const formData: any = await this.files.readMulti({ files });
-      cleanObject(formData, top);
-      for (let i in formData) {
-        formData[collectionDir(collection.uri, i)] = this.blob(formData[i]);
-        delete(formData[i]);
+      const filenameList: any = await this.files.readMulti({ files });
+      const formData = new FormData();
+      cleanObject(filenameList, top);
+      let counter = 1;
+      for (let i in filenameList) {
+        formData.append('file-upload-' + counter++, this.blob(filenameList[i], lookup(i) || 'application/octet-stream'), i);
       }
-      console.log(formData);
-      this.saveDocuments(collection.connection, formData);
+      this.saveDocuments(collectionNode, formData);
     } else {
-      this.saveDocument(collection.connection, collectionDir(collection.uri, clean(files, top)[0]), this.blob(await this.files.read(files[0])));
+      const documentName = this.collectionDir(collectionNode.uri, clean(files, top)[0]);
+      const content = await this.files.read(files[0]);
+      if (await this.saveDocument(collectionNode.connection, documentName, this.blob(content, lookup(documentName) || 'application/octet-strea,'))) {
+        this.addDocument(collectionNode, collectionNode.connection, {
+          content,
+          name: documentName,
+          group: '',
+          owner: '',
+        });
+      }
     }
     return true;
   }

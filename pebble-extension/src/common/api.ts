@@ -1,7 +1,7 @@
 import { PebbleCollection, PebblePermission, PebblePermissions, PebbleDocument, PebbleItem } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
-import { createError, Error } from "./error";
-import { PebbleFilesBlobsList } from "./files";
+import { createError, PebbleError } from "./error";
+import { PebbleFileList } from "./files";
 // import { xml2js } from 'xml-js';
 
 // const TEMP = '';
@@ -72,12 +72,15 @@ async function put(connection: PebbleConnection, uri: string, body: any = '', bi
     headers['Content-Type'] = 'application/octet-stream';
   }
   if (!useBody) {
-    headers['Content-Type'] = 'multipart/form-data';
-    const formData = new FormData();
-    for (let i in body) {
-      formData.append(i, body[i]);
+    // headers['Content-Type'] = 'multipart/form-data';
+    if (!(body instanceof FormData)) {
+      const formData = new FormData();
+      let counter = 1;
+      for (let i in body) {
+        formData.append('file-upload-' + counter++, body[i], i);
+      }
+      body = formData;
     }
-    body = formData;
   }
   return fetch(connection.server + uri, {
     headers,
@@ -107,11 +110,11 @@ async function load(connection: PebbleConnection, uri: string): Promise<PebbleCo
       case 200:
         const object = await result.json();
         return 'collections' in object ? readCollection(object) : readDocument(object, connection, uri);;
-      case 401: throw createError(Error.permissionDenied, result);
-      default: throw createError(Error.permissionDenied, result)
+      case 401: throw createError(PebbleError.permissionDenied, result);
+      default: throw createError(PebbleError.permissionDenied, result)
     }
   } catch (error) {
-    throw createError(Error.unknown, error);
+    throw createError(PebbleError.unknown, error);
   }
 }
 
@@ -120,27 +123,26 @@ async function save(connection: PebbleConnection, uri: string, content: string |
     const result = await put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, binary);
     switch (result.status) {
       case 201: return true;
-      case 401: throw createError(Error.permissionDenied, result);
-      default: throw createError(Error.unknown, result);
+      case 401: throw createError(PebbleError.permissionDenied, result);
+      default: throw createError(PebbleError.unknown, result);
     }
   } catch (error) {
-    throw createError(Error.unknown, error);
+    throw createError(PebbleError.unknown, error);
   }
   return false;
 }
 
-async function saveDocuments(connection: PebbleConnection, documents: PebbleFilesBlobsList): Promise<boolean> {
+async function saveDocuments(connection: PebbleConnection, collection: PebbleCollection, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {
   try {
-    const result = await put(connection, '/exist/restxq/pebble/documents', documents);
+    const result = await put(connection, '/exist/restxq/pebble/document?uri=' + collection.name, documents);
     switch (result.status) {
-      case 201: return true;
-      case 401: throw createError(Error.permissionDenied, result);
-      default: throw createError(Error.unknown, result);
+      case 201: return Promise.all((await result.json() as any[]).map(doc => readItem(doc) as PebbleDocument));
+      case 401: throw createError(PebbleError.permissionDenied, result);
+      default: throw createError(PebbleError.unknown, result);
     }
   } catch (error) {
-    throw createError(Error.unknown, error);
+    throw createError(PebbleError.unknown, error);
   }
-  return false;
 }
 
 async function newCollection(connection: PebbleConnection, uri: string): Promise<PebbleCollection> {
@@ -150,11 +152,11 @@ async function newCollection(connection: PebbleConnection, uri: string): Promise
       case 201:
         const json = await result.json();
         return readCollection(json);
-      case 401: throw createError(Error.permissionDenied, result);
-      default: throw createError(Error.unknown, result);
+      case 401: throw createError(PebbleError.permissionDenied, result);
+      default: throw createError(PebbleError.unknown, result);
     }
   } catch (error) {
-    throw createError(Error.unknown, error);
+    throw createError(PebbleError.unknown, error);
   }
 }
 
@@ -167,11 +169,11 @@ async function removeDoc(connection: PebbleConnection, uri: string, isCollection
     const result = await remove(connection, '/exist/restxq/pebble/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri);
     switch (result.status) {
       case 204: return true;
-      case 401: throw createError(Error.permissionDenied, result);
-      default: throw createError(Error.unknown, result);
+      case 401: throw createError(PebbleError.permissionDenied, result);
+      default: throw createError(PebbleError.unknown, result);
     }
   } catch (error) {
-    throw createError(Error.unknown, error);
+    throw createError(PebbleError.unknown, error);
   }
 }
 
@@ -184,11 +186,11 @@ async function move(connection: PebbleConnection, source: string, destination: s
     const result = await put(connection, '/exist/restxq/pebble/' + endpoint + '?uri=' + destination, headers);
     switch (result.status) {
       case 201: return true;
-      case 401: throw createError(Error.permissionDenied, result);
-      default: throw createError(Error.unknown, result);
+      case 401: throw createError(PebbleError.permissionDenied, result);
+      default: throw createError(PebbleError.unknown, result);
     }
   } catch (error) {
-    throw createError(Error.unknown, error);
+    throw createError(PebbleError.unknown, error);
   }
   return false;
 }

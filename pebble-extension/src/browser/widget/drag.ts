@@ -5,6 +5,7 @@ import { PebbleNode, PebbleCollectionNode, PebbleConnectionNode, PebbleItemNode 
 import { DisposableCollection } from "@theia/core";
 import { Disposable } from "vscode-jsonrpc";
 import { TreeNode } from "@theia/core/lib/browser";
+import { PebbleFileList } from "../../common/files";
 
 export interface PebbleDragOperation {
   destinationContainer: PebbleCollectionNode;
@@ -105,6 +106,28 @@ export class DragController {
     event.stopPropagation();
     this.toCancelNodeExpansion.dispose();
   }
+  public async listFiles(list: WebKitEntry[]): Promise<PebbleFileList> {
+    const files: PebbleFileList = {};
+    await Promise.all(list.map(entry => this.listFile(entry, files)));
+    return files;
+  }
+  public async getFile(item: WebKitFileEntry): Promise<File> {
+    return new Promise<any>(resolve => (item as WebKitFileEntry).file(f => resolve(f)));
+  }
+  public async listFile(item: WebKitEntry, files: PebbleFileList): Promise<any> {
+    if (item.isDirectory) {
+      const reader = (item as WebKitDirectoryEntry).createReader();
+      const entries = await new Promise<WebKitEntry[]>(resolve => reader.readEntries(entries => resolve(entries)));
+      await Promise.all(entries.map(entry => this.listFile(entry, files)));
+    } else {
+      let path = item.fullPath;
+      if (path[0] === '/') {
+        path = path.substr(1);
+      }
+      files[path] = await this.getFile(item as WebKitFileEntry);
+    }
+    return Promise.resolve;
+  }
   public onDrop(node: TreeNode | undefined, event: React.DragEvent<HTMLElement>): void {
     if (!node) {
       return;
@@ -114,7 +137,35 @@ export class DragController {
     this.dragOperation(event);
     const container = this.checkOperation(node, event);
     if (container) {
-      this.core.move(container);
+      if (event.dataTransfer.items.length) {
+        const entries: WebKitEntry[] = [];
+        for (let i = 0; i < event.dataTransfer.items.length; i++) {
+          const entry = event.dataTransfer.items[i].webkitGetAsEntry();
+          if (entry) {
+            entries.push(entry);
+          }
+        }
+        this.listFiles(entries).then(files => {
+          if (Object.keys(files).length > 0) {
+            this.core.saveDocuments(container.destinationContainer, files)
+          } else {
+            const documentName = this.core.collectionDir(container.destinationContainer.uri, Object.keys(files)[0]);
+            const content = '';
+            this.core.saveDocument(container.destinationContainer.connection, documentName, files[Object.keys(files)[0]]).then(ok => {
+              if (ok) {
+                this.core.addDocument(container.destinationContainer, container.destinationContainer.connection, {
+                  content,
+                  name: documentName,
+                  group: '',
+                  owner: '',
+                });
+              }
+            });
+          }
+        });
+      } else {
+        this.core.move(container);
+      }
     }
   }
 }
