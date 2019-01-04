@@ -1,7 +1,7 @@
 import { PebbleFiles, PebbleFilenameList } from "../common/files";
 import { injectable } from "inversify";
 import { readFileSync, statSync, readdirSync } from "fs";
-import { createError, Error } from "../common/error";
+import { createError, PebbleError } from "../common/error";
 import { isArray } from "util";
 
 function getFiles(files: string | string[], result?: string[]): string[] {
@@ -29,7 +29,7 @@ function read(file: string): string {
     const content = readFileSync(file).toString('binary');
     return content;
   } catch (e) {
-    throw createError(Error.unknown);
+    throw createError(PebbleError.unknown);
   }
 }
 

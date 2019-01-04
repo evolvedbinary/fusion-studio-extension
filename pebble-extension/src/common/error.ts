@@ -10,13 +10,13 @@ export namespace ErrorObject {
       && (!('data' in error) || 'length' in error.data);
   }
 }
-export enum Error {
+export enum PebbleError {
   unknown = 0,
   permissionDenied = 401,
 }
 
 type ErrorMessages = {
-  [key in Error]: string;
+  [key in PebbleError]: string;
 }
 
 export function createError(code: number, ...data: any[]) {
@@ -28,6 +28,6 @@ export function createError(code: number, ...data: any[]) {
 }
 
 export const ERROR_MESSAGES: ErrorMessages = {
-  [Error.unknown]: 'unknown error',
-  [Error.permissionDenied]: 'permission denied',
+  [PebbleError.unknown]: 'unknown error',
+  [PebbleError.permissionDenied]: 'permission denied',
 }

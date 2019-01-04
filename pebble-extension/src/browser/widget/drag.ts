@@ -145,7 +145,24 @@ export class DragController {
             entries.push(entry);
           }
         }
-        this.listFiles(entries).then(files =>  this.core.saveDocuments(container.destinationContainer, files));
+        this.listFiles(entries).then(files => {
+          if (Object.keys(files).length > 0) {
+            this.core.saveDocuments(container.destinationContainer, files)
+          } else {
+            const documentName = this.core.collectionDir(container.destinationContainer.uri, Object.keys(files)[0]);
+            const content = '';
+            this.core.saveDocument(container.destinationContainer.connection, documentName, files[Object.keys(files)[0]]).then(ok => {
+              if (ok) {
+                this.core.addDocument(container.destinationContainer, container.destinationContainer.connection, {
+                  content,
+                  name: documentName,
+                  group: '',
+                  owner: '',
+                });
+              }
+            });
+          }
+        });
       } else {
         this.core.move(container);
       }
