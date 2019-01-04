@@ -141,7 +141,7 @@ export class DragController {
             entries.push(entry);
           }
         }
-        this.listFiles(entries, container.destinationContainer.uri).then(files =>  this.core.saveDocuments(container.destinationContainer.connection, files));
+        this.listFiles(entries, container.destinationContainer.uri).then(files =>  this.core.saveDocuments(container.destinationContainer, files));
       } else {
         this.core.move(container);
       }

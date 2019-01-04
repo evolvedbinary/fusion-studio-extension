@@ -73,11 +73,14 @@ async function put(connection: PebbleConnection, uri: string, body: any = '', bi
   }
   if (!useBody) {
     headers['Content-Type'] = 'multipart/form-data';
-    const formData = new FormData();
-    for (let i in body) {
-      formData.append(i, body[i]);
+    if (!(body instanceof FormData)) {
+      const formData = new FormData();
+      let counter = 1;
+      for (let i in body) {
+        formData.append('file-upload-' + counter++, body[i], i);
+      }
+      body = formData;
     }
-    body = formData;
   }
   return fetch(connection.server + uri, {
     headers,
@@ -129,9 +132,9 @@ async function save(connection: PebbleConnection, uri: string, content: string |
   return false;
 }
 
-async function saveDocuments(connection: PebbleConnection, documents: PebbleFileList): Promise<boolean> {
+async function saveDocuments(connection: PebbleConnection, collection: PebbleCollection, documents: PebbleFileList | FormData): Promise<boolean> {
   try {
-    const result = await put(connection, '/exist/restxq/pebble/documents', documents);
+    const result = await put(connection, '/exist/restxq/pebble/document?uri=' + collection.name, documents);
     switch (result.status) {
       case 201: return true;
       case 401: throw createError(Error.permissionDenied, result);
