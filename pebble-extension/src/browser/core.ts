@@ -671,12 +671,13 @@ export class PebbleCore {
   public async move(operation: PebbleDragOperation): Promise<boolean> {
     if (operation.source) {
       const isCollection = PebbleNode.isCollection(operation.source);
+      const copy = operation.event.dataTransfer.dropEffect === 'copy';
       const result = await PebbleApi.move(
         operation.source.connection,
         operation.source.uri,
         operation.destination,
         isCollection,
-        operation.event.dataTransfer.dropEffect === 'copy'
+        copy
       );
       if (result) {
         if (isCollection) {
@@ -690,7 +691,9 @@ export class PebbleCore {
             name: operation.destination,
           });
         }
-        this.removeNode(operation.source, operation.sourceContainer);
+        if (!copy) {
+          this.removeNode(operation.source, operation.sourceContainer);
+        }
       }
       return result;
     } else {

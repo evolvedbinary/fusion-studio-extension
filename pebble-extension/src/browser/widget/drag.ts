@@ -137,7 +137,7 @@ export class DragController {
     this.dragOperation(event);
     const container = this.checkOperation(node, event);
     if (container) {
-      if (event.dataTransfer.items.length) {
+      if (event.dataTransfer.files.length) {
         const entries: WebKitEntry[] = [];
         for (let i = 0; i < event.dataTransfer.items.length; i++) {
           const entry = event.dataTransfer.items[i].webkitGetAsEntry();

@@ -63,8 +63,8 @@ async function remove(connection: PebbleConnection, uri: string): Promise<Respon
   return fetch(connection.server + uri, options);
 }
 async function put(connection: PebbleConnection, uri: string, body: any = '', binary = false): Promise<Response> {
-  const useBody = (typeof body === 'string') || (body instanceof Blob);
-  const headers: any = {};
+  const useBody = (typeof body === 'string') || (body instanceof Blob) || (body instanceof FormData);
+  const headers: any = useBody ? {} : body;
   if (connection.username !== '') {
     headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
   }
