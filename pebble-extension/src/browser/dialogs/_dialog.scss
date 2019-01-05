@@ -1,0 +1,12 @@
+.dialog-container {
+  &.vertical-form {
+    > div {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+      span {
+        margin-bottom: 8px;
+      }
+    }
+}
+}

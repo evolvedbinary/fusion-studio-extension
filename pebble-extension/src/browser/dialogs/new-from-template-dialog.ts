@@ -29,7 +29,7 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
     this.nameField.input.value = props.initialValue || '';
     this.containerDiv.appendChild(this.nameField.container);
     
-    this.containerDiv.className = 'new-from-template-dialog-container';
+    this.containerDiv.className = 'dialog-container vertical-form';
     this.contentNode.appendChild(this.containerDiv);
     
     if (props.template && props.template.fields) {

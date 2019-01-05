@@ -44,7 +44,7 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
     this.containerDiv.appendChild(this.usernameField.container);
     this.containerDiv.appendChild(this.passwordField.container);
     
-    this.containerDiv.className = 'connection-dialog-container';
+    this.containerDiv.className = 'dialog-container vertical-form';
     this.contentNode.appendChild(this.containerDiv);
 
     this.appendAcceptButton(props.acceptButton || 'Connect');
