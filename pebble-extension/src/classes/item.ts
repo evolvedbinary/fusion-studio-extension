@@ -10,15 +10,18 @@ export interface PebblePermissions {
 }
 export interface PebbleItem {
   name: string;
-  created?: Date;
+  created: Date;
   owner: string;
   group: string;
-  permissions?: PebblePermissions
+  permissions?: PebblePermissions;
+  acl: string[];
 }
 export interface PebbleDocument extends PebbleItem {
-  lastModified?: Date;
-  binaryDoc?: boolean,
+  lastModified: Date;
+  binaryDoc: boolean,
   content: string;
+  size: number;
+  mediaType: string;
 }
 export interface PebbleCollection extends PebbleItem {
   collections: PebbleCollection[];

@@ -392,7 +392,9 @@ export class PebbleCore {
       // const collection = await PebbleApi.newCollection(connection, uri);
       // if (collection) {
         return this.addCollection(parent, connection, {
+          created: new Date(),
           name: uri,
+          acl: [],
           collections: [],
           documents: [],
           group: 'dba',
@@ -621,6 +623,12 @@ export class PebbleCore {
     const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
       content,
       name,
+      created: new Date(),
+      lastModified: new Date(),
+      binaryDoc: false,
+      acl: [],
+      size: content.length,
+      mediaType: lookup(name) || 'text/plain',
       group: group || 'dba',
       owner: owner || collection.connection.username,
     }, true));

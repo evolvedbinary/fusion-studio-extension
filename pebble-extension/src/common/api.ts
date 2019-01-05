@@ -43,6 +43,7 @@ function readItem(data: any, group = '', owner = ''): PebbleItem {
     group: data['group'] || group,
     owner: data['owner'] || owner,
     name: data['uri'] || '',
+    acl: data['acl'] || [],
     permissions: readPermissions(data['mode'] || ''),
   };
 }
@@ -91,6 +92,8 @@ async function readDocument(data: any, connection?: PebbleConnection, uri?: stri
   return {
     ...readItem(data, 'dba', connection ? connection.username : ''),
     lastModified: readDate(data['lastModified'] || null),
+    size: data['size'] || 0,
+    mediaType: data['mediaType'] || 'text/plain',
     binaryDoc: data.binaryDoc,
     content: (connection && uri) ? await get(connection, '/exist/restxq/pebble/document?uri=' + uri).then(result => result.text()) : '',
   };
