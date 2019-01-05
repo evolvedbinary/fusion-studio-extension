@@ -19,6 +19,7 @@ import { createError, PebbleError } from "../common/error";
 import { asyncForEach } from "../common/asyncForEach";
 import { PebbleStatusEntry } from "../classes/status";
 import { actProperties } from "./commands";
+import { PebblePropertiesDialog } from "./dialogs/properties-dialog";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -196,7 +197,14 @@ export class PebbleCore {
           }
         });
       } else {
-        // TODO: show properties dialog
+        const dialog = new PebblePropertiesDialog({
+          title: 'Properties',
+        });
+        dialog.open().then(result => {
+          if (result) {
+            console.log('properties changed:', result);
+          }
+        });
       }
     }
   }
