@@ -1,4 +1,5 @@
 import * as m from "moment";
+import * as size from "filesize";
 export type IKeyType = 'string' | 'number' | 'date' | 'size';
 export interface IKey<T = any> {
   type: IKeyType;
@@ -37,7 +38,7 @@ export function renderKey(key: string | number | Date | IKey): string {
   switch (keyToRender.type) {
     case 'string': return keyToRender.value;
     case 'number': return keyToRender.value.toString();
-    case 'size': return keyToRender.value.toString() + ' B';
+    case 'size': return size(keyToRender.value);
     case 'date': return m(keyToRender.value).format('DD-MM-YYYY HH:mm');
   }
 }

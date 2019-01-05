@@ -41,7 +41,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
           'Modified': props.item.lastModified,
           'Media Type': props.item.mediaType,
           'Binary': props.item.binaryDoc ? 'Yes' : 'No',
-          'size': props.item.size,
+          'size': { type: 'size', value: props.item.size },
         }, this.keys);
       }
     }
