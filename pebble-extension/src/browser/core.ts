@@ -180,6 +180,17 @@ export class PebbleCore {
     }
   }
 
+  getGroupOwner(item: PebbleItem): string {
+    let result = '';
+    if (item.group) {
+      result = item.group;
+    }
+    if (item.owner) {
+      result += (result ? ':' : '') + item.owner;
+    }
+    return (item.owner || '(n/a)') + ':' + (item.group || '(n/a)');
+  }
+
   status() {
     const nodes = this.topNodes(this.selection);
     if (this.node) {
@@ -192,9 +203,9 @@ export class PebbleCore {
         if (PebbleNode.isConnection(this.node)) {
           this.statusEntry.text = `$(toggle-on) "${this.node.connection.name}" by "${this.node.connection.username}" to ${this.node.connection.server}`;
         } else if (PebbleNode.isCollection(this.node)) {
-          this.statusEntry.text = `$(folder) ${this.node.name}`;
+          this.statusEntry.text = `$(folder) ${this.node.name} (${this.getGroupOwner(this.node.collection)})`;
         } else if (PebbleNode.isDocument(this.node)) {
-          this.statusEntry.text = `$(file${this.node.document.binaryDoc ? '' : '-code'}-o) ${this.node.name}`;
+          this.statusEntry.text = `$(file${this.node.document.binaryDoc ? '' : '-code'}-o) ${this.node.name} (${this.getGroupOwner(this.node.document)})`;
         }
       }
     } else {
