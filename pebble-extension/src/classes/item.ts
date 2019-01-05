@@ -34,14 +34,16 @@ export namespace PebbleItem {
       && 'group' in obj
       && 'permissions' in obj;
   }
-  export function isCollection(obj: any): obj is PebbleItem {
+  export function isCollection(obj: any): obj is PebbleCollection {
     return PebbleItem.is(obj)
       && 'collections' in obj
       && 'documents' in obj;
   }
-  export function isDocument(obj: any): obj is PebbleItem {
+  export function isDocument(obj: any): obj is PebbleDocument {
     return PebbleItem.is(obj)
-      && 'content' in obj
-      && 'lastModified' in obj;
+      && (
+        ('content' in obj && 'lastModified' in obj)
+        || !PebbleItem.isCollection(obj)
+      );
   }
 }
