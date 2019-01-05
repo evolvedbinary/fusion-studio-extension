@@ -17,6 +17,7 @@ export interface PebbleItem {
 }
 export interface PebbleDocument extends PebbleItem {
   lastModified?: Date;
+  binaryDoc?: boolean,
   content: string;
 }
 export interface PebbleCollection extends PebbleItem {

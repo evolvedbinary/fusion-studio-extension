@@ -87,18 +87,19 @@ async function put(connection: PebbleConnection, uri: string, body: any = '', bi
     body: isHeader ? undefined : body
   });
 }
-async function readDocument(data: any, connection: PebbleConnection, uri: string): Promise<PebbleDocument> {
+async function readDocument(data: any, connection?: PebbleConnection, uri?: string): Promise<PebbleDocument> {
   return {
     ...readItem(data),
     lastModified: readDate(data['lastModified'] || null),
-    content: await get(connection, '/exist/restxq/pebble/document?uri=' + uri).then(result => result.text()),
+    binaryDoc: data.binaryDoc,
+    content: connection ? await get(connection, '/exist/restxq/pebble/document?uri=' + uri).then(result => result.text()) : '',
   };
 }
-function readCollection(data: any): PebbleCollection {
+async function readCollection(data: any): Promise<PebbleCollection> {
   return {
     ...readItem(data),
-    collections: (data['collections'] || []).map((collection: any) => readCollection(collection)),
-    documents: (data['documents'] || []).map((docoment: any) => readCollection(docoment)),
+    collections: await Promise.all((data['collections'] || []).map((collection: any) => readCollection(collection)) as Promise<PebbleCollection>[]),
+    documents: await Promise.all((data['documents'] || []).map((docoment: any) => readDocument(docoment)) as Promise<PebbleDocument>[]),
   };
 }
 

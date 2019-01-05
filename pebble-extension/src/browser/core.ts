@@ -194,7 +194,7 @@ export class PebbleCore {
         } else if (PebbleNode.isCollection(this.node)) {
           this.statusEntry.text = `$(folder) ${this.node.name}`;
         } else if (PebbleNode.isDocument(this.node)) {
-          this.statusEntry.text = `$(file) ${this.node.name}`;
+          this.statusEntry.text = `$(file${this.node.document.binaryDoc ? '' : '-code'}-o) ${this.node.name}`;
         }
       }
     } else {
