@@ -18,14 +18,14 @@ import { lookup } from "mime-types";
 import { createError, PebbleError } from "../common/error";
 import { asyncForEach } from "../common/asyncForEach";
 import { PebbleStatusEntry } from "../classes/status";
-import { actStatusClick } from "./commands";
+import { actProperties } from "./commands";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
 const STATUSBAR_ELEMENT = 'pebble-statusbar';
 @injectable()
 export class PebbleCore {
-  statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actStatusClick.id) };
+  statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -171,12 +171,10 @@ export class PebbleCore {
     }
   }
 
-  onStatusClick(nodeId = '') {
-    if (nodeId) {
-      const node = this.node && this.node.id !== nodeId ? this.node : this.getNode(nodeId);
-      if (node) {
-        console.log(node);
-      }
+  showDropertiesDialog(nodeId = '') {
+    const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
+    if (node) {
+      console.log(node);
     }
   }
 
