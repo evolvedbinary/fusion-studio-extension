@@ -15,6 +15,7 @@ import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
 import { PebbleFiles, PebbleFileList } from "../common/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
+import { createError, PebbleError } from "../common/error";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -128,12 +129,16 @@ export class PebbleCore {
       return false;
     }
   }
-  async saveDocuments(node: PebbleCollectionNode, documents: PebbleFileList | FormData): Promise<boolean> {
+  async saveDocuments(node: PebbleCollectionNode, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {
     try {
-      return await PebbleApi.saveDocuments(node.connection, node.collection, documents);
+      const docs = await PebbleApi.saveDocuments(node.connection, node.collection, documents);
+      for (let i = 0; i < docs.length; i++) {
+        await this.addDocumentRecursive(node, node.connection, docs[i]);
+      };
+      return docs;
     } catch (error) {
       console.error('caught:', error);
-      return false;
+      return [];
     }
   }
 
@@ -245,6 +250,51 @@ export class PebbleCore {
   public removeNode(child: PebbleNode, parent?: TreeNode): void {
     CompositeTreeNode.removeChild(parent as CompositeTreeNode, child);
   }
+  parentCollection(uri: string): string {
+    const parent = uri.split(TRAILING_SYMBOL);
+    parent.pop();
+    return parent.join(TRAILING_SYMBOL);
+  }
+  public async addCollectionRecursive(connection: PebbleConnection, uri: string): Promise<PebbleCollectionNode> {
+    const node = this.getNode(this.connectionID(connection) + uri);
+    if (node) {
+      if (PebbleNode.isCollection(node)) {
+        return node;
+      } else {
+        throw createError(PebbleError.unknown);
+      }
+    } else {
+      const parent = await this.addCollectionRecursive(connection, this.parentCollection(uri));
+      // const collection = await PebbleApi.newCollection(connection, uri);
+      // if (collection) {
+        return this.addCollection(parent, connection, {
+          name: uri,
+          collections: [],
+          documents: [],
+          group: '',
+          owner: '',
+        });
+      // } else {
+      //   throw createError(PebbleError.unknown);
+      // }
+    }
+  }
+  public async addDocumentRecursive(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): Promise<PebbleDocumentNode> {
+    const node = {
+      type: 'item',
+      connection,
+      isCollection: false,
+      id: this.itemID(connection, document),
+      name: this.getName(document.name),
+      parent: parent,
+      isNew,
+      selected: false,
+      uri: document.name,
+      document,
+    } as PebbleDocumentNode;
+    this.addNode(node, await this.addCollectionRecursive(connection, this.parentCollection(document.name)));
+    return node;
+  }
   public addDocument(parent: TreeNode, connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): PebbleDocumentNode {
     const node = {
       type: 'item',
@@ -261,8 +311,8 @@ export class PebbleCore {
     this.addNode(node, parent);
     return node;
   }
-  public addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): void {
-    this.addNode({
+  public addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): PebbleCollectionNode {
+    return this.addNode({
       type: 'item',
       connection,
       isCollection: true,
@@ -275,7 +325,7 @@ export class PebbleCore {
       expanded: false,
       collection,
       uri: collection.name,
-    } as PebbleCollectionNode, parent);
+    } as PebbleCollectionNode, parent) as PebbleCollectionNode;
   }
   public addConnection(connection: PebbleConnection, parent?: TreeNode, expanded?: boolean): void {
     this.addNode({
@@ -563,7 +613,16 @@ export class PebbleCore {
         }
         this.saveDocuments(collectionNode, formData);
       } else {
-        this.saveDocument(collectionNode.connection, clean(files, top)[0], this.blob(await this.files.read(files[0]), 'bla'));
+        const documentName = this.collectionDir(collectionNode.uri, clean(files, top)[0]);
+        const content = await this.files.read(files[0]);
+        if (await this.saveDocument(collectionNode.connection, documentName, this.blob(content, lookup(documentName) || 'application/octet-strea,'))) {
+          this.addDocument(collectionNode, collectionNode.connection, {
+            content,
+            name: documentName,
+            group: '',
+            owner: '',
+          });
+        }
       }
     }
     return true;
