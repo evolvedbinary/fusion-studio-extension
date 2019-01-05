@@ -56,15 +56,16 @@ export class PebbleViewService implements WidgetFactory {
     if (toolbar) {
       this.widget.model.toggleNode(toolbar);
     } else {
-      const deleteButton = document.getElementById('pebble-toolbar-button-delete');
-      if (deleteButton) {
-        const enabled = nodes.length && PebbleNode.isConnection(nodes[0]);
-        if (enabled) {
-          deleteButton.removeAttribute('disabled');
-        } else {
-          deleteButton.setAttribute('disabled', 'disabled');
-        }
-      }
+      // const deleteButton = document.getElementById('pebble-toolbar-button-delete');
+      // if (deleteButton) {
+      //   const enabled = nodes.length && PebbleNode.isConnection(nodes[0]);
+      //   if (enabled) {
+      //     deleteButton.removeAttribute('disabled');
+      //   } else {
+      //     deleteButton.setAttribute('disabled', 'disabled');
+      //   }
+      // }
+      this.core.status();
     }
   }
 

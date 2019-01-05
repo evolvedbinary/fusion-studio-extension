@@ -10,9 +10,10 @@ import { PebbleFileList } from "../../common/files";
 export interface PebbleDragOperation {
   destinationContainer: PebbleCollectionNode;
   sourceContainer?: PebbleCollectionNode;
-  destination: string;
-  source?: PebbleItemNode;
+  destination: string[];
+  source: PebbleItemNode[];
   event: React.DragEvent<HTMLElement>;
+  copy: boolean;
 }
 
 export const DRAG_NODE = 'pebble-node';
@@ -33,15 +34,18 @@ export class DragController {
     event.dataTransfer.dropEffect = event.ctrlKey ? 'copy' : 'move';
     const destinationContainer = this.getParentContainer(node as PebbleItemNode);
     if (destinationContainer && PebbleNode.isItem(destinationContainer)) {
-      const source = this.core.getNode(event.dataTransfer.getData(DRAG_NODE)) as PebbleItemNode;
+      const data = event.dataTransfer.getData(DRAG_NODE);
+      const ids: string[] = data ? JSON.parse(data) : [];
+      const source = ids.map(id => this.core.getNode(id) as PebbleItemNode);
       let sourceContainer: PebbleCollectionNode | undefined;
-      let destination = '';
-      if (source) {
-        sourceContainer = source.parent as PebbleCollectionNode;
-        if (destinationContainer.uri.indexOf(source.uri) === 0 || (source.parent && (destinationContainer.id === source.parent.id))) {
+      let destination: string[] = [];
+      if (source.length) {
+        const item = source[0];
+        sourceContainer = item.parent as PebbleCollectionNode;
+        if (destinationContainer.uri.indexOf(item.uri) === 0 || (item.parent && (destinationContainer.id === item.parent.id))) {
           return;
         }
-        destination = source ? destinationContainer.uri + '/' + source.name : '';
+        destination = ids.map(id => destinationContainer.uri + '/' + id.split('/').pop());
       }
       const result: PebbleDragOperation = {
         source,
@@ -49,6 +53,7 @@ export class DragController {
         sourceContainer,
         destinationContainer,
         event,
+        copy: event.dataTransfer.dropEffect === 'copy',
       };
       return result;
     }
@@ -69,7 +74,15 @@ export class DragController {
     if (!PebbleNode.is(node)) {
       return;
     }
-    event.dataTransfer.setData(DRAG_NODE, node.id);
+    let nodes = this.core.topNodes(this.core.selection);
+    if (nodes.indexOf(node as PebbleItemNode) < 0) {
+      nodes = [node as PebbleItemNode];
+    }
+    if (nodes.length > 0) {
+      event.dataTransfer.setData(DRAG_NODE, JSON.stringify(nodes.map(node => node.id)));
+    } else {
+      event.dataTransfer.setData(DRAG_NODE, '[]');
+    }
   }
   public onDragEnter(node: TreeNode | undefined, event: React.DragEvent<HTMLElement>): void {
     if (!node) {
@@ -137,7 +150,7 @@ export class DragController {
     this.dragOperation(event);
     const container = this.checkOperation(node, event);
     if (container) {
-      if (event.dataTransfer.items.length) {
+      if (event.dataTransfer.files.length) {
         const entries: WebKitEntry[] = [];
         for (let i = 0; i < event.dataTransfer.items.length; i++) {
           const entry = event.dataTransfer.items[i].webkitGetAsEntry();
@@ -145,24 +158,7 @@ export class DragController {
             entries.push(entry);
           }
         }
-        this.listFiles(entries).then(files => {
-          if (Object.keys(files).length > 0) {
-            this.core.saveDocuments(container.destinationContainer, files)
-          } else {
-            const documentName = this.core.collectionDir(container.destinationContainer.uri, Object.keys(files)[0]);
-            const content = '';
-            this.core.saveDocument(container.destinationContainer.connection, documentName, files[Object.keys(files)[0]]).then(ok => {
-              if (ok) {
-                this.core.addDocument(container.destinationContainer, container.destinationContainer.connection, {
-                  content,
-                  name: documentName,
-                  group: '',
-                  owner: '',
-                });
-              }
-            });
-          }
-        });
+        this.listFiles(entries).then(files => this.core.saveDocuments(container.destinationContainer, files));
       } else {
         this.core.move(container);
       }
