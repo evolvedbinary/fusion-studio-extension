@@ -37,11 +37,11 @@ function readPermissions(data: string): PebblePermissions {
     other: readPermission(data.substr(6, 3)),
   }
 }
-function readItem(data: any): PebbleItem {
+function readItem(data: any, group = '', owner = ''): PebbleItem {
   return {
     created: readDate(data['created'] || null),
-    group: data['group'] || '',
-    owner: data['owner'] || '',
+    group: data['group'] || group,
+    owner: data['owner'] || owner,
     name: data['uri'] || '',
     permissions: readPermissions(data['mode'] || ''),
   };
@@ -89,17 +89,17 @@ async function put(connection: PebbleConnection, uri: string, body: any = '', bi
 }
 async function readDocument(data: any, connection?: PebbleConnection, uri?: string): Promise<PebbleDocument> {
   return {
-    ...readItem(data),
+    ...readItem(data, 'dba', connection ? connection.username : ''),
     lastModified: readDate(data['lastModified'] || null),
     binaryDoc: data.binaryDoc,
-    content: connection ? await get(connection, '/exist/restxq/pebble/document?uri=' + uri).then(result => result.text()) : '',
+    content: (connection && uri) ? await get(connection, '/exist/restxq/pebble/document?uri=' + uri).then(result => result.text()) : '',
   };
 }
-async function readCollection(data: any): Promise<PebbleCollection> {
+async function readCollection(data: any, connection?: PebbleConnection): Promise<PebbleCollection> {
   return {
-    ...readItem(data),
-    collections: await Promise.all((data['collections'] || []).map((collection: any) => readCollection(collection)) as Promise<PebbleCollection>[]),
-    documents: await Promise.all((data['documents'] || []).map((docoment: any) => readDocument(docoment)) as Promise<PebbleDocument>[]),
+    ...readItem(data, 'dba', connection ? connection.username : ''),
+    collections: await Promise.all((data['collections'] || []).map((collection: any) => readCollection(collection, connection)) as Promise<PebbleCollection>[]),
+    documents: await Promise.all((data['documents'] || []).map((docoment: any) => readDocument(docoment, connection)) as Promise<PebbleDocument>[]),
   };
 }
 
@@ -109,7 +109,7 @@ async function load(connection: PebbleConnection, uri: string): Promise<PebbleCo
     switch (result.status) {
       case 200:
         const object = await result.json();
-        return 'collections' in object ? readCollection(object) : readDocument(object, connection, uri);;
+        return 'collections' in object ? readCollection(object, connection) : readDocument(object, connection, uri);;
       case 401: throw createError(PebbleError.permissionDenied, result);
       default: throw createError(PebbleError.permissionDenied, result)
     }
@@ -136,7 +136,7 @@ async function saveDocuments(connection: PebbleConnection, collection: PebbleCol
   try {
     const result = await put(connection, '/exist/restxq/pebble/document?uri=' + collection.name, documents);
     switch (result.status) {
-      case 201: return Promise.all((await result.json() as any[]).map(doc => readItem(doc) as PebbleDocument));
+      case 201: return Promise.all((await result.json() as any[]).map(doc => readItem(doc, connection ? connection.username : '') as PebbleDocument));
       case 401: throw createError(PebbleError.permissionDenied, result);
       default: throw createError(PebbleError.unknown, result);
     }
@@ -151,7 +151,7 @@ async function newCollection(connection: PebbleConnection, uri: string): Promise
     switch (result.status) {
       case 201:
         const json = await result.json();
-        return readCollection(json);
+        return readCollection(json, connection);
       case 401: throw createError(PebbleError.permissionDenied, result);
       default: throw createError(PebbleError.unknown, result);
     }

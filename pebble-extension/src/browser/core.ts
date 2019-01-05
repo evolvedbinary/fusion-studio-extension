@@ -366,8 +366,8 @@ export class PebbleCore {
           name: uri,
           collections: [],
           documents: [],
-          group: '',
-          owner: '',
+          group: 'dba',
+          owner: connection.username,
         });
       // } else {
       //   throw createError(PebbleError.unknown);
@@ -589,7 +589,12 @@ export class PebbleCore {
   }
 
   public async createDocument(collection: PebbleCollectionNode, name: string, content = '', group = '', owner = '') {
-    const doc = await this.openDocument(this.addDocument(collection, collection.connection, { content, name, group, owner }, true));
+    const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
+      content,
+      name,
+      group: group || 'dba',
+      owner: owner || collection.connection.username,
+    }, true));
     if (content !== '') {
       doc.editor.document.setDirty(true);
       doc.editor.document.contentChanges.push({
