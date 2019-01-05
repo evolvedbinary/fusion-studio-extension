@@ -46,13 +46,19 @@ export function renderKey(key: string | number | Date | IKey): string {
 export function addKey(index: string, key: string | number | Date | IKey, element: IKeysElement) {
   const row = document.createElement('tr');
   const label = document.createElement('td');
-  const value = document.createElement('td');
-  label.innerHTML = index;
-  value.innerHTML = renderKey(key);
   row.append(label);
-  row.append(value);
+  if (index[0] === '-' && key === '-') {
+    label.colSpan = 2;
+    label.append(document.createElement('hr'));
+    element.data[index] = { row, label, value: label };
+  } else {
+    const value = document.createElement('td');
+    label.innerHTML = index;
+    value.innerHTML = renderKey(key);
+    row.append(value);
+    element.data[index] = { row, label, value };
+  }
   element.container.append(row);
-  element.data[index] = { row, label, value }
 }
 export function createKeys(keys: IKeys): IKeysElement {
   const result: IKeysElement = {
