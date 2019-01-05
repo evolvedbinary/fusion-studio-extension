@@ -34,11 +34,11 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     if (props.item) {
       addKeys({
         'Name': props.item.name,
-        'Created': props.item.created,
+        'Created': { type: 'date', value: props.item.created },
       }, this.keys);
       if (PebbleItem.isDocument(props.item)) {
         addKeys({
-          'Modified': props.item.lastModified,
+          'Modified': { type: 'date', value: props.item.lastModified },
           'Media Type': props.item.mediaType,
           'Binary': props.item.binaryDoc ? 'Yes' : 'No',
           'size': { type: 'size', value: props.item.size },
