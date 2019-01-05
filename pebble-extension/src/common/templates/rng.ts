@@ -15,7 +15,7 @@ export const PebbleTemplateRN: PebbleTemplate<PebbleTemplateRNParams> = {
     },
   },
   defaults: {
-    type: 'xml',
+    type: 'compact',
   },
   ext: ({ type }: PebbleTemplateRNParams) => type === 'xml' ? 'rng' : 'rnc',
   execute: ({ type }: PebbleTemplateRNParams) => type === 'xml' ? `<?xml version="1.0" encoding="UTF-8"?>
