@@ -11,7 +11,7 @@ import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
-import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
+import { PebbleConnectionDialog, NewFromTemplateDialog } from "./dialogs";
 import { PebbleFiles, PebbleFileList } from "../common/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
@@ -175,6 +175,29 @@ export class PebbleCore {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
     if (node) {
       console.log(node);
+      if (PebbleNode.isConnection(node)) {
+        const dialog = new PebbleConnectionDialog({
+          title: 'Edit connection',
+          acceptButton: 'Update',
+          ...node.connection,
+        });
+        dialog.open().then(result => {
+          if (result) {
+            this.empty(node);
+            node.expanded = false;
+            node.loading = false;
+            node.loaded = false;
+            (node as any).id = this.connectionID(result.connection);
+            (node as any).name = result.connection.name;
+            node.connection = result.connection;
+            node.selected = false;
+            node.uri = result.connection.server;
+            this.connect(node, result.connection);
+          }
+        });
+      } else {
+        // TODO: show properties dialog
+      }
     }
   }
 
@@ -545,7 +568,7 @@ export class PebbleCore {
     if (!this._model) {
       return;
     }
-    const dialog = new NewConnectionDialog({
+    const dialog = new PebbleConnectionDialog({
       title: 'New connection',
       name: 'Localhost',
       server: 'http://localhost:8080',

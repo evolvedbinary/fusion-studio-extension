@@ -5,18 +5,20 @@ import { IDialogField, createField } from "../../classes/dialog-field";
 
 @injectable()
 export class PebbleConnectionDialogProps extends DialogProps {
-  name?: string;
-  server?: string;
-  username?: string;
-  password?: string;
+  readonly acceptButton?: string;
+  readonly cancelButton?: string;
+  readonly name?: string;
+  readonly server?: string;
+  readonly username?: string;
+  readonly password?: string;
 }
 
-export interface NewConnectionDialogResult {
+export interface PebbleConnectionDialogResult {
   connection: PebbleConnection;
   autoConnect?: boolean;
 }
 
-export class NewConnectionDialog extends AbstractDialog<NewConnectionDialogResult> {
+export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialogResult> {
 
   protected readonly usernameField: IDialogField;
   protected readonly passwordField: IDialogField;
@@ -42,14 +44,14 @@ export class NewConnectionDialog extends AbstractDialog<NewConnectionDialogResul
     this.containerDiv.appendChild(this.usernameField.container);
     this.containerDiv.appendChild(this.passwordField.container);
     
-    this.containerDiv.className = 'new-connection-dialog-container';
+    this.containerDiv.className = 'connection-dialog-container';
     this.contentNode.appendChild(this.containerDiv);
 
-    this.appendAcceptButton('Connect');
-    this.appendCloseButton('Cancel');
+    this.appendAcceptButton(props.acceptButton || 'Connect');
+    this.appendCloseButton(props.cancelButton || 'Cancel');
   }
 
-  get value(): NewConnectionDialogResult {
+  get value(): PebbleConnectionDialogResult {
     return {
         connection: {
           name: this.nameField.input.value || '',
@@ -61,7 +63,7 @@ export class NewConnectionDialog extends AbstractDialog<NewConnectionDialogResul
       };
   }
 
-  protected isValid(value: NewConnectionDialogResult, mode: DialogMode): DialogError {
+  protected isValid(value: PebbleConnectionDialogResult, mode: DialogMode): DialogError {
     return !!(
       value.connection.name &&
       value.connection.server
