@@ -44,6 +44,11 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
           'size': { type: 'size', value: props.item.size },
         }, this.keys);
       }
+      addKeys({
+        '-owner/group': '-',
+        'Owner': props.item.owner,
+        'Group': props.item.group,
+      }, this.keys);
     }
 
     // this.nameField = createField('Name:', 'name-field');
