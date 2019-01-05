@@ -1,10 +1,13 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
+import { IKeysElement, createKeys, addKeys } from "../../classes/keys";
+import { PebbleItem } from "../../classes/item";
 
 @injectable()
 export class PebblePropertiesDialogProps extends DialogProps {
   readonly acceptButton?: string;
   readonly cancelButton?: string;
+  readonly item?: PebbleItem;
   // readonly name?: string;
   // readonly server?: string;
   // readonly username?: string;
@@ -18,7 +21,7 @@ export interface PebblePropertiesDialogResult {
 
 export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialogResult> {
 
-  // protected readonly usernameField: IDialogField;
+  protected readonly keys: IKeysElement = createKeys({});
   // protected readonly passwordField: IDialogField;
   // protected readonly serverField: IDialogField;
   // protected readonly nameField: IDialogField;
@@ -28,6 +31,20 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     @inject(PebblePropertiesDialogProps) protected readonly props: PebblePropertiesDialogProps
   ) {
     super(props);
+    if (props.item) {
+      addKeys({
+        'Name': props.item.name,
+        'Created': props.item.created,
+      }, this.keys);
+      if (PebbleItem.isDocument(props.item)) {
+        addKeys({
+          'Modified': props.item.lastModified,
+          'Media Type': props.item.mediaType,
+          'Binary': props.item.binaryDoc ? 'Yes' : 'No',
+          'size': props.item.size,
+        }, this.keys);
+      }
+    }
 
     // this.nameField = createField('Name:', 'name-field');
     // this.serverField = createField('Server:', 'server-field');
@@ -40,7 +57,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     // this.containerDiv.appendChild(this.nameField.container);
     // this.containerDiv.appendChild(this.serverField.container);
     // this.containerDiv.appendChild(this.usernameField.container);
-    // this.containerDiv.appendChild(this.passwordField.container);
+    this.containerDiv.appendChild(this.keys.container);
     
     this.containerDiv.className = 'dialog-container';
     this.contentNode.appendChild(this.containerDiv);

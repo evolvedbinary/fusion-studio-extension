@@ -13,6 +13,7 @@
   "dependencies": {
     "@theia/core": "^0.3.8",
     "mime-types": "^2.1.21",
+    "moment": "^2.23.0",
     "typescript": "^3.1.5",
     "xml-js": "^1.6.8"
   },
