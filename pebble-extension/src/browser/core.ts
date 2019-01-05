@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from "../classes/node";
-import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar } from "@theia/core/lib/browser";
+import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
@@ -17,11 +17,15 @@ import { isArray } from "util";
 import { lookup } from "mime-types";
 import { createError, PebbleError } from "../common/error";
 import { asyncForEach } from "../common/asyncForEach";
+import { PebbleStatusEntry } from "../classes/status";
+import { actStatusClick } from "./commands";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
+const STATUSBAR_ELEMENT = 'pebble-statusbar';
 @injectable()
 export class PebbleCore {
+  statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actStatusClick.id) };
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -167,13 +171,40 @@ export class PebbleCore {
     }
   }
 
+  onStatusClick(nodeId = '') {
+    if (nodeId) {
+      const node = this.node && this.node.id !== nodeId ? this.node : this.getNode(nodeId);
+      if (node) {
+        console.log(node);
+      }
+    }
+  }
+
   status() {
-    // const nodes = this.topNodes(this.selection);
-    // if (nodes.length) {
-    //   console.log('selection:', nodes);
-    // } else {
-    //   console.log('selection: 0');
-    // }
+    const nodes = this.topNodes(this.selection);
+    if (this.node) {
+      this.statusEntry.active = true;
+      if (nodes.length > 1) {
+        this.statusEntry.text = 'selection: ' + nodes.length.toString();
+        this.statusEntry.arguments = [];
+      } else {
+        this.statusEntry.arguments = [this.node.id];
+        if (PebbleNode.isConnection(this.node)) {
+          this.statusEntry.text = `$(toggle-on) "${this.node.connection.name}" by "${this.node.connection.username}" to ${this.node.connection.server}`;
+        } else if (PebbleNode.isCollection(this.node)) {
+          this.statusEntry.text = `$(folder) ${this.node.name}`;
+        } else if (PebbleNode.isDocument(this.node)) {
+          this.statusEntry.text = `$(file) ${this.node.name}`;
+        }
+      }
+    } else {
+      this.statusEntry.active = false;
+    }
+    if (this.statusEntry.active) {
+      this.statusBar.setElement(STATUSBAR_ELEMENT, this.statusEntry);
+    } else {
+      this.statusBar.removeElement(STATUSBAR_ELEMENT);
+    }
   }
 
   // topItems(items: PebbleItem[]): PebbleItem[] {

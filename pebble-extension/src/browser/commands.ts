@@ -29,6 +29,11 @@ export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_new'];
 export const CONTEXT_MENU_NEW_SUBMENU = [...CONTEXT_MENU_NEW, 'a_from_template'];
 export const CONTEXT_MENU_EDIT = [...CONTEXT_MENU, 'd_edit'];
 export const MENU = CommonMenus.FILE;
+export const actStatusClick: PebbleAction = {
+  id: 'status-click',
+  label: 'Status click',
+  execute: core => core.onStatusClick.bind(core),
+};
 export const actConnect: PebbleAction = {
   id: 'connect',
   order: 'a',
@@ -110,6 +115,7 @@ export const actDelete: PebbleAction = {
   visible: core => () => check.selected(core) && !check.connection(core),
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [
+  actStatusClick,
   actConnect,
   actDisconnect,
   actNewCollection,
