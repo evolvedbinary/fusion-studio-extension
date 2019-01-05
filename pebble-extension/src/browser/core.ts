@@ -131,6 +131,7 @@ export class PebbleCore {
   }
   async saveDocuments(node: PebbleCollectionNode, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {
     try {
+      this.startLoading(node);
       const docs = await PebbleApi.saveDocuments(node.connection, node.collection, documents);
       // const topDir = this.getTopDir(docs.map(doc => doc.name));
       // const items = this.cleanItems(docs, topDir);
@@ -144,6 +145,7 @@ export class PebbleCore {
       //     await this.addCollectionRecursive(node.connection, item.name);
       //   }
       // };
+      this.endLoading(node);
       this.load(node as CompositeTreeNode, node.connection, node.uri);
       return docs;
     } catch (error) {
@@ -403,6 +405,14 @@ export class PebbleCore {
     if (PebbleNode.is(node)) {
       if (node.loading) {
         return false;
+      } else {
+        let parentNode = node.parent;
+        while (PebbleNode.isItem(parentNode)) {
+          if (parentNode.loading) {
+            return false;
+          }
+          parentNode = parentNode.parent;
+        }
       }
       node.loading = true;
       this.refresh();
@@ -519,9 +529,12 @@ export class PebbleCore {
   }
 
   public async openDocument(node: PebbleDocumentNode): Promise<any> {
-    const result = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
-    node.loaded = true;
-    return result;
+    if (this.startLoading(node)) {
+      const result = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
+      this.endLoading(node);
+      node.loaded = true;
+      return result;
+    }
   }
 
   public async newItemFromTemplate(template: PebbleTemplate): Promise<boolean> {

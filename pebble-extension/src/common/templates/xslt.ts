@@ -17,7 +17,7 @@ export const PebbleTemplateXLST: PebbleTemplate<PebbleTemplateXLSTParams> = {
     },
   },
   defaults: {
-    version: '1',
+    version: '2',
   },
   ext: () => 'xslt',
   execute: ({ version }: PebbleTemplateXLSTParams) => {

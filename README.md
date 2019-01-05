@@ -9,47 +9,62 @@ If you don't know what Theia is, then you likely want the full [Pebble IDE appli
 ## Getting started:
 ### Requirements:
 * [Yarn](https://yarnpkg.com/lang/en/docs/install/#install-via-chocolatey)
-* [Node 8](https://nodejs.org/dist/v8.11.4/) (it should be install it with Yarn)
-### Install:
+* [Node 8](https://nodejs.org/dist/v8.11.4/) (it should be installed with Yarn)
+### Install and build:
 Clone the repo, and build the source:
 ```bash
 $ git clone https://github.com/ccheraa/pebble-extension.git
 $ cd pebble-extension
 $ yarn
 ```
-To compile css file run:
+### Test the extension
+#### Test on the browser
+* run this after install, and run it right after switching from Electron to the browser:
 ```bash
-$ yarn run sass
+$ yarn run rebuild:browser
 ```
-To compile it upon change run:
+* Start the IDE:
+```bash
+$ cd browser-app
+$ yarn start
+```
+#### Test Electron app
+* run this after install, and run it right after switching from the browser to Electron:
+```bash
+$ yarn run rebuild:electron
+```
+* Start the IDE:
+```bash
+$ cd electron-app
+$ yarn start
+```
+### Developing
+To watch for files changes:
+* To compile css:
 ```bash
 $ yarn run sass:watch
 ```
-### Build & run
-Build the extension:
+* To compile the extension
 ```bash
 $ cd pebble-extension
 $ yarn watch
 ```
-#### Test on the browser
-* Build the IDE:
+* To compile the browser app
 ```bash
 $ cd browser-app
 $ yarn watch
 ```
-* Start the IDE:
+* To compile Electron app
 ```bash
 $ cd browser-app
-$ yarn start
-```
-#### Test on desktop
-* Build the IDE:
-```bash
-$ cd electron-app
 $ yarn watch
 ```
-* Start the IDE:
+
+**Extra**
+- You can debug both the browser and Electron apps using VS Code launch configurations:
+  - `"Start Browser Backend"`
+  - `"Start Electron Backend"`
+- You can compile css file at anytime by running:
 ```bash
-$ cd electron-app
-$ yarn start
+$ yarn run sass
 ```
