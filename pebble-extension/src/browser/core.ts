@@ -298,7 +298,6 @@ export class PebbleCore {
   public addNode(child: PebbleNode, parent?: TreeNode): PebbleNode {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
     this._model && this._model.refresh();
-    console.log('-------------------ADDED:', child.uri);
     return this.getNode(child.id) as PebbleNode;
   }
   public removeNode(child: PebbleNode, parent?: TreeNode): void {
@@ -334,7 +333,6 @@ export class PebbleCore {
     }
   }
   public async addDocumentRecursive(connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): Promise<PebbleDocumentNode> {
-    console.log(document);
     const parent = await this.addCollectionRecursive(connection, this.parentCollection(document.name));
     return this.addDocument(parent, connection, document);
   }
