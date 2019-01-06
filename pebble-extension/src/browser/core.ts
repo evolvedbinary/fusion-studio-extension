@@ -199,6 +199,7 @@ export class PebbleCore {
       } else {
         const dialog = new PebblePropertiesDialog({
           title: 'Properties',
+          item: PebbleNode.isCollection(this.node) ? this.node.collection : (PebbleNode.isDocument(this.node) ? this.node.document : undefined),
         });
         dialog.open().then(result => {
           if (result) {

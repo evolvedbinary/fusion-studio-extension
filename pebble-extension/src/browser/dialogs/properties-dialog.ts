@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
-import { IKeysElement, createKeys, addKeys } from "../../classes/keys";
+import { IKeysElement, createKeys, addKeys, addKey } from "../../classes/keys";
 import { PebbleItem } from "../../classes/item";
 
 @injectable()
@@ -41,8 +41,10 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
           'Modified': { type: 'date', value: props.item.lastModified },
           'Media Type': props.item.mediaType,
           'Binary': props.item.binaryDoc ? 'Yes' : 'No',
-          'size': { type: 'size', value: props.item.size },
         }, this.keys);
+        if (props.item.binaryDoc) {
+          addKey('size', { type: 'size', value: props.item.size }, this.keys);
+        }
       }
       addKeys({
         '-owner/group': '-',
@@ -64,7 +66,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     // this.containerDiv.appendChild(this.usernameField.container);
     this.containerDiv.appendChild(this.keys.container);
     
-    this.containerDiv.className = 'dialog-container';
+    this.containerDiv.className = 'dialog-container properties-dialog-container';
     this.contentNode.appendChild(this.containerDiv);
 
     this.appendAcceptButton(props.acceptButton || 'Save');

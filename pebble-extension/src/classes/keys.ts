@@ -55,6 +55,8 @@ export function addKey(index: string, key: string | number | Date | IKey, elemen
     const value = document.createElement('td');
     label.innerHTML = index;
     value.innerHTML = renderKey(key);
+    label.className = 'label';
+    value.className = 'value';
     row.append(value);
     element.data[index] = { row, label, value };
   }

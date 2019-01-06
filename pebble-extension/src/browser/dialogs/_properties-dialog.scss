@@ -1,1 +1,17 @@
-.properties-dialog-container {}
+.properties-dialog-container {
+  table {
+    width: 100%;
+    tr {
+      td {
+        &.label {
+          padding-right: 8px;
+          white-space: nowrap;
+          font-weight: bold;
+        }
+        &.value {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
