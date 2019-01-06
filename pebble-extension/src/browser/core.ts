@@ -149,6 +149,7 @@ export class PebbleCore {
       this.load(node as CompositeTreeNode, node.connection, node.uri);
       return docs;
     } catch (error) {
+      this.endLoading(node);
       console.error('caught:', error);
       return [];
     }
