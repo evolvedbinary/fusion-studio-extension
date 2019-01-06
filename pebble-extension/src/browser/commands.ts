@@ -72,7 +72,7 @@ export const actNewDocument: PebbleAction = {
 export const actUploadDocument: PebbleAction = {
   id: 'upload-document',
   order: 'c2',
-  label: 'Upload document',
+  label: 'Upload document(s)',
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-upload',
   execute: core => () => core.uploadItem(),
