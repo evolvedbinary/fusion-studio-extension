@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { IKeysElement, createKeys, addKeys, addKey } from "../../classes/keys";
-import { PebbleItem } from "../../classes/item";
+import { PebbleItem, PebblePermissions, samePermissions } from "../../classes/item";
 import { PebblePermissionsEditor } from "./permissions-editor";
 
 @injectable()
@@ -16,8 +16,8 @@ export class PebblePropertiesDialogProps extends DialogProps {
 }
 
 export interface PebblePropertiesDialogResult {
-  // connection: PebbleProperties;
-  // autoConnect?: boolean;
+  permissions?: PebblePermissions;
+  binary: boolean;
 }
 
 export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialogResult> {
@@ -27,7 +27,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   // protected readonly serverField: IDialogField;
   // protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
-  protected readonly permissions: PebblePermissionsEditor = new PebblePermissionsEditor();
+  protected readonly permissionsEditor: PebblePermissionsEditor = new PebblePermissionsEditor();
 
   constructor(
     @inject(PebblePropertiesDialogProps) protected readonly props: PebblePropertiesDialogProps,
@@ -54,8 +54,8 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
         'Group': props.item.group,
         '-separator': '-',
       }, this.keys);
-      this.permissions.permissions = props.item.permissions;
-      console.log(this.permissions);
+      this.permissionsEditor.permissions = props.item.permissions;
+      console.log(this.permissionsEditor);
     }
 
     // this.nameField = createField('Name:', 'name-field');
@@ -70,7 +70,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     // this.containerDiv.appendChild(this.serverField.container);
     // this.containerDiv.appendChild(this.usernameField.container);
     this.containerDiv.appendChild(this.keys.container);
-    this.containerDiv.appendChild(this.permissions.container);
+    this.containerDiv.appendChild(this.permissionsEditor.container);
     
     this.containerDiv.className = 'dialog-container properties-dialog-container';
     this.contentNode.appendChild(this.containerDiv);
@@ -81,26 +81,18 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
 
   get value(): PebblePropertiesDialogResult {
     return {
-        // connection: {
-        //   name: this.nameField.input.value || '',
-        //   server: this.serverField.input.value || '',
-        //   username: this.usernameField.input.value || '',
-        //   password: this.passwordField.input.value || '',
-        // },
-        // autoConnect: false,
-      };
+      permissions: this.permissionsEditor.permissions,
+      binary: PebbleItem.isDocument(this.props.item) && this.props.item.binaryDoc,
+    };
   }
 
   protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
-    // return !!(
-    //   value.connection.name &&
-    //   value.connection.server
-    // );
-    return super.isValid(value, mode);
+    return (PebbleItem.is(this.props.item) && !samePermissions(this.props.item.permissions, value.permissions)) || PebbleItem.isDocument(this.props.item) && (this.props.item.binaryDoc !== this.props.item.binaryDoc);
   }
 
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
+    this.permissionsEditor.addUpdateListeners(this.addUpdateListener.bind(this));
     // this.addUpdateListener(this.nameField.input, 'input');
     // this.addUpdateListener(this.serverField.input, 'input');
     // this.addUpdateListener(this.usernameField.input, 'input');

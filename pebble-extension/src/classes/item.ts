@@ -62,6 +62,26 @@ export namespace PebbleItem {
 
 export const DEFAULT_PERMISSIONS = readPermissions('');
 
+export function fromPermissions(data?: PebblePermissions): PebblePermissions {
+  data = data || DEFAULT_PERMISSIONS;
+  return {
+    group: {
+      execute: data.group.execute,
+      read: data.group.read,
+      write: data.group.write,
+    },
+    user: {
+      execute: data.user.execute,
+      read: data.user.read,
+      write: data.user.write,
+    },
+    other: {
+      execute: data.other.execute,
+      read: data.other.read,
+      write: data.other.write,
+    },
+  }
+}
 export function readDate(data: string): Date {
   return new Date(data);
 }
@@ -82,7 +102,20 @@ export function readPermission(data: string): PebblePermission {
     execute: data[2] === 'x',
   }
 }
-export function writePermissions(data: PebblePermissions): string {
+export function samePermissions(data1?: PebblePermissions, data2?: PebblePermissions): boolean {
+  data1 = data1 || DEFAULT_PERMISSIONS;
+  data2 = data2 || DEFAULT_PERMISSIONS;
+  for (let scope of PERMISSION_SCOPES) {
+    for (let type of PERMISSION_TYPES) {
+      if ((data1 as any)[scope][type] !== (data2 as any)[scope][type]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+export function writePermissions(data?: PebblePermissions): string {
+  data = data || DEFAULT_PERMISSIONS;
   return writePermission(data.user) + writePermission(data.group) + writePermission(data.other);
 }
 export function readPermissions(data: string): PebblePermissions {

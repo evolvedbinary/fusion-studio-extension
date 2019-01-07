@@ -1,5 +1,4 @@
-import { PebblePermissions, readPermissions, writePermissions, PebblePermissionCheckboxes, PERMISSION_SCOPES, PERMISSION_TYPES } from "../../classes/item";
-import { DEFAULT_PERMISSIONS } from "../../classes/item";
+import { PebblePermissions, readPermissions, writePermissions, PebblePermissionCheckboxes, PERMISSION_SCOPES, PERMISSION_TYPES, fromPermissions, samePermissions } from "../../classes/item";
 
 function createCheckboxes(): PebblePermissionCheckboxes {
   const base: PebblePermissionCheckboxes = {};
@@ -16,6 +15,7 @@ function createCheckboxes(): PebblePermissionCheckboxes {
 export class PebblePermissionsEditor {
   public container: HTMLDivElement = document.createElement('div');
   public table: HTMLTableElement = document.createElement('table');
+  private _permissions: PebblePermissions = fromPermissions();
   public rows: {
     [K: string]: HTMLTableRowElement;
   } = {};
@@ -25,7 +25,8 @@ export class PebblePermissionsEditor {
     }
   } = {};
   private checks: PebblePermissionCheckboxes = createCheckboxes();
-  constructor (private _permissions: PebblePermissions = DEFAULT_PERMISSIONS) {
+  constructor (permissions?: PebblePermissions) {
+    this.permissions = permissions;
     this.write(this._permissions);
     this.rows.label = document.createElement('tr');
     this.table.append(this.rows.label);
@@ -51,18 +52,27 @@ export class PebblePermissionsEditor {
     this.container.append(this.table);
   }
   public get permissions(): PebblePermissions | undefined {
+    this.read();
     return this._permissions;
   }
   public set permissions(permissions: PebblePermissions | undefined) {
-    this._permissions = permissions || DEFAULT_PERMISSIONS;
+    if (!samePermissions(this._permissions, permissions)) {
+      this._permissions = fromPermissions(permissions);
+    }
     this.write(this._permissions);
   }
   public get strPermissions(): string {
-    this.read(this._permissions);
     return writePermissions(this._permissions);
   }
   public set strPermissions(permissions: string) {
     this.permissions = readPermissions(permissions);
+  }
+  public addUpdateListeners(add: (element: HTMLElement, type: any, useCapture?: boolean) => void) {
+    for (let scope of PERMISSION_SCOPES) {
+      for (let type of PERMISSION_TYPES) {
+        add(this.checks[scope][type], 'input');
+      }
+    }
   }
   private write(permissions: PebblePermissions) {
     for (let scope of PERMISSION_SCOPES) {
@@ -71,10 +81,10 @@ export class PebblePermissionsEditor {
       }
     }
   }
-  private read(permissions: PebblePermissions) {
+  private read() {
     for (let scope of PERMISSION_SCOPES) {
       for (let type of PERMISSION_TYPES) {
-        (permissions as any)[scope][type] = this.checks[scope][type].checked;
+        (this._permissions as any)[scope][type] = this.checks[scope][type].checked;
       }
     }
   }
