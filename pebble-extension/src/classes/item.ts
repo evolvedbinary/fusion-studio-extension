@@ -1,12 +1,20 @@
-export interface PebblePermission {
-  read: boolean,
-  write: boolean,
-  execute: boolean,
+export type PebblePermissionType = 'read' | 'write' | 'execute';
+export const PERMISSION_TYPES = ['read', 'write', 'execute'];
+export type PebblePermissionScope = 'user' | 'group' | 'other';
+export const PERMISSION_SCOPES = ['user', 'group', 'other'];
+
+export type PebblePermissionCheckboxes = {
+  [K: string]: {
+    [P: string]: HTMLInputElement;
+  }
 }
-export interface PebblePermissions {
-  user: PebblePermission,
-  group: PebblePermission,
-  other: PebblePermission,
+
+
+export type PebblePermission = {
+  [K in PebblePermissionType]: boolean;
+}
+export type PebblePermissions = {
+  [K in PebblePermissionScope]: PebblePermission;
 }
 export interface PebbleItem {
   name: string;
@@ -51,3 +59,54 @@ export namespace PebbleItem {
       );
   }
 }
+
+export const DEFAULT_PERMISSIONS = readPermissions('');
+
+export function readDate(data: string): Date {
+  return new Date(data);
+}
+export function writePermission(data: PebblePermission): string {
+  return (data.read ? 'r' : '-') + (data.write ? 'w' : '-') + (data.execute ? 'x' : '-');
+}
+export function readPermission(data: string): PebblePermission {
+  if (data.length !== 3) {
+    return {
+      read: false,
+      write: false,
+      execute: false,
+    }
+  }
+  return {
+    read: data[0] === 'r',
+    write: data[1] === 'w',
+    execute: data[2] === 'x',
+  }
+}
+export function writePermissions(data: PebblePermissions): string {
+  return writePermission(data.user) + writePermission(data.group) + writePermission(data.other);
+}
+export function readPermissions(data: string): PebblePermissions {
+  if (data.length !== 9) {
+    return {
+      user: readPermission(''),
+      group: readPermission(''),
+      other: readPermission(''),
+    }
+  }
+  return {
+    user: readPermission(data.substr(0, 3)),
+    group: readPermission(data.substr(3, 3)),
+    other: readPermission(data.substr(6, 3)),
+  }
+}
+export function readItem(data: any, group = '', owner = ''): PebbleItem {
+  return {
+    created: readDate(data['created'] || null),
+    group: data['group'] || group,
+    owner: data['owner'] || owner,
+    name: data['uri'] || '',
+    acl: data['acl'] || [],
+    permissions: readPermissions(data['mode'] || ''),
+  };
+}
+

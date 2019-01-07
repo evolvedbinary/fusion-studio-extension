@@ -1,4 +1,4 @@
-import { PebbleCollection, PebblePermission, PebblePermissions, PebbleDocument, PebbleItem } from "../classes/item";
+import { PebbleCollection, PebbleDocument, readItem, readDate } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
 import { createError, PebbleError } from "./error";
 import { PebbleFileList } from "./files";
@@ -6,47 +6,6 @@ import { PebbleFileList } from "./files";
 
 // const TEMP = '';
 
-function readDate(data: string): Date {
-  return new Date(data);
-}
-function readPermission(data: string): PebblePermission {
-  if (data.length !== 3) {
-    return {
-      read: false,
-      write: false,
-      execute: false,
-    }
-  }
-  return {
-    read: data[0] === 'r',
-    write: data[1] === 'w',
-    execute: data[2] === 'x',
-  }
-}
-function readPermissions(data: string): PebblePermissions {
-  if (data.length !== 9) {
-    return {
-      user: readPermission(''),
-      group: readPermission(''),
-      other: readPermission(''),
-    }
-  }
-  return {
-    user: readPermission(data.substr(0, 3)),
-    group: readPermission(data.substr(3, 3)),
-    other: readPermission(data.substr(6, 3)),
-  }
-}
-function readItem(data: any, group = '', owner = ''): PebbleItem {
-  return {
-    created: readDate(data['created'] || null),
-    group: data['group'] || group,
-    owner: data['owner'] || owner,
-    name: data['uri'] || '',
-    acl: data['acl'] || [],
-    permissions: readPermissions(data['mode'] || ''),
-  };
-}
 async function get(connection: PebbleConnection, uri: string): Promise<Response> {
   return fetch(connection.server + uri,  connection.username === '' ? undefined : {
     headers: {
