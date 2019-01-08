@@ -200,6 +200,7 @@ export class PebbleCore {
         const dialog = new PebblePropertiesDialog({
           title: 'Properties',
           node: this.node,
+          validate: filename => !this.fileExists(filename, this.node && this.node.parent as PebbleCollectionNode)
         });
         dialog.open().then(result => {
           if (result) {

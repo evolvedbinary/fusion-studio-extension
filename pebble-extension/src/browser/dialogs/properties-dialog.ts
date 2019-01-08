@@ -17,6 +17,7 @@ export class PebblePropertiesDialogProps extends DialogProps {
   readonly acceptButton?: string;
   readonly cancelButton?: string;
   readonly node?: PebbleNode;
+  validate?: (filename: string) => boolean;
   // readonly name?: string;
   // readonly server?: string;
   // readonly username?: string;
@@ -32,7 +33,8 @@ export interface PebblePropertiesDialogResult {
 export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialogResult> {
 
   protected readonly keys: IKeysElement = createKeys({});
-  protected readonly name: HTMLInputElement = document.createElement('input');
+  protected readonly nameField: HTMLInputElement = document.createElement('input');
+  protected name: string = '';
   // protected readonly serverField: IDialogField;
   // protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
@@ -49,15 +51,16 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     super(props);
     if (props.node) {
       const slash = props.node.name.lastIndexOf('/');
-      this.name.type = 'text';
-      this.name.value = props.node.name.substr(slash + 1);
-      this.name.addEventListener('focus', e => this.name.select());
+      this.name = props.node.name.substr(slash + 1);
+      this.nameField.type = 'text';
+      this.nameField.value = this.name;
+      this.nameField.addEventListener('focus', e => this.nameField.select());
       const item = PebbleNode.isCollection(props.node) ? props.node.collection as PebbleCollection : (props.node as PebbleDocumentNode).document as PebbleDocument;
       addKeys({
         'Name': {
           type: 'string',
           value: '',
-          el: this.name,
+          el: this.nameField,
         },
         'Collection': item.name.substr(0, slash),
         'Created': { type: 'date', value: item.created },
@@ -142,18 +145,24 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     return {
       permissions: this.permissionsEditor.permissions,
       binary: PebbleItem.isDocument(this.props.node) && this.props.node.binaryDoc,
-      name: this.name.value
+      name: this.nameField.value
     };
   }
 
   protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
-    return PebbleItem.is(this.props.node) && (!samePermissions(this.props.node.permissions, value.permissions) || value.name != this.props.node.name.substr(this.props.node.name.lastIndexOf('/') + 1)) ||
-      PebbleItem.isDocument(this.props.node) && (this.props.node.binaryDoc !== this.props.node.binaryDoc);
+    const sameName = value.name === this.name;
+    const item = PebbleNode.isCollection(this.props.node) ? this.props.node.collection as PebbleCollection : (this.props.node as PebbleDocumentNode).document as PebbleDocument;
+    const same = samePermissions(item.permissions, value.permissions) && sameName;
+    let validName = true;
+    if (!sameName && this.props.validate) {
+      validName = this.props.validate(value.name);
+    }
+    return !same && validName;
   }
 
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
-    this.addUpdateListener(this.name, 'input');
+    this.addUpdateListener(this.nameField, 'input');
     this.permissionsEditor.addUpdateListeners(this.addUpdateListener.bind(this));
     // this.addUpdateListener(this.serverField.input, 'input');
     // this.addUpdateListener(this.usernameField.input, 'input');
