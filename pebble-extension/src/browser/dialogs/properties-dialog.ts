@@ -1,14 +1,22 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { IKeysElement, createKeys, addKeys, addKey } from "../../classes/keys";
-import { PebbleItem, PebblePermissions, samePermissions } from "../../classes/item";
+import { PebbleItem, PebblePermissions, samePermissions, PebbleCollection, PebbleDocument } from "../../classes/item";
 import { PebblePermissionsEditor } from "./permissions-editor";
+import { PebbleNode, PebbleDocumentNode } from "../../classes/node";
+import { createError, PebbleError } from "../../common/error";
+import { PebbleApi } from "../../common/api";
+
+const SPINNER = 'fa-fw fa fa-spin fa-spinner';
+const ARROWS_XML = 'fa-fw fa fa-file-code-o';
+const ARROWS_BIN = 'fa-fw fa fa-file-o';
+const CANT_CONVERT = 'fa-fw fa fa-exclamation';
 
 @injectable()
 export class PebblePropertiesDialogProps extends DialogProps {
   readonly acceptButton?: string;
   readonly cancelButton?: string;
-  readonly item?: PebbleItem;
+  readonly node?: PebbleNode;
   // readonly name?: string;
   // readonly server?: string;
   // readonly username?: string;
@@ -28,54 +36,76 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   // protected readonly serverField: IDialogField;
   // protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
-  protected readonly convertBtn: HTMLButtonElement = document.createElement('button');
-  protected readonly convertTxt: HTMLSpanElement = document.createElement('span');
-  protected readonly convertIcn: HTMLSpanElement = document.createElement('span');
+  protected readonly convertBtn = {
+    button: document.createElement('button'),
+    text: document.createElement('span'),
+    icon: document.createElement('span'),
+  };
   protected readonly permissionsEditor: PebblePermissionsEditor = new PebblePermissionsEditor();
 
   constructor(
     @inject(PebblePropertiesDialogProps) protected readonly props: PebblePropertiesDialogProps,
   ) {
     super(props);
-    if (props.item) {
-      const slash = props.item.name.lastIndexOf('/');
+    if (props.node) {
+      const slash = props.node.name.lastIndexOf('/');
       this.name.type = 'text';
-      this.name.value = props.item.name.substr(slash + 1);
+      this.name.value = props.node.name.substr(slash + 1);
       this.name.addEventListener('focus', e => this.name.select());
+      const item = PebbleNode.isCollection(props.node) ? props.node.collection as PebbleCollection : (props.node as PebbleDocumentNode).document as PebbleDocument;
       addKeys({
         'Name': {
           type: 'string',
           value: '',
           el: this.name,
         },
-        'Collection': props.item.name.substr(0, slash),
-        'Created': { type: 'date', value: props.item.created },
+        'Collection': item.name.substr(0, slash),
+        'Created': { type: 'date', value: item.created },
       }, this.keys);
-      if (PebbleItem.isDocument(props.item)) {
-        this.convertIcn.className = 'fa-fw fa fa-arrows-h';
-        this.convertBtn.append(this.convertIcn);
-        this.convertTxt.innerHTML = 'Convert to ' + (props.item.binaryDoc ? 'non-' : '') + 'binary';
-        this.convertBtn.append(this.convertTxt);
+      if (PebbleItem.isDocument(item)) {
+        this.convertBtn.icon.className = item.binaryDoc ? ARROWS_XML : ARROWS_BIN;
+        this.convertBtn.button.append(this.convertBtn.icon);
+        this.convertBtn.text.innerHTML = 'Convert to ' + (item.binaryDoc ? 'non-' : '') + 'binary';
+        this.convertBtn.button.append(this.convertBtn.text);
+        this.convertBtn.button.addEventListener('click', async () => {
+          this.convertBtn.icon.className = SPINNER;
+          this.convertBtn.button.disabled = true;
+          try {
+            if (await this.convert()) {
+              // converted
+              this.convertBtn.button.disabled = false;
+            } else {
+              // not converted
+              this.convertBtn.text.innerHTML = 'This document can\'t be converted';
+              this.convertBtn.icon.className = CANT_CONVERT;
+              return;
+            }
+          } catch (e) {
+            // error
+            this.convertBtn.button.disabled = false;
+          }
+          this.convertBtn.icon.className = item.binaryDoc ? ARROWS_XML : ARROWS_BIN;
+        })
         addKeys({
-          'Modified': { type: 'date', value: props.item.lastModified },
-          'Media Type': props.item.mediaType,
+          'Modified': { type: 'date', value: item.lastModified },
+          'Media Type': item.mediaType,
           'Binary': {
             type: 'string',
-            value: props.item.binaryDoc ? 'Yes' : 'No',
-            el: this.convertBtn,
+            value: item.binaryDoc ? 'Yes' : 'No',
+            el: this.convertBtn.button,
           },
         }, this.keys);
-        if (props.item.binaryDoc) {
-          addKey('size', { type: 'size', value: props.item.size }, this.keys);
+        if (item.binaryDoc) {
+          addKey('size', { type: 'size', value: item.size }, this.keys);
         }
       }
       addKeys({
         '-owner/group': '-',
-        'Owner': props.item.owner,
-        'Group': props.item.group,
+        'Owner': item.owner,
+        'Group': item.group,
         '-separator': '-',
       }, this.keys);
-      this.permissionsEditor.permissions = props.item.permissions;
+      this.permissionsEditor.permissions = item.permissions;
     }
 
     // this.nameField = createField('Name:', 'name-field');
@@ -99,17 +129,26 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     this.appendCloseButton(props.cancelButton || 'Close');
   }
 
+  async convert(): Promise<boolean> {
+    if (PebbleNode.isDocument(this.props.node)) {
+      return PebbleApi.convert(this.props.node.connection, this.props.node.document);
+    } else {
+      throw createError(PebbleError.unknown);
+    }
+    // return new Promise(resolve => setTimeout(() => resolve(true), 1000));
+  }
+
   get value(): PebblePropertiesDialogResult {
     return {
       permissions: this.permissionsEditor.permissions,
-      binary: PebbleItem.isDocument(this.props.item) && this.props.item.binaryDoc,
+      binary: PebbleItem.isDocument(this.props.node) && this.props.node.binaryDoc,
       name: this.name.value
     };
   }
 
   protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
-    return PebbleItem.is(this.props.item) && (!samePermissions(this.props.item.permissions, value.permissions) || value.name != this.props.item.name.substr(this.props.item.name.lastIndexOf('/') + 1)) ||
-      PebbleItem.isDocument(this.props.item) && (this.props.item.binaryDoc !== this.props.item.binaryDoc);
+    return PebbleItem.is(this.props.node) && (!samePermissions(this.props.node.permissions, value.permissions) || value.name != this.props.node.name.substr(this.props.node.name.lastIndexOf('/') + 1)) ||
+      PebbleItem.isDocument(this.props.node) && (this.props.node.binaryDoc !== this.props.node.binaryDoc);
   }
 
   protected onAfterAttach(msg: Message): void {

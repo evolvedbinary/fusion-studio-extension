@@ -157,6 +157,12 @@ async function move(connection: PebbleConnection, source: string, destination: s
   return false;
 }
 
+async function convert(connection: PebbleConnection, document: PebbleDocument): Promise<boolean> {
+  return (await put(connection, '/exist/restxq/pebble/document?uri=' + document.name, {
+    headers: { 'x-pebble-convert': !document.binaryDoc },
+  })).status === 200;
+}
+
 export const PebbleApi = {
   load,
   save,
@@ -165,4 +171,5 @@ export const PebbleApi = {
   remove: removeDoc,
   move,
   newCollection,
+  convert,
 };
