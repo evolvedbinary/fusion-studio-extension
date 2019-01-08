@@ -1,16 +1,5 @@
-import { PebblePermissions, readPermissions, writePermissions, PebblePermissionCheckboxes, PERMISSION_SCOPES, PERMISSION_TYPES, fromPermissions, samePermissions } from "../../classes/item";
-
-function createCheckboxes(): PebblePermissionCheckboxes {
-  const base: PebblePermissionCheckboxes = {};
-  for (let scope of PERMISSION_SCOPES) {
-    base[scope] = {};
-    for (let type of PERMISSION_TYPES) {
-      base[scope][type] = document.createElement('input');
-      base[scope][type].type = 'checkbox';
-    }
-  }
-  return base;
-}
+import { PebblePermissions, readPermissions, writePermissions, PERMISSION_SCOPES, PERMISSION_TYPES, fromPermissions, samePermissions } from "../../classes/item";
+import { Checkbox } from "../../classes/checkbox";
 
 export class PebblePermissionsEditor {
   public table: HTMLTableElement = document.createElement('table');
@@ -23,32 +12,34 @@ export class PebblePermissionsEditor {
       [P: string]: HTMLTableCellElement;
     }
   } = {};
-  private checks: PebblePermissionCheckboxes = createCheckboxes();
-  constructor (permissions?: PebblePermissions) {
-    this.permissions = permissions;
-    this.write(this._permissions);
-    this.table.className = 'permissions-editor';
-    this.rows.label = document.createElement('tr');
-    this.table.append(this.rows.label);
-    this.cells.label = { label: document.createElement('td') };
-    this.rows.label.append(this.cells.label.label);
-    for (let type of PERMISSION_TYPES) {
-      this.cells.label[type] = document.createElement('td');
-      this.cells.label[type].innerHTML = type;
-      this.rows.label.append(this.cells.label[type]);
+  public labels: {
+    [K: string]: {
+      [P: string]: HTMLSpanElement;
     }
+  } = {};
+  private checks: {
+    [K: string]: {
+      [P: string]: Checkbox;
+    }
+  } = {};
+  constructor (permissions?: PebblePermissions) {
+    this.table.className = 'permissions-editor';
     for (let scope of PERMISSION_SCOPES) {
       this.rows[scope] = document.createElement('tr');
       this.cells[scope] = { label: document.createElement('td') };
       this.cells[scope].label.innerHTML = scope;
       this.table.append(this.rows[scope]);
       this.rows[scope].append(this.cells[scope].label);
+      this.labels[scope] = {};
+      this.checks[scope] = {};
       for (let type of PERMISSION_TYPES) {
+        this.checks[scope][type] = new Checkbox(type);
         this.cells[scope][type] = document.createElement('td');
-        this.cells[scope][type].append(this.checks[scope][type]);
+        this.cells[scope][type].append(this.checks[scope][type].container);
         this.rows[scope].append(this.cells[scope][type]);
       }
     }
+    this.permissions = permissions;
   }
   public get permissions(): PebblePermissions | undefined {
     this.read();
@@ -69,7 +60,7 @@ export class PebblePermissionsEditor {
   public addUpdateListeners(add: (element: HTMLElement, type: any, useCapture?: boolean) => void) {
     for (let scope of PERMISSION_SCOPES) {
       for (let type of PERMISSION_TYPES) {
-        add(this.checks[scope][type], 'input');
+        add(this.checks[scope][type].container, 'click');
       }
     }
   }

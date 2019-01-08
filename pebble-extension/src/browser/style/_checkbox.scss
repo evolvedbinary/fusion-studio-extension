@@ -1,0 +1,30 @@
+span.checkbox {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 3px;
+  cursor: pointer;
+  > .checkbox-box {
+    display: block;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    background-color: var(--theia-ui-button-color);
+    position: relative;
+    &.checked > span {
+      display: block;
+      border: 2px solid white;
+      width: 8px;
+      height: 3px;
+      border-top: none;
+      border-right: none;
+      transform: rotate(-45deg);
+      top: 3px;
+      position: relative;
+      left: 2px;
+    }
+  }
+  > .checkbox-label {
+    text-transform: capitalize;
+  }
+}

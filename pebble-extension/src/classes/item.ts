@@ -3,13 +3,6 @@ export const PERMISSION_TYPES = ['read', 'write', 'execute'];
 export type PebblePermissionScope = 'user' | 'group' | 'other';
 export const PERMISSION_SCOPES = ['user', 'group', 'other'];
 
-export type PebblePermissionCheckboxes = {
-  [K: string]: {
-    [P: string]: HTMLInputElement;
-  }
-}
-
-
 export type PebblePermission = {
   [K in PebblePermissionType]: boolean;
 }

@@ -66,7 +66,6 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
         '-separator': '-',
       }, this.keys);
       this.permissionsEditor.permissions = props.item.permissions;
-      console.log(this.permissionsEditor);
     }
 
     // this.nameField = createField('Name:', 'name-field');
