@@ -196,15 +196,26 @@ export class PebbleCore {
             this.connect(node, result.connection);
           }
         });
-      } else {
+      } else if (PebbleNode.isItem(node)) {
+        const parent = node.parent as PebbleCollectionNode;
         const dialog = new PebblePropertiesDialog({
           title: 'Properties',
           node: this.node,
-          validate: filename => !this.fileExists(filename, this.node && this.node.parent as PebbleCollectionNode)
+          validate: filename => !this.fileExists(filename, parent)
         });
-        dialog.open().then(result => {
+        dialog.open().then(async result => {
           if (result) {
             console.log('properties changed:', result);
+            if (result.name !== node.name) {
+              this.move({
+                copy: false,
+                destination: [this.collectionDir(parent.uri, result.name)],
+                destinationContainer: parent,
+                source: [node],
+                sourceContainer: parent,
+                event: undefined as any,
+              });
+            }
           }
         });
       }
