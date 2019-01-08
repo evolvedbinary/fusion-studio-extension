@@ -27,6 +27,9 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   // protected readonly serverField: IDialogField;
   // protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
+  protected readonly convertBtn: HTMLButtonElement = document.createElement('button');
+  protected readonly convertTxt: HTMLSpanElement = document.createElement('span');
+  protected readonly convertIcn: HTMLSpanElement = document.createElement('span');
   protected readonly permissionsEditor: PebblePermissionsEditor = new PebblePermissionsEditor();
 
   constructor(
@@ -39,10 +42,18 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
         'Created': { type: 'date', value: props.item.created },
       }, this.keys);
       if (PebbleItem.isDocument(props.item)) {
+        this.convertIcn.className = 'fa-fw fa fa-arrows-h';
+        this.convertBtn.append(this.convertIcn);
+        this.convertTxt.innerHTML = 'Convert to ' + (props.item.binaryDoc ? 'non-' : '') + 'binary';
+        this.convertBtn.append(this.convertTxt);
         addKeys({
           'Modified': { type: 'date', value: props.item.lastModified },
           'Media Type': props.item.mediaType,
-          'Binary': props.item.binaryDoc ? 'Yes' : 'No',
+          'Binary': {
+            type: 'string',
+            value: props.item.binaryDoc ? 'Yes' : 'No',
+            el: this.convertBtn,
+          },
         }, this.keys);
         if (props.item.binaryDoc) {
           addKey('size', { type: 'size', value: props.item.size }, this.keys);

@@ -1,9 +1,15 @@
 import * as m from "moment";
 import * as size from "filesize";
 export type IKeyType = 'string' | 'number' | 'date' | 'size';
+export namespace IKey {
+  export function is(key?: any): key is IKey {
+    return !!key && typeof key === 'object' && 'type' in key && 'value' in key;
+  }
+}
 export interface IKey<T = any> {
   type: IKeyType;
   value: T;
+  el?: HTMLElement;
 }
 export interface IKeys {
   [key: string]: string | number | Date | IKey;
@@ -27,7 +33,7 @@ export function addKeys(keys: IKeys, element: IKeysElement) {
 export function renderKey(key: string | number | Date | IKey): string {
   let keyToRender: IKey;
   if (typeof key === 'object') {
-    if ('type' in key && 'value' in key) {
+    if (IKey.is(key)) {
       keyToRender = key;
     } else {
       keyToRender = { value: key, type: 'date' } as IKey<Date>;
@@ -55,6 +61,9 @@ export function addKey(index: string, key: string | number | Date | IKey, elemen
     const value = document.createElement('td');
     label.innerHTML = index;
     value.innerHTML = renderKey(key);
+    if (IKey.is(key) && key.el) {
+      value.append(key.el);
+    }
     label.className = 'label';
     value.className = 'value';
     row.append(value);
