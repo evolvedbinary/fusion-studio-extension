@@ -81,7 +81,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     // this.containerDiv.appendChild(this.serverField.container);
     // this.containerDiv.appendChild(this.usernameField.container);
     this.containerDiv.appendChild(this.keys.container);
-    this.containerDiv.appendChild(this.permissionsEditor.container);
+    this.containerDiv.appendChild(this.permissionsEditor.table);
     
     this.containerDiv.className = 'dialog-container properties-dialog-container';
     this.contentNode.appendChild(this.containerDiv);

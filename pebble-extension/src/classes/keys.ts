@@ -76,6 +76,7 @@ export function createKeys(keys: IKeys): IKeysElement {
     container: document.createElement('table'),
     data: {},
   }
+  result.container.className = 'keys';
   addKeys(keys, result);
   return result;
 }

@@ -13,7 +13,6 @@ function createCheckboxes(): PebblePermissionCheckboxes {
 }
 
 export class PebblePermissionsEditor {
-  public container: HTMLDivElement = document.createElement('div');
   public table: HTMLTableElement = document.createElement('table');
   private _permissions: PebblePermissions = fromPermissions();
   public rows: {
@@ -28,6 +27,7 @@ export class PebblePermissionsEditor {
   constructor (permissions?: PebblePermissions) {
     this.permissions = permissions;
     this.write(this._permissions);
+    this.table.className = 'permissions-editor';
     this.rows.label = document.createElement('tr');
     this.table.append(this.rows.label);
     this.cells.label = { label: document.createElement('td') };
@@ -49,7 +49,6 @@ export class PebblePermissionsEditor {
         this.rows[scope].append(this.cells[scope][type]);
       }
     }
-    this.container.append(this.table);
   }
   public get permissions(): PebblePermissions | undefined {
     this.read();
