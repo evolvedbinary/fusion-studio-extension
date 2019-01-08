@@ -1,4 +1,4 @@
-import { PebblePermissions, readPermissions, writePermissions, PERMISSION_SCOPES, PERMISSION_TYPES, fromPermissions, samePermissions } from "../../classes/item";
+import { PebblePermissions, readPermissions, writePermissions, PERMISSION_SCOPES, PERMISSION_TYPES, fromPermissions, samePermissions, PERMISSION_SPECIAL } from "../../classes/item";
 import { Checkbox } from "../../classes/checkbox";
 
 export class PebblePermissionsEditor {
@@ -39,6 +39,19 @@ export class PebblePermissionsEditor {
         this.rows[scope].append(this.cells[scope][type]);
       }
     }
+    this.rows.special = document.createElement('tr');
+    this.cells.special = { label: document.createElement('td') };
+    this.cells.special.label.innerHTML = 'Special';
+    this.table.append(this.rows.special);
+    this.rows.special.append(this.cells.special.label);
+    this.labels.special = {};
+    this.checks.special = {};
+    for (let type of PERMISSION_SPECIAL) {
+      this.checks.special[type] = new Checkbox(type);
+      this.cells.special[type] = document.createElement('td');
+      this.cells.special[type].append(this.checks.special[type].container);
+      this.rows.special.append(this.cells.special[type]);
+    }
     this.permissions = permissions;
   }
   public get permissions(): PebblePermissions | undefined {
@@ -48,8 +61,8 @@ export class PebblePermissionsEditor {
   public set permissions(permissions: PebblePermissions | undefined) {
     if (!samePermissions(this._permissions, permissions)) {
       this._permissions = fromPermissions(permissions);
+      this.write(this._permissions);
     }
-    this.write(this._permissions);
   }
   public get strPermissions(): string {
     return writePermissions(this._permissions);
@@ -63,6 +76,9 @@ export class PebblePermissionsEditor {
         add(this.checks[scope][type].container, 'click');
       }
     }
+    for (let type of PERMISSION_SPECIAL) {
+      add(this.checks.special[type].container, 'click');
+    }
   }
   private write(permissions: PebblePermissions) {
     for (let scope of PERMISSION_SCOPES) {
@@ -70,12 +86,18 @@ export class PebblePermissionsEditor {
         this.checks[scope][type].checked = (permissions as any)[scope][type];
       }
     }
+    for (let type of PERMISSION_SPECIAL) {
+      this.checks.special[type].checked = (permissions.special as any)[type];
+    }
   }
   private read() {
     for (let scope of PERMISSION_SCOPES) {
       for (let type of PERMISSION_TYPES) {
         (this._permissions as any)[scope][type] = this.checks[scope][type].checked;
       }
+    }
+    for (let type of PERMISSION_SPECIAL) {
+      (this._permissions.special as any)[type] = this.checks.special[type].checked;
     }
   }
 }
