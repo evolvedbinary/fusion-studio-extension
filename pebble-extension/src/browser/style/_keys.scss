@@ -10,6 +10,12 @@ table.keys {
       }
       &.value {
         width: 100%;
+        input{
+          &[type=text],
+          &[type=password] {
+            width: 100%;
+          }
+        }
       }
       hr {
         border-color: var(--theia-ui-button-color-secondary);

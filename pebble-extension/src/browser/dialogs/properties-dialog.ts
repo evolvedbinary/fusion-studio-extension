@@ -18,12 +18,13 @@ export class PebblePropertiesDialogProps extends DialogProps {
 export interface PebblePropertiesDialogResult {
   permissions?: PebblePermissions;
   binary: boolean;
+  name: string;
 }
 
 export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialogResult> {
 
   protected readonly keys: IKeysElement = createKeys({});
-  // protected readonly passwordField: IDialogField;
+  protected readonly name: HTMLInputElement = document.createElement('input');
   // protected readonly serverField: IDialogField;
   // protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
@@ -37,8 +38,17 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   ) {
     super(props);
     if (props.item) {
+      const slash = props.item.name.lastIndexOf('/');
+      this.name.type = 'text';
+      this.name.value = props.item.name.substr(slash + 1);
+      this.name.addEventListener('focus', e => this.name.select());
       addKeys({
-        'Name': props.item.name,
+        'Name': {
+          type: 'string',
+          value: '',
+          el: this.name,
+        },
+        'Collection': props.item.name.substr(0, slash),
         'Created': { type: 'date', value: props.item.created },
       }, this.keys);
       if (PebbleItem.isDocument(props.item)) {
@@ -93,17 +103,19 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     return {
       permissions: this.permissionsEditor.permissions,
       binary: PebbleItem.isDocument(this.props.item) && this.props.item.binaryDoc,
+      name: this.name.value
     };
   }
 
   protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
-    return (PebbleItem.is(this.props.item) && !samePermissions(this.props.item.permissions, value.permissions)) || PebbleItem.isDocument(this.props.item) && (this.props.item.binaryDoc !== this.props.item.binaryDoc);
+    return PebbleItem.is(this.props.item) && (!samePermissions(this.props.item.permissions, value.permissions) || value.name != this.props.item.name.substr(this.props.item.name.lastIndexOf('/') + 1)) ||
+      PebbleItem.isDocument(this.props.item) && (this.props.item.binaryDoc !== this.props.item.binaryDoc);
   }
 
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
+    this.addUpdateListener(this.name, 'input');
     this.permissionsEditor.addUpdateListeners(this.addUpdateListener.bind(this));
-    // this.addUpdateListener(this.nameField.input, 'input');
     // this.addUpdateListener(this.serverField.input, 'input');
     // this.addUpdateListener(this.usernameField.input, 'input');
     // this.addUpdateListener(this.passwordField.input, 'input');
