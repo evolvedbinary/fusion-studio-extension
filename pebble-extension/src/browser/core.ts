@@ -175,7 +175,6 @@ export class PebbleCore {
   showDropertiesDialog(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
     if (node) {
-      console.log(node);
       if (PebbleNode.isConnection(node)) {
         const dialog = new PebbleConnectionDialog({
           title: 'Edit connection',
@@ -201,20 +200,12 @@ export class PebbleCore {
         const dialog = new PebblePropertiesDialog({
           title: 'Properties',
           node: this.node,
-          validate: filename => !this.fileExists(filename, parent)
+          validate: filename => filename !== '' && !this.fileExists(filename, parent)
         });
         dialog.open().then(async result => {
           if (result) {
-            console.log('properties changed:', result);
             if (result.name !== node.name) {
-              this.move({
-                copy: false,
-                destination: [this.collectionDir(parent.uri, result.name)],
-                destinationContainer: parent,
-                source: [node],
-                sourceContainer: parent,
-                event: undefined as any,
-              });
+              this.rename(node, result.name);
             }
           }
         });
@@ -531,6 +522,46 @@ export class PebbleCore {
     }
   }
   
+  public async rename(node: PebbleItemNode, name: string): Promise<boolean> {
+    if (PebbleNode.isCollection(node.parent)) {
+      const parent = node.parent;
+      const nodes = await this.move({
+        copy: false,
+        destination: [this.collectionDir(parent.uri, name)],
+        destinationContainer: node.parent,
+        source: [node],
+        sourceContainer: parent,
+        event: undefined as any,
+      });
+      if (nodes.length === 1) {
+        this.select(nodes[0]);
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      throw createError(PebbleError.unknown);
+    }
+  }
+  
+  public async renameItem(): Promise<void> {
+    if (PebbleNode.isItem(this.node)) {      
+      const isCollection = PebbleNode.isCollection(this.node);
+      const collection = this.node.parent as PebbleCollectionNode;
+      const validator = (input: string) => input === (this.node && this.node.name) || input !== '' && !this.fileExists(input, collection);
+      const dialog = new SingleTextInputDialog({
+        initialValue: this.node.name,
+        title: 'Rename ' + (isCollection ? 'collection' : 'document'),
+        confirmButtonLabel: 'Rename',
+        validate: validator,
+      });
+      let name = await dialog.open();
+      if (name && name != this.node.name) {
+        this.rename(this.node, name);
+      }
+    }
+  }
+  
   public async deleteItem(): Promise<void> {
     const deleteNode = async function (core: PebbleCore, node: PebbleItemNode) {
       try {
@@ -815,7 +846,7 @@ export class PebbleCore {
 
   public async move(operation: PebbleDragOperation): Promise<PebbleItemNode[]> {
     if (operation.source.length) {
-      const result = (await asyncForEach(operation.source, async (source, i) => {
+      let result = (await asyncForEach(operation.source, async (source, i) => {
         const isCollection = PebbleNode.isCollection(source);
         const result = await PebbleApi.move(
           source.connection,
