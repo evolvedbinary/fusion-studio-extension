@@ -160,6 +160,16 @@ export class PebbleCore {
     }
   }
 
+  async cut() {
+    console.log('cut');
+  }
+  async copy() {
+    console.log('copy');
+  }
+  async paste() {
+    console.log('paste');
+  }
+
   async refresh(node?: PebbleCollectionNode) {
     if (this._model) {
       if (node) {
