@@ -178,8 +178,17 @@ export class PebbleCore {
     this.setClipboard(this.topNodes(this.selection), true);
   }
   async paste() {
-    console.log('paste');
-    console.log(this.clipboard.source && this.clipboard.source.map(n => n.uri));
+    if (PebbleNode.isCollection(this.node) && this.clipboard.source) {
+      const collection = this.node;
+      const destination = this.clipboard.source.map(item => this.collectionDir(collection.uri, item.uri.split('/').pop() || ''));
+      this.move({
+        copy: !!this.clipboard.copy,
+        destinationContainer: collection,
+        event: undefined as any,
+        source: this.clipboard.source,
+        destination
+      })
+    }
   }
   canPaste(): boolean {
     return !!this.clipboard.source &&
