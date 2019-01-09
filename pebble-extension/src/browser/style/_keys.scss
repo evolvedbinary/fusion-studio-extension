@@ -1,0 +1,25 @@
+table.keys {
+  width: 100%;
+  tr {
+    td {
+      &.label {
+        padding-right: 8px;
+        white-space: nowrap;
+        font-weight: bold;
+        text-transform: capitalize;
+      }
+      &.value {
+        width: 100%;
+        input{
+          &[type=text],
+          &[type=password] {
+            width: 100%;
+          }
+        }
+      }
+      hr {
+        border-color: var(--theia-ui-button-color-secondary);
+      }
+    }
+  }
+}

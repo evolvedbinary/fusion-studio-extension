@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from "../classes/node";
-import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar } from "@theia/core/lib/browser";
+import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
@@ -11,17 +11,22 @@ import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
-import { NewConnectionDialog, NewFromTemplateDialog } from "./dialogs";
+import { PebbleConnectionDialog, NewFromTemplateDialog } from "./dialogs";
 import { PebbleFiles, PebbleFileList } from "../common/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
 import { createError, PebbleError } from "../common/error";
 import { asyncForEach } from "../common/asyncForEach";
+import { PebbleStatusEntry } from "../classes/status";
+import { actProperties } from "./commands";
+import { PebblePropertiesDialog } from "./dialogs/properties-dialog";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
+const STATUSBAR_ELEMENT = 'pebble-statusbar';
 @injectable()
 export class PebbleCore {
+  statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -170,13 +175,83 @@ export class PebbleCore {
     }
   }
 
+  showPropertiesDialog(nodeId = '') {
+    const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
+    if (node) {
+      if (PebbleNode.isConnection(node)) {
+        const dialog = new PebbleConnectionDialog({
+          title: 'Edit connection',
+          acceptButton: 'Update',
+          ...node.connection,
+        });
+        dialog.open().then(result => {
+          if (result) {
+            this.empty(node);
+            node.expanded = false;
+            node.loading = false;
+            node.loaded = false;
+            (node as any).id = this.connectionID(result.connection);
+            (node as any).name = result.connection.name;
+            node.connection = result.connection;
+            node.selected = false;
+            node.uri = result.connection.server;
+            this.connect(node, result.connection);
+          }
+        });
+      } else if (PebbleNode.isItem(node)) {
+        const parent = node.parent as PebbleCollectionNode;
+        const dialog = new PebblePropertiesDialog({
+          title: 'Properties',
+          node: this.node,
+          validate: filename => filename !== '' && !this.fileExists(filename, parent)
+        });
+        dialog.open().then(async result => {
+          if (result) {
+            if (result.name !== node.name) {
+              this.rename(node, result.name);
+            }
+          }
+        });
+      }
+    }
+  }
+
+  getGroupOwner(item: PebbleItem): string {
+    let result = '';
+    if (item.group) {
+      result = item.group;
+    }
+    if (item.owner) {
+      result += (result ? ':' : '') + item.owner;
+    }
+    return (item.owner || '(n/a)') + ':' + (item.group || '(n/a)');
+  }
+
   status() {
-    // const nodes = this.topNodes(this.selection);
-    // if (nodes.length) {
-    //   console.log('selection:', nodes);
-    // } else {
-    //   console.log('selection: 0');
-    // }
+    const nodes = this.topNodes(this.selection);
+    if (this.node) {
+      this.statusEntry.active = true;
+      if (nodes.length > 1) {
+        this.statusEntry.text = 'selection: ' + nodes.length.toString();
+        this.statusEntry.arguments = [];
+      } else {
+        this.statusEntry.arguments = [this.node.id];
+        if (PebbleNode.isConnection(this.node)) {
+          this.statusEntry.text = `$(toggle-on) "${this.node.connection.name}" by "${this.node.connection.username}" to ${this.node.connection.server}`;
+        } else if (PebbleNode.isCollection(this.node)) {
+          this.statusEntry.text = `$(folder) ${this.node.name} (${this.getGroupOwner(this.node.collection)})`;
+        } else if (PebbleNode.isDocument(this.node)) {
+          this.statusEntry.text = `$(file${this.node.document.binaryDoc ? '' : '-code'}-o) ${this.node.name} (${this.getGroupOwner(this.node.document)})`;
+        }
+      }
+    } else {
+      this.statusEntry.active = false;
+    }
+    if (this.statusEntry.active) {
+      this.statusBar.setElement(STATUSBAR_ELEMENT, this.statusEntry);
+    } else {
+      this.statusBar.removeElement(STATUSBAR_ELEMENT);
+    }
   }
 
   // topItems(items: PebbleItem[]): PebbleItem[] {
@@ -324,11 +399,13 @@ export class PebbleCore {
       // const collection = await PebbleApi.newCollection(connection, uri);
       // if (collection) {
         return this.addCollection(parent, connection, {
+          created: new Date(),
           name: uri,
+          acl: [],
           collections: [],
           documents: [],
-          group: '',
-          owner: '',
+          group: 'dba',
+          owner: connection.username,
         });
       // } else {
       //   throw createError(PebbleError.unknown);
@@ -456,6 +533,46 @@ export class PebbleCore {
     }
   }
   
+  public async rename(node: PebbleItemNode, name: string): Promise<boolean> {
+    if (PebbleNode.isCollection(node.parent)) {
+      const parent = node.parent;
+      const nodes = await this.move({
+        copy: false,
+        destination: [this.collectionDir(parent.uri, name)],
+        destinationContainer: node.parent,
+        source: [node],
+        sourceContainer: parent,
+        event: undefined as any,
+      });
+      if (nodes.length === 1) {
+        this.select(nodes[0]);
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      throw createError(PebbleError.unknown);
+    }
+  }
+  
+  public async renameItem(): Promise<void> {
+    if (PebbleNode.isItem(this.node)) {      
+      const isCollection = PebbleNode.isCollection(this.node);
+      const collection = this.node.parent as PebbleCollectionNode;
+      const validator = (input: string) => input === (this.node && this.node.name) || input !== '' && !this.fileExists(input, collection);
+      const dialog = new SingleTextInputDialog({
+        initialValue: this.node.name,
+        title: 'Rename ' + (isCollection ? 'collection' : 'document'),
+        confirmButtonLabel: 'Rename',
+        validate: validator,
+      });
+      let name = await dialog.open();
+      if (name && name != this.node.name) {
+        this.rename(this.node, name);
+      }
+    }
+  }
+  
   public async deleteItem(): Promise<void> {
     const deleteNode = async function (core: PebbleCore, node: PebbleItemNode) {
       try {
@@ -516,7 +633,7 @@ export class PebbleCore {
     if (!this._model) {
       return;
     }
-    const dialog = new NewConnectionDialog({
+    const dialog = new PebbleConnectionDialog({
       title: 'New connection',
       name: 'Localhost',
       server: 'http://localhost:8080',
@@ -561,7 +678,18 @@ export class PebbleCore {
   }
 
   public async createDocument(collection: PebbleCollectionNode, name: string, content = '', group = '', owner = '') {
-    const doc = await this.openDocument(this.addDocument(collection, collection.connection, { content, name, group, owner }, true));
+    const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
+      content,
+      name,
+      created: new Date(),
+      lastModified: new Date(),
+      binaryDoc: false,
+      acl: [],
+      size: content.length,
+      mediaType: lookup(name) || 'text/plain',
+      group: group || 'dba',
+      owner: owner || collection.connection.username,
+    }, true));
     if (content !== '') {
       doc.editor.document.setDirty(true);
       doc.editor.document.contentChanges.push({
@@ -732,7 +860,7 @@ export class PebbleCore {
 
   public async move(operation: PebbleDragOperation): Promise<PebbleItemNode[]> {
     if (operation.source.length) {
-      const result = (await asyncForEach(operation.source, async (source, i) => {
+      let result = (await asyncForEach(operation.source, async (source, i) => {
         const isCollection = PebbleNode.isCollection(source);
         const result = await PebbleApi.move(
           source.connection,

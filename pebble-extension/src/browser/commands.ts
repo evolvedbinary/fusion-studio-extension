@@ -25,7 +25,7 @@ namespace check {
 export const CONTEXT_MENU = ['pebble-context-menu'];
 export const CONTEXT_MENU_CONNECTION = [...CONTEXT_MENU, 'a_connection'];
 export const CONTEXT_MENU_NEW = [...CONTEXT_MENU, 'b_new'];
-export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_new'];
+export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_refresh'];
 export const CONTEXT_MENU_NEW_SUBMENU = [...CONTEXT_MENU_NEW, 'a_from_template'];
 export const CONTEXT_MENU_EDIT = [...CONTEXT_MENU, 'd_edit'];
 export const MENU = CommonMenus.FILE;
@@ -99,15 +99,34 @@ export const actRefresh: PebbleAction = {
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 };
+export const actRename: PebbleAction = {
+  id: 'rename',
+  order: 'f',
+  label: 'Rename',
+  contextMenu: CONTEXT_MENU_EDIT,
+  icon: 'fa fa-i-cursor',
+  execute: core => () => core.renameItem(),
+  enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
+  visible: core => () => check.selected(core) && !check.connection(core),
+};
 export const actDelete: PebbleAction = {
   id: 'delete',
-  order: 'f',
+  order: 'g',
   label: 'Delete',
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-trash',
   execute: core => () => core.deleteItem(),
   enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
   visible: core => () => check.selected(core) && !check.connection(core),
+};
+export const actProperties: PebbleAction = {
+  id: 'properties',
+  order: 'h',
+  label: 'Properties...',
+  contextMenu: CONTEXT_MENU_EDIT,
+  keys: 'alt+enter',
+  icon: 'fa fa-info-circle',
+  execute: core => core.showPropertiesDialog.bind(core),
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [
   actConnect,
@@ -116,7 +135,9 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actNewDocument,
   actUploadDocument,
   actRefresh,
+  actRename,
   actDelete,
+  actProperties,
   ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New document...',
