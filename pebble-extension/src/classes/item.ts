@@ -92,14 +92,34 @@ export function fromPermissions(data?: PebblePermissions): PebblePermissions {
 export function readDate(data: string): Date {
   return new Date(data);
 }
+export function writeSpecialPermission(data: PebblePermissions, result: string): string {
+  const arr = result.split('');
+  if (data.special.setUID) {
+    arr[2] = data.user.execute ? 's' : 'S';
+  }
+  if (data.special.setGID) {
+    arr[5] = data.group.execute ? 's' : 'S';
+  }
+  if (data.special.sticky) {
+    arr[8] = data.other.execute ? 't' : 'T';
+  }
+  return arr.join('');
+}
 export function writePermission(data: PebblePermission): string {
   return (data.read ? 'r' : '-') + (data.write ? 'w' : '-') + (data.execute ? 'x' : '-');
 }
 export function readSpecialPermission(data: string): PebbleSpecialPermission {
+  if (data.length !== 9) {
+    return {
+      setGID: false,
+      setUID: false,
+      sticky: false,
+    }
+  }
   return {
-    setUID: false,
-    setGID: false,
-    sticky: false,
+    setGID: (data[2] === 's') || (data[2] === 'S'),
+    setUID: (data[5] === 's') || (data[5] === 'S'),
+    sticky: (data[8] === 't') || (data[8] === 'T'),
   }
 }
 export function readPermission(data: string): PebblePermission {
@@ -113,7 +133,7 @@ export function readPermission(data: string): PebblePermission {
   return {
     read: data[0] === 'r',
     write: data[1] === 'w',
-    execute: data[2] === 'x',
+    execute: (data[2] === 'x') || (data[2] === 's') || (data[2] === 't'),
   }
 }
 export function samePermissions(data1?: PebblePermissions, data2?: PebblePermissions): boolean {
@@ -135,7 +155,7 @@ export function samePermissions(data1?: PebblePermissions, data2?: PebblePermiss
 }
 export function writePermissions(data?: PebblePermissions): string {
   data = data || DEFAULT_PERMISSIONS;
-  return writePermission(data.user) + writePermission(data.group) + writePermission(data.other);
+  return writeSpecialPermission(data, writePermission(data.user) + writePermission(data.group) + writePermission(data.other));
 }
 export function readPermissions(data: string): PebblePermissions {
   if (data.length !== 9) {
@@ -150,7 +170,7 @@ export function readPermissions(data: string): PebblePermissions {
     user: readPermission(data.substr(0, 3)),
     group: readPermission(data.substr(3, 3)),
     other: readPermission(data.substr(6, 3)),
-    special: readSpecialPermission(''),
+    special: readSpecialPermission(data),
   }
 }
 export function readItem(data: any, group = '', owner = ''): PebbleItem {
