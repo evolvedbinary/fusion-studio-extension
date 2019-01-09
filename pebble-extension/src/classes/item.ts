@@ -4,6 +4,13 @@ export type PebblePermissionScope = 'user' | 'group' | 'other';
 export const PERMISSION_SCOPES = ['user', 'group', 'other'];
 export const PERMISSION_SPECIAL = [ 'setUID', 'setGID', 'sticky' ];
 
+export interface ACE {
+  mode: PebblePermission;
+  target: 'USER' | 'GROUP';
+  accessType: 'ALLOWED' | 'DENIED';
+  who: string;
+}
+
 export type PebbleSpecialPermission = {
   setUID: boolean,
   setGID: boolean,
@@ -24,7 +31,7 @@ export interface PebbleItem {
   owner: string;
   group: string;
   permissions?: PebblePermissions;
-  acl: string[];
+  acl: ACE[];
 }
 export interface PebbleDocument extends PebbleItem {
   lastModified: Date;
@@ -179,7 +186,10 @@ export function readItem(data: any, group = '', owner = ''): PebbleItem {
     group: data['group'] || group,
     owner: data['owner'] || owner,
     name: data['uri'] || '',
-    acl: data['acl'] || [],
+    acl: (data['acl'] || []).map((ace: any) => {
+      ace.mode = readPermission(ace.mode);
+      return ace;
+    }),
     permissions: readPermissions(data['mode'] || ''),
   };
 }
