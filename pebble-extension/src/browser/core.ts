@@ -172,7 +172,7 @@ export class PebbleCore {
     }
   }
 
-  showDropertiesDialog(nodeId = '') {
+  showPropertiesDialog(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
     if (node) {
       if (PebbleNode.isConnection(node)) {

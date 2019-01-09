@@ -126,7 +126,7 @@ export const actProperties: PebbleAction = {
   contextMenu: CONTEXT_MENU_EDIT,
   keys: 'alt+enter',
   icon: 'fa fa-info-circle',
-  execute: core => core.showDropertiesDialog.bind(core),
+  execute: core => core.showPropertiesDialog.bind(core),
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [
   actConnect,
