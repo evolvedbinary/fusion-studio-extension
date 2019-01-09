@@ -56,8 +56,27 @@ export class PebbleViewWidget extends TreeWidget {
       onDragOver: event => this.drag.onDragOver(node, event),
       onDragLeave: event => this.drag.onDragLeave(node, event),
       onDrop: event => this.drag.onDrop(node, event),
+      onDoubleClick: event => this.doubleClick(node, event, elementAttrs.onDoubleClick),
+      onClick: event => this.click(node, event, elementAttrs.onClick),
       title: node.name,
     };
+  }
+  
+  protected doubleClick(node: TreeNode, event: React.MouseEvent<HTMLElement>, defaultHandler?: (event: React.MouseEvent<HTMLElement>) => void): void {
+    if (event.altKey && (PebbleNode.isConnection(node) || PebbleNode.isItem(node))) {
+      event.stopPropagation();
+      this.core.select(node);
+      this.core.showPropertiesDialog(node.id);
+    } else {
+      defaultHandler && defaultHandler(event);
+    }
+  }
+  protected click(node: TreeNode, event: React.MouseEvent<HTMLElement>, defaultHandler?: (event: React.MouseEvent<HTMLElement>) => void): void {
+    if (event.altKey && (PebbleNode.isConnection(node) || PebbleNode.isItem(node))) {
+      event.stopPropagation();
+    } else {
+      defaultHandler && defaultHandler(event);
+    }
   }
   
   protected isEmpty(model?: TreeModel): boolean {
