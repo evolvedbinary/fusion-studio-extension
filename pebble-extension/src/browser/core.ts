@@ -160,6 +160,11 @@ export class PebbleCore {
     }
   }
 
+  canMoveTo(source: PebbleItemNode[], collectionUri: string): boolean {
+    return !source.map(node => node.uri)
+      .find(source => collectionUri.indexOf(source) >= 0 || collectionUri === source.substr(0, source.lastIndexOf('/')));
+  }
+
   async cut() {
     console.log('cut');
   }
@@ -551,7 +556,6 @@ export class PebbleCore {
         destination: [this.collectionDir(parent.uri, name)],
         destinationContainer: node.parent,
         source: [node],
-        sourceContainer: parent,
         event: undefined as any,
       });
       if (nodes.length === 1) {
@@ -870,7 +874,7 @@ export class PebbleCore {
 
   public async move(operation: PebbleDragOperation): Promise<PebbleItemNode[]> {
     if (operation.source.length) {
-      let result = (await asyncForEach(operation.source, async (source, i) => {
+      let result = (await asyncForEach(operation.source, async (source: PebbleItemNode, i) => {
         const isCollection = PebbleNode.isCollection(source);
         const result = await PebbleApi.move(
           source.connection,
@@ -893,7 +897,7 @@ export class PebbleCore {
             });
           }
           if (!operation.copy) {
-            this.removeNode(source, operation.sourceContainer);
+            this.removeNode(source, source.parent);
           }
           return resultNode as PebbleItemNode;
         }
