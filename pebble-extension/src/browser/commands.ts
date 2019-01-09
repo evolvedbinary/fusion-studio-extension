@@ -127,7 +127,7 @@ export const actPaste: PebbleAction = {
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-clipboard',
   execute: core => () => core.paste(),
-  enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
+  enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core) && core.canPaste(),
   visible: core => () => check.collection(core),
 };
 export const actRefresh: PebbleAction = {

@@ -27,6 +27,7 @@ const STATUSBAR_ELEMENT = 'pebble-statusbar';
 @injectable()
 export class PebbleCore {
   statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
+  clipboard: Partial<PebbleDragOperation> = {};
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -165,14 +166,25 @@ export class PebbleCore {
       .find(source => collectionUri.indexOf(source) >= 0 || collectionUri === source.substr(0, source.lastIndexOf('/')));
   }
 
+  setClipboard(nodes: PebbleItemNode[], copy?: boolean) {
+    this.clipboard.source = nodes;
+    this.clipboard.copy = copy;
+  }
+
   async cut() {
-    console.log('cut');
+    this.setClipboard(this.topNodes(this.selection));
   }
   async copy() {
-    console.log('copy');
+    this.setClipboard(this.topNodes(this.selection), true);
   }
   async paste() {
     console.log('paste');
+    console.log(this.clipboard.source && this.clipboard.source.map(n => n.uri));
+  }
+  canPaste(): boolean {
+    return !!this.clipboard.source &&
+      this.clipboard.source.length > 0 &&
+      this.canMoveTo(this.clipboard.source, this.node ? this.node.uri : '/');
   }
 
   async refresh(node?: PebbleCollectionNode) {
