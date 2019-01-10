@@ -16,6 +16,8 @@ import { PebbleCore } from "./core";
 import { CONTEXT_MENU } from "./commands";
 import { DragController } from "./widget/drag";
 import { PebbleFiles, pebbleFilesePath } from "../common/files";
+import { LanguageGrammarDefinitionContribution } from "@theia/monaco/lib/browser/textmate";
+import { XQueryGrammaribution } from "./language-contribution";
 
 export default new ContainerModule(bind => {
 
@@ -42,6 +44,7 @@ export default new ContainerModule(bind => {
   
   bind(PebbleResourceResolver).toSelf().inSingletonScope();
   bind(ResourceResolver).toService(PebbleResourceResolver);
+  bind(LanguageGrammarDefinitionContribution).to(XQueryGrammaribution).inSingletonScope();
   
 });
 
