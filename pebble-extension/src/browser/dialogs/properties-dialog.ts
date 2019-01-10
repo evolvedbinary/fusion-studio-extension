@@ -18,10 +18,6 @@ export class PebblePropertiesDialogProps extends DialogProps {
   readonly cancelButton?: string;
   readonly node?: PebbleNode;
   validate?: (filename: string) => boolean;
-  // readonly name?: string;
-  // readonly server?: string;
-  // readonly username?: string;
-  // readonly password?: string;
 }
 
 export interface PebblePropertiesDialogResult {
@@ -35,8 +31,6 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   protected readonly keys: IKeysElement = createKeys({});
   protected readonly nameField: HTMLInputElement = document.createElement('input');
   protected name: string = '';
-  // protected readonly serverField: IDialogField;
-  // protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly convertBtn = {
     button: document.createElement('button'),
@@ -75,16 +69,16 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
           this.convertBtn.button.disabled = true;
           try {
             if (await this.convert()) {
-              // converted
+              // TODO: converted
               this.convertBtn.button.disabled = false;
             } else {
-              // not converted
+              // TODO: not converted
               this.convertBtn.text.innerHTML = 'This document can\'t be converted';
               this.convertBtn.icon.className = CANT_CONVERT;
               return;
             }
           } catch (e) {
-            // error
+            // TODO: error
             this.convertBtn.button.disabled = false;
           }
           this.convertBtn.icon.className = item.binaryDoc ? ARROWS_XML : ARROWS_BIN;
@@ -110,18 +104,6 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
       }, this.keys);
       this.permissionsEditor.permissions = item.permissions;
     }
-
-    // this.nameField = createField('Name:', 'name-field');
-    // this.serverField = createField('Server:', 'server-field');
-    // this.usernameField = createField('Username:', 'username-field');
-    // this.passwordField = createField('Password:', 'password-field', 'password');
-    // this.nameField.input.value = props.name || '';
-    // this.serverField.input.value = props.server || '';
-    // this.usernameField.input.value = props.username || '';
-    // this.passwordField.input.value = props.password || '';
-    // this.containerDiv.appendChild(this.nameField.container);
-    // this.containerDiv.appendChild(this.serverField.container);
-    // this.containerDiv.appendChild(this.usernameField.container);
     this.containerDiv.appendChild(this.keys.container);
     this.containerDiv.appendChild(this.permissionsEditor.table);
     
@@ -138,7 +120,6 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     } else {
       throw createError(PebbleError.unknown);
     }
-    // return new Promise(resolve => setTimeout(() => resolve(true), 1000));
   }
 
   get value(): PebblePropertiesDialogResult {
@@ -164,9 +145,6 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     super.onAfterAttach(msg);
     this.addUpdateListener(this.nameField, 'input');
     this.permissionsEditor.addUpdateListeners(this.addUpdateListener.bind(this));
-    // this.addUpdateListener(this.serverField.input, 'input');
-    // this.addUpdateListener(this.usernameField.input, 'input');
-    // this.addUpdateListener(this.passwordField.input, 'input');
   }
 
   protected onActivateRequest(msg: Message): void {

@@ -59,11 +59,7 @@ export class PebbleCore {
       this.createRoot();
     }
   }
-  public get model(): TreeModel | undefined {
-    return this._model;
-  }
 
-  // new
   async expanded(node: CompositeTreeNode) {
     if (PebbleNode.isConnection(node) && !node.loaded) {
       this.connect(node, node.connection);
@@ -139,18 +135,6 @@ export class PebbleCore {
     try {
       this.startLoading(node);
       const docs = await PebbleApi.saveDocuments(node.connection, node.collection, documents);
-      // const topDir = this.getTopDir(docs.map(doc => doc.name));
-      // const items = this.cleanItems(docs, topDir);
-      // for (let i = 0; i < items.length; i++) {
-      //   const item = items[i];
-      //   console.log('item', i, PebbleItem.isDocument(item), item);
-      //   console.log('-------------------ADDING:', item.name);
-      //   if (PebbleItem.isDocument(item)) {
-      //     await this.addDocumentRecursive(node.connection, item);
-      //   } else {
-      //     await this.addCollectionRecursive(node.connection, item.name);
-      //   }
-      // };
       this.endLoading(node);
       this.load(node as CompositeTreeNode, node.connection, node.uri);
       return docs;
@@ -290,25 +274,6 @@ export class PebbleCore {
     }
   }
 
-  // topItems(items: PebbleItem[]): PebbleItem[] {
-  //   return items.filter(item => {
-  //     if ((PebbleItem.isDocument(item) || PebbleItem.isCollection(item))) {
-  //       let parts = item.name.split(TRAILING_SYMBOL);
-  //       parts.pop();
-  //       let parent = parts.join(TRAILING_SYMBOL);
-  //       while (parts.length > 1) {
-  //         if (items.find(other => other.name === parent)) {
-  //           return false;
-  //         }
-  //         parts = item.name.split(TRAILING_SYMBOL);
-  //         parts.pop();
-  //         parent = parts.join(TRAILING_SYMBOL);
-  //       }
-  //     }
-  //     return true;
-  //   });
-  // }
-
   topNodes(nodes: PebbleItemNode[]): PebbleItemNode[] {
     return nodes.filter(node => {
       if (this.node && (PebbleNode.isDocument(node) || PebbleNode.isCollection(node))) {
@@ -393,10 +358,8 @@ export class PebbleCore {
     return this._model ? this._model.getNode(id) as PebbleNode : undefined;
   }
 
-  // from widget
   
   public createRoot() {
-    // const nodes = this.reconcileTreeState(roots);
     if (this._model) {
       this._model.root = {
         id: 'pebble-connections-view-root',
@@ -432,8 +395,6 @@ export class PebbleCore {
       }
     } else {
       const parent = await this.addCollectionRecursive(connection, this.parentCollection(uri));
-      // const collection = await PebbleApi.newCollection(connection, uri);
-      // if (collection) {
         return this.addCollection(parent, connection, {
           created: new Date(),
           name: uri,
@@ -443,9 +404,6 @@ export class PebbleCore {
           group: 'dba',
           owner: connection.username,
         });
-      // } else {
-      //   throw createError(PebbleError.unknown);
-      // }
     }
   }
   public async addDocumentRecursive(connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): Promise<PebbleDocumentNode> {
@@ -541,8 +499,6 @@ export class PebbleCore {
     }
   }
 
-  // functionalities
-  
   public async deleteConnection(): Promise<void> {
     if (!this.selected || !this._model) {
       return;

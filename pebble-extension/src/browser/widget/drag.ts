@@ -24,7 +24,6 @@ export class DragController {
   protected draggedIDs: string[] = [];
   constructor(
     @inject(PebbleCore) private core: PebbleCore,
-    // @inject(PebbleViewWidget) private tree: PebbleViewWidget,
   ) {}
 
   private dragOperation(event: React.DragEvent<HTMLElement>): void {

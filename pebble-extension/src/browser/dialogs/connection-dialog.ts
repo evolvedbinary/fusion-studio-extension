@@ -68,7 +68,6 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
       value.connection.name &&
       value.connection.server
     );
-    // return super.isValid(value, mode);
   }
 
   protected onAfterAttach(msg: Message): void {
