@@ -5,7 +5,7 @@ import { PebbleNode, PebbleCollectionNode, PebbleConnectionNode, PebbleItemNode 
 import { DisposableCollection } from "@theia/core";
 import { Disposable } from "vscode-jsonrpc";
 import { TreeNode } from "@theia/core/lib/browser";
-import { PebbleFileList } from "../../common/files";
+import { PebbleFileList } from "../../classes/files";
 
 export interface PebbleDragOperation {
   destinationContainer: PebbleCollectionNode;

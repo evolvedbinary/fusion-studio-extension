@@ -1,7 +1,7 @@
 import { PebbleCollection, PebbleDocument, readItem, readDate } from "../classes/item";
 import { PebbleConnection } from "../classes/connection";
-import { createError, PebbleError } from "./error";
-import { PebbleFileList } from "./files";
+import { createError, PebbleError } from "../classes/error";
+import { PebbleFileList } from "../classes/files";
 
 async function get(connection: PebbleConnection, uri: string): Promise<Response> {
   return fetch(connection.server + uri,  connection.username === '' ? undefined : {

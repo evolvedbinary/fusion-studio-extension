@@ -15,7 +15,7 @@ import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
 import { CONTEXT_MENU } from "./commands";
 import { DragController } from "./widget/drag";
-import { PebbleFiles, pebbleFilesePath } from "../common/files";
+import { PebbleFiles, pebbleFilesePath } from "../classes/files";
 import { LanguageGrammarDefinitionContribution } from "@theia/monaco/lib/browser/textmate";
 import { XQueryGrammaribution } from "./language-contribution";
 

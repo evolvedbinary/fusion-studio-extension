@@ -10,11 +10,11 @@ export class PebbleNewFromTemplateDialogProps extends DialogProps {
   validate?: (filename: string) => boolean;
 }
 
-export interface NewFromTemplateDialogResult {
+export interface PebbleNewFromTemplateDialogResult {
   params: any;
 }
 
-export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogResult> {
+export class NewFromTemplateDialog extends AbstractDialog<PebbleNewFromTemplateDialogResult> {
 
   protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
@@ -53,7 +53,7 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
     this.appendCloseButton('Cancel');
   }
 
-  get value(): NewFromTemplateDialogResult {
+  get value(): PebbleNewFromTemplateDialogResult {
     const params: any = {};
     for (const key in this.fields) {
       params[key] = this.fields[key].input.value;
@@ -62,7 +62,7 @@ export class NewFromTemplateDialog extends AbstractDialog<NewFromTemplateDialogR
     return { params };
   }
   
-  protected isValid(value: NewFromTemplateDialogResult, mode: DialogMode): DialogError {
+  protected isValid(value: PebbleNewFromTemplateDialogResult, mode: DialogMode): DialogError {
     return !this.props.validate || this.props.validate(value.params.name);
   }
 

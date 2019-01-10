@@ -4,7 +4,7 @@ import { IKeysElement, createKeys, addKeys, addKey } from "../../classes/keys";
 import { PebbleItem, PebblePermissions, samePermissions, PebbleCollection, PebbleDocument } from "../../classes/item";
 import { PebblePermissionsEditor } from "./permissions-editor";
 import { PebbleNode, PebbleDocumentNode } from "../../classes/node";
-import { createError, PebbleError } from "../../common/error";
+import { createError, PebbleError } from "../../classes/error";
 import { PebbleApi } from "../../common/api";
 
 const SPINNER = 'fa-fw fa fa-spin fa-spinner';
