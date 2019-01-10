@@ -148,7 +148,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   }
 
   protected onActivateRequest(msg: Message): void {
-    // this.nameField.input.focus();
+    this.nameField.focus();
   }
 
 }
