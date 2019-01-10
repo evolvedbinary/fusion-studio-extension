@@ -27,6 +27,7 @@ const STATUSBAR_ELEMENT = 'pebble-statusbar';
 @injectable()
 export class PebbleCore {
   statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
+  clipboard: Partial<PebbleDragOperation> = {};
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -158,6 +159,41 @@ export class PebbleCore {
       console.error('caught:', error);
       return [];
     }
+  }
+
+  canMoveTo(source: PebbleItemNode[], collectionUri: string): boolean {
+    return !source.map(node => node.uri)
+      .find(source => collectionUri.indexOf(source) >= 0 || collectionUri === source.substr(0, source.lastIndexOf('/')));
+  }
+
+  setClipboard(nodes: PebbleItemNode[], copy?: boolean) {
+    this.clipboard.source = nodes;
+    this.clipboard.copy = copy;
+  }
+
+  async cut() {
+    this.setClipboard(this.topNodes(this.selection));
+  }
+  async copy() {
+    this.setClipboard(this.topNodes(this.selection), true);
+  }
+  async paste() {
+    if (PebbleNode.isCollection(this.node) && this.clipboard.source) {
+      const collection = this.node;
+      const destination = this.clipboard.source.map(item => this.collectionDir(collection.uri, item.uri.split('/').pop() || ''));
+      this.move({
+        copy: !!this.clipboard.copy,
+        destinationContainer: collection,
+        event: undefined as any,
+        source: this.clipboard.source,
+        destination
+      })
+    }
+  }
+  canPaste(): boolean {
+    return !!this.clipboard.source &&
+      this.clipboard.source.length > 0 &&
+      this.canMoveTo(this.clipboard.source, this.node ? this.node.uri : '/');
   }
 
   async refresh(node?: PebbleCollectionNode) {
@@ -541,7 +577,6 @@ export class PebbleCore {
         destination: [this.collectionDir(parent.uri, name)],
         destinationContainer: node.parent,
         source: [node],
-        sourceContainer: parent,
         event: undefined as any,
       });
       if (nodes.length === 1) {
@@ -860,7 +895,7 @@ export class PebbleCore {
 
   public async move(operation: PebbleDragOperation): Promise<PebbleItemNode[]> {
     if (operation.source.length) {
-      let result = (await asyncForEach(operation.source, async (source, i) => {
+      let result = (await asyncForEach(operation.source, async (source: PebbleItemNode, i) => {
         const isCollection = PebbleNode.isCollection(source);
         const result = await PebbleApi.move(
           source.connection,
@@ -883,7 +918,7 @@ export class PebbleCore {
             });
           }
           if (!operation.copy) {
-            this.removeNode(source, operation.sourceContainer);
+            this.removeNode(source, source.parent);
           }
           return resultNode as PebbleItemNode;
         }
