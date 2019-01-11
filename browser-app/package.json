@@ -16,6 +16,7 @@
     "@theia/monaco": "^0.3.8",
     "@theia/typescript": "^0.3.8",
     "@theia/messages": "^0.3.8",
+    "@theia/textmate-grammars": "^0.3.18",
     "pebble-extension": "0.0.0"
   },
   "devDependencies": {
@@ -27,6 +28,11 @@
     "watch": "theia build --watch --mode development"
   },
   "theia": {
-    "target": "browser"
+    "target": "browser",
+    "frontend": {
+      "config": {
+        "applicationName": "Pebble"
+      }
+    }
   }
 }

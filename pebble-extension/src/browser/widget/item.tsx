@@ -18,9 +18,9 @@ export class PebbleItem extends React.Component<PebbleItemProps, any> {
         </div>
       );
     }
-    if (PebbleNode.isItem(node)) {
+    if (PebbleNode.is(node)) {
       return (
-        <div className={'pebble-item pebble-item-' + (node.isCollection ? 'collection' : 'document') + (PebbleNode.isDocument(node) && node.isNew ? ' pebble-item-new' : '')}>
+        <div className={'pebble-item pebble-item-' + (PebbleNode.isCollection(node) ? 'collection' : 'document') + (PebbleNode.isDocument(node) && node.isNew ? ' pebble-item-new' : '')}>
           <i className={core.getIcon(node)}></i>
           <span className='name'>{node.name}</span>
         </div>

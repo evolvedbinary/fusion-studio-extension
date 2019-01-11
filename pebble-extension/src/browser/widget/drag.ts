@@ -5,11 +5,10 @@ import { PebbleNode, PebbleCollectionNode, PebbleConnectionNode, PebbleItemNode 
 import { DisposableCollection } from "@theia/core";
 import { Disposable } from "vscode-jsonrpc";
 import { TreeNode } from "@theia/core/lib/browser";
-import { PebbleFileList } from "../../common/files";
+import { PebbleFileList } from "../../classes/files";
 
 export interface PebbleDragOperation {
   destinationContainer: PebbleCollectionNode;
-  sourceContainer?: PebbleCollectionNode;
   destination: string[];
   source: PebbleItemNode[];
   event: React.DragEvent<HTMLElement>;
@@ -21,9 +20,10 @@ export const DRAG_NODE = 'pebble-node';
 @injectable()
 export class DragController {
   protected readonly toCancelNodeExpansion = new DisposableCollection();
+  protected dragged: PebbleItemNode[] = [];
+  protected draggedIDs: string[] = [];
   constructor(
     @inject(PebbleCore) private core: PebbleCore,
-    // @inject(PebbleViewWidget) private tree: PebbleViewWidget,
   ) {}
 
   private dragOperation(event: React.DragEvent<HTMLElement>): void {
@@ -33,24 +33,17 @@ export class DragController {
   private checkOperation(node: TreeNode | undefined, event: React.DragEvent<HTMLElement>): PebbleDragOperation | undefined {
     event.dataTransfer.dropEffect = event.ctrlKey ? 'copy' : 'move';
     const destinationContainer = this.getParentContainer(node as PebbleItemNode);
-    if (destinationContainer && PebbleNode.isItem(destinationContainer)) {
+    if (destinationContainer && PebbleNode.isCollection(destinationContainer)) {
       const data = event.dataTransfer.getData(DRAG_NODE);
-      const ids: string[] = data ? JSON.parse(data) : [];
-      const source = ids.map(id => this.core.getNode(id) as PebbleItemNode);
-      let sourceContainer: PebbleCollectionNode | undefined;
-      let destination: string[] = [];
-      if (source.length) {
-        const item = source[0];
-        sourceContainer = item.parent as PebbleCollectionNode;
-        if (destinationContainer.uri.indexOf(item.uri) === 0 || (item.parent && (destinationContainer.id === item.parent.id))) {
-          return;
-        }
-        destination = ids.map(id => destinationContainer.uri + '/' + id.split('/').pop());
+      const ids: string[] = data ? JSON.parse(data) : this.draggedIDs;
+      const source = ids.map(id => this.core.getNode(id)).filter(node => PebbleNode.isItem(node)) as PebbleItemNode[];
+      if (!this.core.canMoveTo(source, destinationContainer.uri)) {
+        return;
       }
+      const destination = ids.map(id => destinationContainer.uri + '/' + id.split('/').pop());
       const result: PebbleDragOperation = {
         source,
         destination,
-        sourceContainer,
         destinationContainer,
         event,
         copy: event.dataTransfer.dropEffect === 'copy',
@@ -60,10 +53,7 @@ export class DragController {
   }
   private getParentContainer(node: PebbleItemNode | PebbleConnectionNode): PebbleCollectionNode | undefined {
     let container = node;
-    while (container) {
-      if (PebbleNode.isCollection(container)) {
-        break;
-      }
+    while (container && !PebbleNode.isCollection(container)) {
       container = container.parent as PebbleCollectionNode;
     }
     return container;
@@ -79,8 +69,12 @@ export class DragController {
       nodes = [node as PebbleItemNode];
     }
     if (nodes.length > 0) {
-      event.dataTransfer.setData(DRAG_NODE, JSON.stringify(nodes.map(node => node.id)));
+      this.dragged = nodes;
+      this.draggedIDs = nodes.map(node => node.id);
+      event.dataTransfer.setData(DRAG_NODE, JSON.stringify(this.draggedIDs));
     } else {
+      this.dragged = [];
+      this.draggedIDs = [];
       event.dataTransfer.setData(DRAG_NODE, '[]');
     }
   }
@@ -92,9 +86,9 @@ export class DragController {
     event.preventDefault();
     this.dragOperation(event);
     this.toCancelNodeExpansion.dispose();
-    const container = this.checkOperation(node, event);
-    if (container) {
-      this.core.select(container.destinationContainer);
+    const operation = this.checkOperation(node, event);
+    if (operation) {
+      this.core.select(operation.destinationContainer);
     }
   }
   public onDragOver(node: TreeNode | undefined, event: React.DragEvent<HTMLElement>): void {
@@ -148,8 +142,8 @@ export class DragController {
     event.preventDefault();
     event.stopPropagation();
     this.dragOperation(event);
-    const container = this.checkOperation(node, event);
-    if (container) {
+    const operation = this.checkOperation(node, event);
+    if (operation) {
       if (event.dataTransfer.files.length) {
         const entries: WebKitEntry[] = [];
         for (let i = 0; i < event.dataTransfer.items.length; i++) {
@@ -158,9 +152,9 @@ export class DragController {
             entries.push(entry);
           }
         }
-        this.listFiles(entries).then(files => this.core.saveDocuments(container.destinationContainer, files));
+        this.listFiles(entries).then(files => this.core.saveDocuments(operation.destinationContainer, files));
       } else {
-        this.core.move(container);
+        this.core.move(operation);
       }
     }
   }

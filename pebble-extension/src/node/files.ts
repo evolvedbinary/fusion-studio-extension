@@ -1,7 +1,7 @@
-import { PebbleFiles, PebbleFilenameList } from "../common/files";
+import { PebbleFiles, PebbleFilenameList } from "../classes/files";
 import { injectable } from "inversify";
 import { readFileSync, statSync, readdirSync } from "fs";
-import { createError, PebbleError } from "../common/error";
+import { createError, PebbleError } from "../classes/error";
 import { isArray } from "util";
 
 function getFiles(files: string | string[], result?: string[]): string[] {

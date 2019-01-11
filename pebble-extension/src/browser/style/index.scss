@@ -1,15 +1,6 @@
-@import "../widget/home.scss";
-@import "../widget/toolbar.scss";
-@import "../widget/item.scss";
-
-.new-connection-dialog-container,
-.new-from-template-dialog-container {
-  > div {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 16px;
-    span {
-      margin-bottom: 8px;
-    }
-  }
-}
+@import "checkbox";
+@import "keys";
+@import "../dialogs/index";
+@import "../widget/home";
+@import "../widget/toolbar";
+@import "../widget/item";

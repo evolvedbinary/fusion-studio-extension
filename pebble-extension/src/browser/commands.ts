@@ -25,9 +25,10 @@ namespace check {
 export const CONTEXT_MENU = ['pebble-context-menu'];
 export const CONTEXT_MENU_CONNECTION = [...CONTEXT_MENU, 'a_connection'];
 export const CONTEXT_MENU_NEW = [...CONTEXT_MENU, 'b_new'];
-export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_new'];
+export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_refresh'];
 export const CONTEXT_MENU_NEW_SUBMENU = [...CONTEXT_MENU_NEW, 'a_from_template'];
 export const CONTEXT_MENU_EDIT = [...CONTEXT_MENU, 'd_edit'];
+export const CONTEXT_MENU_FILE = [...CONTEXT_MENU, 'e_file'];
 export const MENU = CommonMenus.FILE;
 export const actConnect: PebbleAction = {
   id: 'connect',
@@ -72,7 +73,7 @@ export const actNewDocument: PebbleAction = {
 export const actUploadDocument: PebbleAction = {
   id: 'upload-document',
   order: 'c2',
-  label: 'Upload document',
+  label: 'Upload document(s)',
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-upload',
   execute: core => () => core.uploadItem(),
@@ -89,11 +90,51 @@ const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: nu
   enabled: core => () => check.collection(core) && !check.loading(core),
   visible: core => () => check.collection(core) && !check.connection(core),
 } as PebbleAction));
+export const actRename: PebbleAction = {
+  id: 'rename',
+  order: 'd',
+  label: 'Rename',
+  contextMenu: CONTEXT_MENU_EDIT,
+  icon: 'fa fa-i-cursor',
+  execute: core => () => core.renameItem(),
+  enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
+  visible: core => () => check.selected(core) && !check.connection(core),
+};
+export const actCut: PebbleAction = {
+  id: 'cut',
+  order: 'a',
+  label: 'Cut',
+  contextMenu: CONTEXT_MENU_EDIT,
+  icon: 'fa fa-scissors',
+  execute: core => () => core.cut(),
+  enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
+  visible: core => () => check.selected(core) && !check.connection(core),
+};
+export const actCopy: PebbleAction = {
+  id: 'copy',
+  order: 'd',
+  label: 'Copy',
+  contextMenu: CONTEXT_MENU_EDIT,
+  icon: 'fa fa-files-o',
+  execute: core => () => core.copy(),
+  enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
+  visible: core => () => check.selected(core) && !check.connection(core),
+};
+export const actPaste: PebbleAction = {
+  id: 'paste',
+  order: 'd',
+  label: 'Paste',
+  contextMenu: CONTEXT_MENU_EDIT,
+  icon: 'fa fa-clipboard',
+  execute: core => () => core.paste(),
+  enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core) && core.canPaste(),
+  visible: core => () => check.collection(core),
+};
 export const actRefresh: PebbleAction = {
   id: 'refresh',
-  order: 'e',
+  order: 'a',
   label: 'Refresh',
-  contextMenu: CONTEXT_MENU_REFRESH,
+  contextMenu: CONTEXT_MENU_FILE,
   icon: 'fa fa-refresh',
   execute: core => () => core.refresh(core.node as any),
   enabled: core => () => check.collection(core) && !check.loading(core),
@@ -101,13 +142,22 @@ export const actRefresh: PebbleAction = {
 };
 export const actDelete: PebbleAction = {
   id: 'delete',
-  order: 'f',
+  order: 'b',
   label: 'Delete',
-  contextMenu: CONTEXT_MENU_EDIT,
+  contextMenu: CONTEXT_MENU_FILE,
   icon: 'fa fa-trash',
   execute: core => () => core.deleteItem(),
   enabled: core => () => (check.document(core) || check.collection(core)) && !check.loading(core),
   visible: core => () => check.selected(core) && !check.connection(core),
+};
+export const actProperties: PebbleAction = {
+  id: 'properties',
+  order: 'c',
+  label: 'Properties...',
+  contextMenu: CONTEXT_MENU_FILE,
+  keys: 'alt+enter',
+  icon: 'fa fa-info-circle',
+  execute: core => core.showPropertiesDialog.bind(core),
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [
   actConnect,
@@ -115,8 +165,13 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actNewCollection,
   actNewDocument,
   actUploadDocument,
+  actCut,
+  actCopy,
+  actPaste,
+  actRename,
   actRefresh,
   actDelete,
+  actProperties,
   ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New document...',

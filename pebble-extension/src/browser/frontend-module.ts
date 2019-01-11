@@ -7,7 +7,7 @@ import { ResourceResolver } from "@theia/core/lib/common";
 import { ContainerModule, interfaces } from "inversify";
 import { PebbleResourceResolver } from '../browser/resource';
 import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget/main';
-import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution, WebSocketConnectionProvider } from '@theia/core/lib/browser';
+import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution, WebSocketConnectionProvider, Tree, TreeModel } from '@theia/core/lib/browser';
 import { PebbleViewService } from './view-service';
 
 import '../../src/browser/style/index.css';
@@ -15,7 +15,10 @@ import { PebbleContribution } from "./contribution";
 import { PebbleCore } from "./core";
 import { CONTEXT_MENU } from "./commands";
 import { DragController } from "./widget/drag";
-import { PebbleFiles, pebbleFilesePath } from "../common/files";
+import { PebbleFiles, pebbleFilesePath } from "../classes/files";
+import { LanguageGrammarDefinitionContribution } from "@theia/monaco/lib/browser/textmate";
+import { XQueryGrammaribution } from "./language-contribution";
+import { PebbleTree, PebbleTreeModel } from "../classes/tree";
 
 export default new ContainerModule(bind => {
 
@@ -31,9 +34,6 @@ export default new ContainerModule(bind => {
   bind(PebbleViewService).toSelf().inSingletonScope();
   bind(WidgetFactory).toDynamicValue(context => context.container.get(PebbleViewService));
 
-  // bindViewContribution(bind, PebbleViewContribution);
-  // bind(FrontendApplicationContribution).toService(PebbleViewContribution);
-
   bindViewContribution(bind, PebbleContribution);
   bind(FrontendApplicationContribution).toService(PebbleContribution);
 
@@ -42,6 +42,7 @@ export default new ContainerModule(bind => {
   
   bind(PebbleResourceResolver).toSelf().inSingletonScope();
   bind(ResourceResolver).toService(PebbleResourceResolver);
+  bind(LanguageGrammarDefinitionContribution).to(XQueryGrammaribution).inSingletonScope();
   
 });
 
@@ -52,6 +53,12 @@ const TREE_PROPS = {
 
 function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
   const child = createTreeContainer(parent);
+
+  child.bind(PebbleTree).toSelf();
+  child.rebind(Tree).toService(PebbleTree);
+
+  child.bind(PebbleTreeModel).toSelf();
+  child.rebind(TreeModel).toService(PebbleTreeModel);
 
   child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, ...TREE_PROPS });
 

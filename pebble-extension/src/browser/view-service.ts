@@ -4,7 +4,6 @@ import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget/main";
 import { PebbleNode, PebbleDocumentNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
 import { PebbleCore } from "./core";
-// import { EditorWidget } from "@theia/editor/lib/browser";
 
 @injectable()
 export class PebbleViewService implements WidgetFactory {
@@ -21,13 +20,6 @@ export class PebbleViewService implements WidgetFactory {
   get open(): boolean {
     return this.widget !== undefined && this.widget.isVisible;
   }
-
-  // publish(roots: PebbleNode[]): void {
-  //   if (this.core) {
-  //     this.core.createRoot(roots);
-  //     // this.onDidChangeOutlineEmitter.fire(roots);
-  //   }
-  // }
   
   async onOpen(node: Readonly<any>): Promise<void> {
     if (PebbleNode.isDocument(node as any)) {
@@ -56,15 +48,6 @@ export class PebbleViewService implements WidgetFactory {
     if (toolbar) {
       this.widget.model.toggleNode(toolbar);
     } else {
-      // const deleteButton = document.getElementById('pebble-toolbar-button-delete');
-      // if (deleteButton) {
-      //   const enabled = nodes.length && PebbleNode.isConnection(nodes[0]);
-      //   if (enabled) {
-      //     deleteButton.removeAttribute('disabled');
-      //   } else {
-      //     deleteButton.setAttribute('disabled', 'disabled');
-      //   }
-      // }
       this.core.status();
     }
   }
