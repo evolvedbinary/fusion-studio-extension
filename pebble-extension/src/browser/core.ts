@@ -139,6 +139,10 @@ export class PebbleCore {
 
   // Pebble nodes
 
+  public isItem(): boolean {
+    return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isItem(this._model.selectedNodes[0]);
+  }
+
   public isConnection(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isConnection(this._model.selectedNodes[0]);
   }
