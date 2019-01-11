@@ -24,6 +24,8 @@ export interface PebblePropertiesDialogResult {
   permissions?: PebblePermissions;
   binary: boolean;
   name: string;
+  owner: string;
+  group: string;
 }
 
 export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialogResult> {
@@ -31,7 +33,10 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   protected readonly keys: IKeysElement = createKeys({});
   protected readonly nameField: HTMLInputElement = document.createElement('input');
   protected name: string = '';
+  protected item?: PebbleCollection | PebbleDocument;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
+  protected readonly ownerSelect: HTMLSelectElement = document.createElement('select');
+  protected readonly groupSelect: HTMLSelectElement = document.createElement('select');
   protected readonly convertBtn = {
     button: document.createElement('button'),
     text: document.createElement('span'),
@@ -50,6 +55,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
       this.nameField.value = this.name;
       this.nameField.addEventListener('focus', e => this.nameField.select());
       const item = PebbleNode.isCollection(props.node) ? props.node.collection as PebbleCollection : (props.node as PebbleDocumentNode).document as PebbleDocument;
+      this.item = item;
       addKeys({
         'Name': {
           type: 'string',
@@ -96,10 +102,32 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
           addKey('size', { type: 'size', value: item.size }, this.keys);
         }
       }
+      props.node.connection.users.forEach(user => {
+        const option = document.createElement('option');
+        option.innerHTML = user;
+        option.setAttribute('value', user);
+        this.ownerSelect.append(option);
+      });
+      this.ownerSelect.value = item.owner;
+      props.node.connection.groups.forEach(groups => {
+        const option = document.createElement('option');
+        option.innerHTML = groups;
+        option.setAttribute('value', groups);
+        this.groupSelect.append(option);
+      });
+      this.groupSelect.value = item.group;
       addKeys({
         '-owner/group': '-',
-        'Owner': item.owner,
-        'Group': item.group,
+        'Owner': {
+          type: 'string',
+          value: '',
+          el: this.ownerSelect,
+        },
+        'Group': {
+          type: 'string',
+          value: '',
+          el: this.groupSelect,
+        },
         '-separator': '-',
       }, this.keys);
       this.permissionsEditor.permissions = item.permissions;
@@ -126,14 +154,18 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     return {
       permissions: this.permissionsEditor.permissions,
       binary: PebbleItem.isDocument(this.props.node) && this.props.node.binaryDoc,
+      owner: this.ownerSelect.value,
+      group: this.groupSelect.value,
       name: this.nameField.value
     };
   }
 
   protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
     const sameName = value.name === this.name;
+    const sameOwner = value.owner === (this.item ? this.item.owner : '');
+    const sameGroup = value.group === (this.item ? this.item.group : '');
     const item = PebbleNode.isCollection(this.props.node) ? this.props.node.collection as PebbleCollection : (this.props.node as PebbleDocumentNode).document as PebbleDocument;
-    const same = samePermissions(item.permissions, value.permissions) && sameName;
+    const same = samePermissions(item.permissions, value.permissions) && sameName && sameGroup && sameOwner ;
     let validName = true;
     if (!sameName && this.props.validate) {
       validName = this.props.validate(value.name);
@@ -144,6 +176,8 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
     this.addUpdateListener(this.nameField, 'input');
+    this.addUpdateListener(this.ownerSelect, 'input');
+    this.addUpdateListener(this.groupSelect, 'input');
     this.permissionsEditor.addUpdateListeners(this.addUpdateListener.bind(this));
   }
 

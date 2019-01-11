@@ -58,6 +58,8 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
           server: this.serverField.input.value || '',
           username: this.usernameField.input.value || '',
           password: this.passwordField.input.value || '',
+          users: [],
+          groups: [],
         },
         autoConnect: false,
       };

@@ -2,6 +2,7 @@ import { PebbleCollection, PebbleDocument, readItem, readDate } from "../classes
 import { PebbleConnection } from "../classes/connection";
 import { createError, PebbleError } from "../classes/error";
 import { PebbleFileList } from "../classes/files";
+import { PebbleUser, PebbleGroup } from "../classes/user";
 
 export namespace PebbleApi {
 
@@ -163,9 +164,25 @@ export namespace PebbleApi {
     return false;
   }
   
+  export async function chmod(connection: PebbleConnection, uri: string, owner: PebbleUser, group: PebbleGroup, isCollection?: boolean): Promise<boolean> {
+    return (await _put(connection, '/exist/restxq/pebble/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri, {
+      headers: {
+        'x-pebble-owner': owner,
+        'x-pebble-group': group,
+      },
+    })).status === 200;
+  }
   export async function convert(connection: PebbleConnection, document: PebbleDocument): Promise<boolean> {
     return (await _put(connection, '/exist/restxq/pebble/document?uri=' + document.name, {
       headers: { 'x-pebble-convert': !document.binaryDoc },
     })).status === 200;
-  }  
+  }
+
+  export async function getUsers(connection: PebbleConnection): Promise<PebbleUser[]> {
+    return (await _get(connection, '/exist/restxq/pebble/user')).json();
+  }
+
+  export async function getGroups(connection: PebbleConnection): Promise<PebbleGroup[]> {
+    return (await _get(connection, '/exist/restxq/pebble/group')).json();
+  }
 }

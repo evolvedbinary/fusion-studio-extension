@@ -8,5 +8,8 @@
         margin-bottom: 8px;
       }
     }
-}
+  }
+  select option {
+    background-color: var(--theia-ui-dialog-color);
+  }
 }
