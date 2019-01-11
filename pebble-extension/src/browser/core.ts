@@ -162,8 +162,10 @@ export class PebbleCore {
         root.documents.forEach(document => this.addDocument(rootNode, connection, document));
         this.expand(rootNode);
         const users = await PebbleApi.getUsers(connection);
+        connection.users.push(...users);
         await this.addUsers(connectionNode, connection, users);
         const groups = await PebbleApi.getGroups(connection);
+        connection.groups.push(...groups);
         await this.addGroups(connectionNode, connection, groups);
       } catch (error) {
         connectionNode.expanded = false;
