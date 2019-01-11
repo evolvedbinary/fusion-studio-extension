@@ -102,14 +102,14 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
           addKey('size', { type: 'size', value: item.size }, this.keys);
         }
       }
-      props.node.connection.users.forEach(user => {
+      props.node.connectionNode.connection.users.forEach(user => {
         const option = document.createElement('option');
         option.innerHTML = user;
         option.setAttribute('value', user);
         this.ownerSelect.append(option);
       });
       this.ownerSelect.value = item.owner;
-      props.node.connection.groups.forEach(groups => {
+      props.node.connectionNode.connection.groups.forEach(groups => {
         const option = document.createElement('option');
         option.innerHTML = groups;
         option.setAttribute('value', groups);
@@ -144,7 +144,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
 
   async convert(): Promise<boolean> {
     if (PebbleNode.isDocument(this.props.node)) {
-      return PebbleApi.convert(this.props.node.connection, this.props.node.document);
+      return PebbleApi.convert(this.props.node.connectionNode.connection, this.props.node.document);
     } else {
       throw createError(PebbleError.unknown);
     }

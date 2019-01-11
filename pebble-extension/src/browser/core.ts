@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode } from "../classes/node";
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebblecontainerNode } from "../classes/node";
 import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
@@ -82,7 +82,7 @@ export class PebbleCore {
       name: 'Pebble Toolbar',
       parent: parent,
       selected: false,
-      connection: undefined as any,
+      connectionNode: undefined as any,
     } as PebbleToolbarNode, parent);
   }
 
@@ -119,9 +119,9 @@ export class PebbleCore {
   
   public expanded(node: CompositeTreeNode) {
     if (PebbleNode.isConnection(node) && !node.loaded) {
-      this.connect(node, node.connection);
+      this.connect(node, node.connectionNode.connection);
     } else if (PebbleNode.isCollection(node) && !node.loaded) {
-      this.load(node, node.connection, node.uri);
+      this.load(node, node.connectionNode.connection, node.uri);
     }
   }
 
@@ -159,6 +159,22 @@ export class PebbleCore {
     return this.isSelected && !!this.node && !!this.node.loading;
   }
 
+  public get isUsers(): boolean {
+    return this.isSelected && PebbleNode.isUsers(this.node);
+  }
+
+  public get isUser(): boolean {
+    return this.isSelected && PebbleNode.isUser(this.node);
+  }
+
+  public get isGroups(): boolean {
+    return this.isSelected && PebbleNode.isGroups(this.node);
+  }
+
+  public get isGroup(): boolean {
+    return this.isSelected && PebbleNode.isGroup(this.node);
+  }
+
   // Pebble nodes
 
   protected async connect(connectionNode: PebbleConnectionNode, connection: PebbleConnection) {
@@ -166,12 +182,12 @@ export class PebbleCore {
       try {
         const root = await PebbleApi.connect(connection);
         connectionNode.loaded = true;
-        const rootNode = await this.addCollection(connectionNode, connection, root)
-        rootNode.loaded = true;
-        root.collections.forEach(subCollection => this.addCollection(rootNode, connection, subCollection));
-        root.documents.forEach(document => this.addDocument(rootNode, connection, document));
-        this.expand(rootNode);
-        await this.addSecurity(connectionNode);
+        connectionNode.db = await this.addCollection(connectionNode, connection, root)
+        connectionNode.db.loaded = true;
+        root.collections.forEach(subCollection => this.addCollection(connectionNode.db, connection, subCollection));
+        root.documents.forEach(document => this.addDocument(connectionNode.db, connection, document));
+        this.expand(connectionNode.db);
+        connectionNode.security = await this.addSecurity(connectionNode);
       } catch (error) {
         connectionNode.expanded = false;
         console.error('caught:', error);
@@ -228,7 +244,7 @@ export class PebbleCore {
 
   public async save(document: PebbleDocumentNode, content: string) {
     try {
-      if (await PebbleApi.save(document.connection, document.uri, content)) {
+      if (await PebbleApi.save(document.connectionNode.connection, document.uri, content)) {
         document.isNew = false;
         this.refresh();
       }
@@ -249,9 +265,9 @@ export class PebbleCore {
   public async saveDocuments(node: PebbleCollectionNode, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {
     try {
       this.startLoading(node);
-      const docs = await PebbleApi.saveDocuments(node.connection, node.collection, documents);
+      const docs = await PebbleApi.saveDocuments(node.connectionNode.connection, node.collection, documents);
       this.endLoading(node);
-      this.load(node as CompositeTreeNode, node.connection, node.uri);
+      this.load(node as CompositeTreeNode, node.connectionNode.connection, node.uri);
       return docs;
     } catch (error) {
       this.endLoading(node);
@@ -267,10 +283,13 @@ export class PebbleCore {
       expanded,
       id: this.connectionID(connection),
       name: connection.name,
-      connection: connection,
+      connectionNode: (parent as PebblecontainerNode).connectionNode,
+      connection,
       parent: parent as any,
       selected: false,
-      uri: connection.server
+      uri: connection.server,
+      db: undefined as any,
+      security: undefined as any,
     } as PebbleConnectionNode, parent);
   }
   protected async addCollectionRecursive(connection: PebbleConnection, uri: string): Promise<PebbleCollectionNode> {
@@ -307,7 +326,7 @@ export class PebbleCore {
     }
     const node = {
       type: 'item',
-      connection,
+      connectionNode: (parent as PebblecontainerNode).connectionNode,
       isCollection: false,
       id: this.itemID(connection, document),
       name,
@@ -328,7 +347,7 @@ export class PebbleCore {
     }
     return this.addNode({
       type: 'item',
-      connection,
+      connectionNode: (parent as PebblecontainerNode).connectionNode,
       isCollection: true,
       children: [],
       id: this.itemID(connection, collection),
@@ -342,10 +361,10 @@ export class PebbleCore {
     } as PebbleCollectionNode, parent) as Promise<PebbleCollectionNode>;
   }
 
-  protected async addUser(parent: CompositeTreeNode, connection: PebbleConnection, user: PebbleUser): Promise<PebbleNode> {
+  protected async addUserNode(parent: CompositeTreeNode, connection: PebbleConnection, user: PebbleUser): Promise<PebbleNode> {
     const node: PebbleUserNode = {
       type: 'user',
-      connection: connection,
+      connectionNode: (parent as PebblecontainerNode).connectionNode,
       id: this.userID(connection, user),
       description: user,
       name: user,
@@ -356,7 +375,7 @@ export class PebbleCore {
     return this.addNode(node, parent) as Promise<PebbleNode>;
   }
 
-  protected async addUsers(parent: CompositeTreeNode, connection: PebbleConnection, users: PebbleUser[]): Promise<PebbleUsersNode> {
+  protected async addUsersNode(parent: CompositeTreeNode, connection: PebbleConnection, users: PebbleUser[]): Promise<PebbleUsersNode> {
     const usersNode = await this.addNode({
       type: 'users',
       connection: connection,
@@ -369,14 +388,14 @@ export class PebbleCore {
       expanded: false,
       selected: false,
     } as any, parent);
-    await Promise.all(users.map(user => this.addUser(usersNode as any as CompositeTreeNode, connection, user)));
+    await Promise.all(users.map(user => this.addUserNode(usersNode as any as CompositeTreeNode, connection, user)));
     return usersNode as PebbleUsersNode;
   }
 
-  protected async addGroup(parent: CompositeTreeNode, connection: PebbleConnection, group: PebbleGroup): Promise<PebbleNode> {
+  protected async addGroupNode(parent: CompositeTreeNode, connection: PebbleConnection, group: PebbleGroup): Promise<PebbleNode> {
     const node: PebbleGroupNode = {
       type: 'group',
-      connection: connection,
+      connectionNode: (parent as PebblecontainerNode).connectionNode,
       id: this.groupID(connection, group),
       description: group,
       name: group,
@@ -387,7 +406,7 @@ export class PebbleCore {
     return this.addNode(node, parent) as Promise<PebbleNode>;
   }
 
-  protected async addGroups(parent: CompositeTreeNode, connection: PebbleConnection, groups: PebbleGroup[]): Promise<PebbleGroupsNode> {
+  protected async addGroupsNode(parent: CompositeTreeNode, connection: PebbleConnection, groups: PebbleGroup[]): Promise<PebbleGroupsNode> {
     const groupsNode = await this.addNode({
       type: 'groups',
       connection: connection,
@@ -400,16 +419,16 @@ export class PebbleCore {
       expanded: false,
       selected: false,
     } as any, parent);
-    await Promise.all(groups.map(group => this.addGroup(groupsNode as any as CompositeTreeNode, connection, group)));
+    await Promise.all(groups.map(group => this.addGroupNode(groupsNode as any as CompositeTreeNode, connection, group)));
     return groupsNode as PebbleGroupsNode;
   }
 
-  protected async addSecurity(connectionNode: PebbleConnectionNode): Promise<PebbleNode> {
+  protected async addSecurity(connectionNode: PebbleConnectionNode): Promise<PebbleSecurityNode> {
     const securityNode = await this.addNode({
       type: 'security',
-      connection: connectionNode.connection,
+      connectionNode: connectionNode.connectionNode,
       children: [],
-      id: this.securityID(connectionNode.connection),
+      id: this.securityID(connectionNode.connectionNode.connection),
       description: 'Security',
       name: 'Security',
       parent,
@@ -417,12 +436,12 @@ export class PebbleCore {
       expanded: false,
       selected: false,
     } as any, connectionNode) as PebbleSecurityNode;
-    const users = await PebbleApi.getUsers(connectionNode.connection);
-    connectionNode.connection.users.push(...users);
-    securityNode.users = await this.addUsers(securityNode, connectionNode.connection, users);
-    const groups = await PebbleApi.getGroups(connectionNode.connection);
-    connectionNode.connection.groups.push(...groups);
-    securityNode.groups = await this.addGroups(securityNode, connectionNode.connection, groups);
+    const users = await PebbleApi.getUsers(connectionNode.connectionNode.connection);
+    connectionNode.connectionNode.connection.users.push(...users);
+    securityNode.users = await this.addUsersNode(securityNode, connectionNode.connectionNode.connection, users);
+    const groups = await PebbleApi.getGroups(connectionNode.connectionNode.connection);
+    connectionNode.connectionNode.connection.groups.push(...groups);
+    securityNode.groups = await this.addGroupsNode(securityNode, connectionNode.connectionNode.connection, groups);
     return securityNode;
   }
 
@@ -437,7 +456,7 @@ export class PebbleCore {
         const node = nodes[0];
         this.statusEntry.arguments = [node.id];
         if (PebbleNode.isConnection(node)) {
-          this.statusEntry.text = `$(toggle-on) "${node.connection.name}" by "${node.connection.username}" to ${node.connection.server}`;
+          this.statusEntry.text = `$(toggle-on) "${node.connectionNode.name}" by "${node.connectionNode.connection.username}" to ${node.connectionNode.connection.server}`;
         } else if (PebbleNode.isCollection(node)) {
           this.statusEntry.text = `$(folder) ${node.name} (${this.getGroupOwner(node.collection)})`;
         } else if (PebbleNode.isDocument(node)) {
@@ -601,7 +620,7 @@ export class PebbleCore {
   
   protected async changeOwner(node: PebbleItemNode, owner: PebbleUser, group: PebbleGroup): Promise<boolean> {
     const isCollection = PebbleNode.isCollection(node);
-    return await PebbleApi.chmod(node.connection, node.uri, owner, group, isCollection);
+    return await PebbleApi.chmod(node.connectionNode.connection, node.uri, owner, group, isCollection);
   }
   
   protected async rename(node: PebbleItemNode, name: string): Promise<boolean> {
@@ -635,7 +654,7 @@ export class PebbleCore {
   }
 
   protected async createDocument(collection: PebbleCollectionNode, name: string, content = '', group = '', owner = '') {
-    const doc = await this.openDocument(this.addDocument(collection, collection.connection, {
+    const doc = await this.openDocument(this.addDocument(collection, collection.connectionNode.connection, {
       content,
       name,
       created: new Date(),
@@ -645,7 +664,7 @@ export class PebbleCore {
       size: content.length,
       mediaType: lookup(name) || 'text/plain',
       group: group || 'dba',
-      owner: owner || collection.connection.username,
+      owner: owner || collection.connectionNode.connection.username,
     }, true));
     if (content !== '') {
       doc.editor.document.setDirty(true);
@@ -775,7 +794,7 @@ export class PebbleCore {
       let result = (await asyncForEach(operation.source, async (source: PebbleItemNode, i) => {
         const isCollection = PebbleNode.isCollection(source);
         const result = await PebbleApi.move(
-          source.connection,
+          source.connectionNode.connection,
           source.uri,
           operation.destination[i],
           isCollection,
@@ -784,12 +803,12 @@ export class PebbleCore {
         if (result) {
           let resultNode: PebbleItemNode;
           if (isCollection) {
-            resultNode = await this.addCollection(operation.destinationContainer, source.connection, {
+            resultNode = await this.addCollection(operation.destinationContainer, source.connectionNode.connection, {
               ...(source as PebbleCollectionNode).collection,
               name: operation.destination[i],
             });
           } else {
-            resultNode = this.addDocument(operation.destinationContainer, source.connection, {
+            resultNode = this.addDocument(operation.destinationContainer, source.connectionNode.connection, {
               ...(source as PebbleDocumentNode).document,
               name: operation.destination[i],
             });
@@ -832,9 +851,9 @@ export class PebbleCore {
     if (this.node && PebbleNode.isConnection(this.node)) {
       const node = this.node as PebbleConnectionNode;
       const msg = document.createElement('p');
-      msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connection.name + '</strong>?<br/>' +
-      'Server: <strong>' + node.connection.server + '</strong><br/>' +
-      'Username: <strong>' + node.connection.username + '</strong>';
+      msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connectionNode.name + '</strong>?<br/>' +
+      'Server: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
+      'Username: <strong>' + node.connectionNode.connection.username + '</strong>';
       const dialog = new ConfirmDialog({
         title: 'Delete connection',
         msg,
@@ -868,9 +887,9 @@ export class PebbleCore {
       this.nextName(name);
       name = collection.uri + '/' + name;
       if (isCollection) {
-        const result = await PebbleApi.newCollection(collection.connection, name);
+        const result = await PebbleApi.newCollection(collection.connectionNode.connection, name);
         if (result) {
-          this.addCollection(collection, collection.connection, result);
+          this.addCollection(collection, collection.connectionNode.connection, result);
         }
       } else {
         this.createDocument(collection, name);
@@ -982,7 +1001,7 @@ export class PebbleCore {
   public async deleteItem(): Promise<void> {
     const deleteNode = async function (core: PebbleCore, node: PebbleItemNode) {
       try {
-        const done = await PebbleApi.remove(node.connection, node.uri, PebbleNode.isCollection(node));
+        const done = await PebbleApi.remove(node.connectionNode.connection, node.uri, PebbleNode.isCollection(node));
         if (done) {
           if (PebbleNode.isDocument(node) && node.editor) {
             node.editor.closeWithoutSaving();
@@ -1041,7 +1060,7 @@ export class PebbleCore {
         const dialog = new PebbleConnectionDialog({
           title: 'Edit connection',
           acceptButton: 'Update',
-          ...node.connection,
+          ...node.connectionNode,
         });
         dialog.open().then(result => {
           if (result) {
@@ -1051,7 +1070,7 @@ export class PebbleCore {
             node.loaded = false;
             (node as any).id = this.connectionID(result.connection);
             (node as any).name = result.connection.name;
-            node.connection = result.connection;
+            node.connectionNode.connection = result.connection;
             node.selected = false;
             node.uri = result.connection.server;
             this.connect(node, result.connection);
@@ -1077,5 +1096,33 @@ export class PebbleCore {
         });
       }
     }
+  }
+
+  public addUser() {
+    if (PebbleNode.is(this.node)) {
+      const connectionNode = this.node.connectionNode;
+      console.log(connectionNode.security.users);
+    }
+    // const validator = (input: string) => input !== '' && !this.fileExists(input);
+    // const dialog = new SingleTextInputDialog({
+    //   initialValue: this.newName(validator),
+    //   title: 'New ' + (isCollection ? 'collection' : 'document'),
+    //   confirmButtonLabel: 'Create',
+    //   validate: validator,
+    // });
+    // let name = await dialog.open();
+    // if (name) {
+    //   this.nextName(name);
+    //   name = collection.uri + '/' + name;
+    //   if (isCollection) {
+    //     const result = await PebbleApi.newCollection(collection.connection, name);
+    //     if (result) {
+    //       this.addCollection(collection, collection.connection, result);
+    //     }
+    //   } else {
+    //     this.createDocument(collection, name);
+    //   }
+    // }
+    // return false;
   }
 }

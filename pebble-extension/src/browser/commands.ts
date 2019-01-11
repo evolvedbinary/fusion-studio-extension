@@ -10,6 +10,7 @@ export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_refresh'];
 export const CONTEXT_MENU_NEW_SUBMENU = [...CONTEXT_MENU_NEW, 'a_from_template'];
 export const CONTEXT_MENU_EDIT = [...CONTEXT_MENU, 'd_edit'];
 export const CONTEXT_MENU_FILE = [...CONTEXT_MENU, 'e_file'];
+export const CONTEXT_MENU_SECURITY = [...CONTEXT_MENU, 'f_security'];
 export const MENU = CommonMenus.FILE;
 export const actConnect: PebbleAction = {
   id: 'connect',
@@ -140,6 +141,15 @@ export const actProperties: PebbleAction = {
   execute: core => core.showPropertiesDialog.bind(core),
   visible: core => () => core.isItem || core.isConnection,
 };
+export const actAddUser: PebbleAction = {
+  id: 'add-user',
+  order: 'a',
+  label: 'Add user',
+  contextMenu: CONTEXT_MENU_SECURITY,
+  icon: 'fa fa-user-plus',
+  execute: core => () => core.addUser(),
+  visible: core => () => core.isUsers,
+};
 export const PEBBLE_COMMANDS: PebbleAction[] = [
   actConnect,
   actDisconnect,
@@ -153,6 +163,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actRefresh,
   actDelete,
   actProperties,
+  actAddUser,
   ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New document...',

@@ -41,8 +41,8 @@ export class PebbleResource implements Resource {
 
   async readContents(options?: { encoding?: string }): Promise<string> {
     const document = this.getDocument();
-    if (!document.isNew && document.connection) {
-      const result = await PebbleApi.load(document.connection, document.uri) as PebbleDocument;
+    if (!document.isNew && document.connectionNode) {
+      const result = await PebbleApi.load(document.connectionNode.connection, document.uri) as PebbleDocument;
       return result.content;
     }
     return document.document ? document.document.content : '';
