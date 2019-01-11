@@ -8,7 +8,6 @@ export class PebbleTree extends TreeImpl {
 }
 export class PebbleTreeModel extends TreeModelImpl {
   public removeNode(node: PebbleNode) {
-    console.log('PebbleTreeModel: removeNode');
     CompositeTreeNode.removeChild(node.parent as CompositeTreeNode, node);
     (this.tree as PebbleTree)._removeNode(node);
   }

@@ -21,6 +21,7 @@ import { PebbleStatusEntry } from "../classes/status";
 import { actProperties } from "./commands";
 import { PebblePropertiesDialog } from "./dialogs/properties-dialog";
 import { PebbleTreeModel } from "../classes/tree";
+import { PebbleUser, PebbleGroup } from "../classes/user";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -81,6 +82,7 @@ export class PebbleCore {
       name: 'Pebble Toolbar',
       parent: parent,
       selected: false,
+      connection: undefined as any,
     } as PebbleToolbarNode, parent);
   }
 
@@ -149,21 +151,25 @@ export class PebbleCore {
     return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isDocument(this._model.selectedNodes[0]);
   }
 
-  protected async connect(node: CompositeTreeNode, connection: PebbleConnection) {
-    if (this.startLoading(node)) {
+  protected async connect(connectionNode: PebbleConnectionNode, connection: PebbleConnection) {
+    if (this.startLoading(connectionNode)) {
       try {
         const root = await PebbleApi.connect(connection);
-        (node as PebbleConnectionNode).loaded = true;
-        const rootNode = await this.addCollection(node, connection, root)
+        connectionNode.loaded = true;
+        const rootNode = await this.addCollection(connectionNode, connection, root)
         rootNode.loaded = true;
         root.collections.forEach(subCollection => this.addCollection(rootNode, connection, subCollection));
         root.documents.forEach(document => this.addDocument(rootNode, connection, document));
         this.expand(rootNode);
+        const users = await PebbleApi.getUsers(connection);
+        await this.addUsers(connectionNode, connection, users);
+        const groups = await PebbleApi.getGroups(connection);
+        await this.addGroups(connectionNode, connection, groups);
       } catch (error) {
-        (node as PebbleConnectionNode).expanded = false;
+        connectionNode.expanded = false;
         console.error('caught:', error);
       }
-      this.endLoading(node);
+      this.endLoading(connectionNode);
     }
   }
 
@@ -329,6 +335,62 @@ export class PebbleCore {
     } as PebbleCollectionNode, parent) as Promise<PebbleCollectionNode>;
   }
 
+  protected async addUser(parent: CompositeTreeNode, connection: PebbleConnection, user: PebbleUser): Promise<PebbleNode> {
+    const node: PebbleNode = {
+      type: 'user',
+      connection: connection,
+      id: this.userID(connection, user),
+      description: user,
+      name: user,
+      parent,
+      uri: '/users/' + user,
+    };
+    return this.addNode(node, parent) as Promise<PebbleNode>;
+  }
+
+  protected async addUsers(parent: CompositeTreeNode, connection: PebbleConnection, users: PebbleUser[]): Promise<PebbleNode[]> {
+    const usersNode = await this.addNode({
+      type: 'users',
+      connection: connection,
+      children: [],
+      id: this.userID(connection),
+      description: 'Users',
+      name: 'users',
+      parent,
+      uri: '/users',
+      expanded: false,
+    } as any, parent);
+    return Promise.all(users.map(user => this.addUser(usersNode as any as CompositeTreeNode, connection, user))) as Promise<PebbleNode[]>;
+  }
+
+  protected async addGroup(parent: CompositeTreeNode, connection: PebbleConnection, group: PebbleGroup): Promise<PebbleNode> {
+    const node: PebbleNode = {
+      type: 'group',
+      connection: connection,
+      id: this.groupID(connection, group),
+      description: group,
+      name: group,
+      parent,
+      uri: '/groups/' + group,
+    };
+    return this.addNode(node, parent) as Promise<PebbleNode>;
+  }
+
+  protected async addGroups(parent: CompositeTreeNode, connection: PebbleConnection, groups: PebbleGroup[]): Promise<PebbleNode[]> {
+    const usersNode = await this.addNode({
+      type: 'groups',
+      connection: connection,
+      children: [],
+      id: this.groupID(connection),
+      description: 'Groups',
+      name: 'groups',
+      parent,
+      uri: '/groups',
+      expanded: false,
+    } as any, parent);
+    return Promise.all(groups.map(group => this.addGroup(usersNode as any as CompositeTreeNode, connection, group))) as Promise<PebbleNode[]>;
+  }
+
   public status() {
     const nodes = this.topNodes(this.selection);
     if (this.node) {
@@ -400,6 +462,12 @@ export class PebbleCore {
     if (PebbleNode.isDocument(node)) {
       return 'fa fa-' + (node.loading ? loading : this.getDocumentIcon(node));
     }
+    if (PebbleNode.isGroup(node) || PebbleNode.isGroups(node)) {
+      return 'fa fa-' + (node.loading ? loading : 'users');
+    }
+    if (PebbleNode.isUser(node) || PebbleNode.isUsers(node)) {
+      return 'fa fa-' + (node.loading ? loading : 'user');
+    }
     return '';
   }
 
@@ -445,12 +513,23 @@ export class PebbleCore {
     return id.split('/').pop() || id;
   }
   
+  protected generateID(connection: PebbleConnection, text: string, prefix?: string): string {
+    return this.connectionID(connection) + (prefix ? prefix + '/' : '') + text;
+  }
+  
   protected connectionID(connection: PebbleConnection): string {
     return (connection.username ? connection.username : '(guest)') + '@' + connection.server;
   }
 
   protected itemID(connection: PebbleConnection, item: PebbleItem): string {
     return this.connectionID(connection) + item.name;
+  }
+
+  protected userID(connection: PebbleConnection, user: PebbleUser = ''): string {
+    return this.generateID(connection, user, 'user');
+  }
+  protected groupID(connection: PebbleConnection, group: PebbleGroup = ''): string {
+    return this.generateID(connection, group, 'group');
   }
 
 
