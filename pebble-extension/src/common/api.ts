@@ -164,6 +164,14 @@ export namespace PebbleApi {
     return false;
   }
   
+  export async function chmod(connection: PebbleConnection, uri: string, owner: PebbleUser, group: PebbleGroup, isCollection?: boolean): Promise<boolean> {
+    return (await _put(connection, '/exist/restxq/pebble/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri, {
+      headers: {
+        'x-pebble-owner': owner,
+        'x-pebble-group': group,
+      },
+    })).status === 200;
+  }
   export async function convert(connection: PebbleConnection, document: PebbleDocument): Promise<boolean> {
     return (await _put(connection, '/exist/restxq/pebble/document?uri=' + document.name, {
       headers: { 'x-pebble-convert': !document.binaryDoc },

@@ -589,6 +589,11 @@ export class PebbleCore {
     return parent.join(TRAILING_SYMBOL);
   }
   
+  protected async changeOwner(node: PebbleItemNode, owner: PebbleUser, group: PebbleGroup): Promise<boolean> {
+    const isCollection = PebbleNode.isCollection(node);
+    return await PebbleApi.chmod(node.connection, node.uri, owner, group, isCollection);
+  }
+  
   protected async rename(node: PebbleItemNode, name: string): Promise<boolean> {
     if (PebbleNode.isCollection(node.parent)) {
       const parent = node.parent;
@@ -1051,8 +1056,12 @@ export class PebbleCore {
         });
         dialog.open().then(async result => {
           if (result) {
+            const item = PebbleNode.isCollection(node) ? node.collection as PebbleCollection : (node as PebbleDocumentNode).document as PebbleDocument;
             if (result.name !== node.name) {
-              this.rename(node, result.name);
+              await this.rename(node, result.name);
+            }
+            if ((result.owner !== item.owner) || (result.group !== item.group)) {
+              await this.changeOwner(node, result.owner, result.group);
             }
           }
         });
