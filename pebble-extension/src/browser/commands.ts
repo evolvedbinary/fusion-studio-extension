@@ -2,28 +2,6 @@ import { PebbleAction, PebbleSubMenu } from "../classes/action";
 import { CommonMenus } from "@theia/core/lib/browser";
 import { TEMPLATES } from "../common/templates";
 import { PebbleTemplate } from "../classes/template";
-import { PebbleCore } from "./core";
-
-namespace check {
-  export function connection(core: PebbleCore): boolean {
-    return core.isConnection();
-  }
-  export function item(core: PebbleCore): boolean {
-    return core.isItem();
-  }
-  export function collection(core: PebbleCore): boolean {
-    return core.isCollection();
-  }
-  export function document(core: PebbleCore): boolean {
-    return core.isDocument();
-  }
-  export function selected(core: PebbleCore, count = 0): boolean {
-    return !!core.node;
-  }
-  export function loading(core: PebbleCore): boolean {
-    return !!core.node && !!core.node.loading;
-  }
-}
 
 export const CONTEXT_MENU = ['pebble-context-menu'];
 export const CONTEXT_MENU_CONNECTION = [...CONTEXT_MENU, 'a_connection'];
@@ -50,7 +28,7 @@ export const actDisconnect: PebbleAction = {
   contextMenu: CONTEXT_MENU_CONNECTION,
   icon: 'fa fa-minus',
   execute: core => () => core.deleteConnection(),
-  visible: core => () => check.connection(core),
+  visible: core => () => core.isConnection,
 };
 export const actNewCollection: PebbleAction = {
   id: 'new-collection',
@@ -59,8 +37,8 @@ export const actNewCollection: PebbleAction = {
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-folder-o',
   execute: core => () => core.newItem(true),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.collection(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isCollection,
 };
 export const actNewDocument: PebbleAction = {
   id: 'new-document',
@@ -69,8 +47,8 @@ export const actNewDocument: PebbleAction = {
   contextMenu: CONTEXT_MENU_NEW_SUBMENU,
   icon: 'fa fa-file-o',
   execute: core => () => core.newItem(),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.collection(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isCollection,
 };
 export const actUploadDocument: PebbleAction = {
   id: 'upload-document',
@@ -79,8 +57,8 @@ export const actUploadDocument: PebbleAction = {
   contextMenu: CONTEXT_MENU_NEW,
   icon: 'fa fa-upload',
   execute: core => () => core.uploadItem(),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.collection(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isCollection,
 };
 const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: number) => ({
   id: 'new-document-template:' + template.name,
@@ -89,8 +67,8 @@ const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: nu
   contextMenu: CONTEXT_MENU_NEW_SUBMENU,
   icon: 'fa fa-file-o',
   execute: core => () => core.newItemFromTemplate(template),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.collection(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isCollection,
 } as PebbleAction));
 export const actRename: PebbleAction = {
   id: 'rename',
@@ -99,8 +77,8 @@ export const actRename: PebbleAction = {
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-i-cursor',
   execute: core => () => core.renameItem(),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.item(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isItem,
 };
 export const actCut: PebbleAction = {
   id: 'cut',
@@ -109,8 +87,8 @@ export const actCut: PebbleAction = {
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-scissors',
   execute: core => () => core.cut(),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.item(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isItem,
 };
 export const actCopy: PebbleAction = {
   id: 'copy',
@@ -119,8 +97,8 @@ export const actCopy: PebbleAction = {
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-files-o',
   execute: core => () => core.copy(),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.item(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isItem,
 };
 export const actPaste: PebbleAction = {
   id: 'paste',
@@ -129,8 +107,8 @@ export const actPaste: PebbleAction = {
   contextMenu: CONTEXT_MENU_EDIT,
   icon: 'fa fa-clipboard',
   execute: core => () => core.paste(),
-  enabled: core => () => !check.loading(core) && core.canPaste(),
-  visible: core => () => check.collection(core),
+  enabled: core => () => !core.isLoading && core.canPaste(),
+  visible: core => () => core.isCollection,
 };
 export const actRefresh: PebbleAction = {
   id: 'refresh',
@@ -139,8 +117,8 @@ export const actRefresh: PebbleAction = {
   contextMenu: CONTEXT_MENU_FILE,
   icon: 'fa fa-refresh',
   execute: core => () => core.refresh(core.node as any),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.collection(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isCollection,
 };
 export const actDelete: PebbleAction = {
   id: 'delete',
@@ -149,8 +127,8 @@ export const actDelete: PebbleAction = {
   contextMenu: CONTEXT_MENU_FILE,
   icon: 'fa fa-trash',
   execute: core => () => core.deleteItem(),
-  enabled: core => () => !check.loading(core),
-  visible: core => () => check.item(core),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isItem,
 };
 export const actProperties: PebbleAction = {
   id: 'properties',
@@ -160,7 +138,7 @@ export const actProperties: PebbleAction = {
   keys: 'alt+enter',
   icon: 'fa fa-info-circle',
   execute: core => core.showPropertiesDialog.bind(core),
-  visible: core => () => check.item(core) || check.connection(core),
+  visible: core => () => core.isItem || core.isConnection,
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [
   actConnect,

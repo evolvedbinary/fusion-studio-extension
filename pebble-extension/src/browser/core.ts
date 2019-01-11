@@ -91,10 +91,6 @@ export class PebbleCore {
     this.refresh();
   }
 
-  public get selected(): boolean {
-    return !!this._model && this._model.selectedNodes.length > 0;
-  }
-
   public get selectedCount(): number {
     return this._model ? this._model.selectedNodes.length : 0;
   }
@@ -137,23 +133,33 @@ export class PebbleCore {
     return this._model ? this._model.getNode(id) as PebbleNode : undefined;
   }
 
+  // Pebble nodes detection
+
+  public get isSelected(): boolean {
+    return !!this._model && this._model.selectedNodes.length > 0;
+  }
+
+  public get isItem(): boolean {
+    return this.isSelected && PebbleNode.isItem(this.node);
+  }
+
+  public get isConnection(): boolean {
+    return this.isSelected && PebbleNode.isConnection(this.node);
+  }
+
+  public get isCollection(): boolean {
+    return this.isSelected && PebbleNode.isCollection(this.node);
+  }
+
+  public get isDocument(): boolean {
+    return this.isSelected && PebbleNode.isDocument(this.node);
+  }
+
+  public get isLoading(): boolean {
+    return this.isSelected && !!this.node && !!this.node.loading;
+  }
+
   // Pebble nodes
-
-  public isItem(): boolean {
-    return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isItem(this._model.selectedNodes[0]);
-  }
-
-  public isConnection(): boolean {
-    return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isConnection(this._model.selectedNodes[0]);
-  }
-
-  public isCollection(): boolean {
-    return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isCollection(this._model.selectedNodes[0]);
-  }
-
-  public isDocument(): boolean {
-    return !!this._model && this._model.selectedNodes.length > 0 && PebbleNode.isDocument(this._model.selectedNodes[0]);
-  }
 
   protected async connect(connectionNode: PebbleConnectionNode, connection: PebbleConnection) {
     if (this.startLoading(connectionNode)) {
@@ -820,7 +826,7 @@ export class PebbleCore {
   }
 
   public async deleteConnection(): Promise<void> {
-    if (!this.selected || !this._model) {
+    if (!this.isSelected || !this._model) {
       return;
     }
     if (this.node && PebbleNode.isConnection(this.node)) {
@@ -990,7 +996,7 @@ export class PebbleCore {
         core.endLoading(node);
       }
     };
-    if (!this.selected || !this._model) {
+    if (!this.isSelected || !this._model) {
       return;
     }
     const collections: any[] = [];
