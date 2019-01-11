@@ -1064,7 +1064,7 @@ export class PebbleCore {
         const dialog = new PebbleConnectionDialog({
           title: 'Edit connection',
           acceptButton: 'Update',
-          ...node.connectionNode,
+          ...node.connectionNode.connection,
         });
         dialog.open().then(result => {
           if (result) {
