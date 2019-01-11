@@ -35,19 +35,19 @@ export interface PebbleDocumentNode extends PebbleItemNode {
   isNew: boolean;
   editor?: any;
 }
-export interface PebbleUserNode extends PebbleNode {
+export interface PebbleUserNode extends PebbleNode, SelectableTreeNode {
   type: 'user',
 }
-export interface PebbleUsersNode extends PebblecontainerNode {
+export interface PebbleUsersNode extends PebblecontainerNode, SelectableTreeNode {
   type: 'users',
 }
-export interface PebbleGroupNode extends PebbleNode {
+export interface PebbleGroupNode extends PebbleNode, SelectableTreeNode {
   type: 'group',
 }
-export interface PebbleGroupsNode extends PebblecontainerNode {
+export interface PebbleGroupsNode extends PebblecontainerNode, SelectableTreeNode {
   type: 'groups',
 }
-export interface PebbleSecurityNode extends PebblecontainerNode {
+export interface PebbleSecurityNode extends PebblecontainerNode, SelectableTreeNode {
   type: 'security',
   users: PebbleUsersNode,
   groups: PebbleGroupsNode,
