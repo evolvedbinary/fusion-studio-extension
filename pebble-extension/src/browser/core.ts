@@ -353,7 +353,7 @@ export class PebbleCore {
       children: [],
       id: this.userID(connection),
       description: 'Users',
-      name: 'users',
+      name: 'Users',
       parent,
       uri: '/users',
       expanded: false,
@@ -384,7 +384,7 @@ export class PebbleCore {
       children: [],
       id: this.groupID(connection),
       description: 'Groups',
-      name: 'groups',
+      name: 'Groups',
       parent,
       uri: '/groups',
       expanded: false,
@@ -401,7 +401,7 @@ export class PebbleCore {
       children: [],
       id: this.securityID(connectionNode.connection),
       description: 'Security',
-      name: 'security',
+      name: 'Security',
       parent,
       uri: '/security',
       expanded: false,
@@ -480,22 +480,22 @@ export class PebbleCore {
   public getIcon(node: PebbleNode): string {
     const loading = 'spin fa-spinner';
     if (PebbleNode.isConnection(node)) {
-      return 'fa fa-' + (node.loading ? loading : this.getConnectionIcon(node));
+      return 'fa fa-fw fa-' + (node.loading ? loading : this.getConnectionIcon(node));
     }
     if (PebbleNode.isCollection(node)) {
-      return 'fa fa-' + (node.loading ? loading : this.getCollectionIcon(node));
+      return 'fa fa-fw fa-' + (node.loading ? loading : this.getCollectionIcon(node));
     }
     if (PebbleNode.isDocument(node)) {
-      return 'fa fa-' + (node.loading ? loading : this.getDocumentIcon(node));
+      return 'fa fa-fw fa-' + (node.loading ? loading : this.getDocumentIcon(node));
     }
     if (PebbleNode.isGroup(node) || PebbleNode.isGroups(node)) {
-      return 'fa fa-' + (node.loading ? loading : 'users');
+      return 'fa fa-fw fa-' + (node.loading ? loading : 'users');
     }
     if (PebbleNode.isUser(node) || PebbleNode.isUsers(node)) {
-      return 'fa fa-' + (node.loading ? loading : 'user');
+      return 'fa fa-fw fa-' + (node.loading ? loading : 'user');
     }
     if (PebbleNode.isSecurity(node)) {
-      return 'fa fa-' + (node.loading ? loading : 'lock');
+      return 'fa fa-fw fa-' + (node.loading ? loading : 'lock');
     }
     return '';
   }
