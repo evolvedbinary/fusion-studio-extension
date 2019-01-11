@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from "../classes/node";
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode } from "../classes/node";
 import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
@@ -161,12 +161,7 @@ export class PebbleCore {
         root.collections.forEach(subCollection => this.addCollection(rootNode, connection, subCollection));
         root.documents.forEach(document => this.addDocument(rootNode, connection, document));
         this.expand(rootNode);
-        const users = await PebbleApi.getUsers(connection);
-        connection.users.push(...users);
-        await this.addUsers(connectionNode, connection, users);
-        const groups = await PebbleApi.getGroups(connection);
-        connection.groups.push(...groups);
-        await this.addGroups(connectionNode, connection, groups);
+        await this.addSecurity(connectionNode);
       } catch (error) {
         connectionNode.expanded = false;
         console.error('caught:', error);
@@ -393,6 +388,27 @@ export class PebbleCore {
     return Promise.all(groups.map(group => this.addGroup(usersNode as any as CompositeTreeNode, connection, group))) as Promise<PebbleNode[]>;
   }
 
+  protected async addSecurity(connectionNode: PebbleConnectionNode): Promise<PebbleNode> {
+    const securityNode = await this.addNode({
+      type: 'security',
+      connection: connectionNode.connection,
+      children: [],
+      id: this.securityID(connectionNode.connection),
+      description: 'Security',
+      name: 'security',
+      parent,
+      uri: '/security',
+      expanded: false,
+    } as any, connectionNode) as PebbleSecurityNode;
+    const users = await PebbleApi.getUsers(connectionNode.connection);
+    connectionNode.connection.users.push(...users);
+    await this.addUsers(securityNode, connectionNode.connection, users);
+    const groups = await PebbleApi.getGroups(connectionNode.connection);
+    connectionNode.connection.groups.push(...groups);
+    await this.addGroups(securityNode, connectionNode.connection, groups);
+    return securityNode;
+  }
+
   public status() {
     const nodes = this.topNodes(this.selection);
     if (this.node) {
@@ -470,6 +486,9 @@ export class PebbleCore {
     if (PebbleNode.isUser(node) || PebbleNode.isUsers(node)) {
       return 'fa fa-' + (node.loading ? loading : 'user');
     }
+    if (PebbleNode.isSecurity(node)) {
+      return 'fa fa-' + (node.loading ? loading : 'lock');
+    }
     return '';
   }
 
@@ -526,12 +545,17 @@ export class PebbleCore {
   protected itemID(connection: PebbleConnection, item: PebbleItem): string {
     return this.connectionID(connection) + item.name;
   }
+  
+  protected securityID(connection: PebbleConnection, prefix?: string, text?: string): string {
+    return this.connectionID(connection) + 'security' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
+  }
 
   protected userID(connection: PebbleConnection, user: PebbleUser = ''): string {
-    return this.generateID(connection, user, 'user');
+    return this.securityID(connection, 'user', user);
   }
+
   protected groupID(connection: PebbleConnection, group: PebbleGroup = ''): string {
-    return this.generateID(connection, group, 'group');
+    return this.securityID(connection, 'group', group);
   }
 
 

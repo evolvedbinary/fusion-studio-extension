@@ -3,7 +3,7 @@ import { PebbleConnection } from "./connection";
 import { PebbleDocument, PebbleCollection } from "./item";
 
 
-export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group';
+export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group' | 'security';
 export interface PebbleNode extends TreeNode {
   type: PebbleNodeType;
   connection: PebbleConnection;
@@ -38,14 +38,19 @@ export interface PebbleDocumentNode extends PebbleItemNode {
 export interface PebbleUserNode extends PebbleNode {
   type: 'user',
 }
-export interface PebbleUsersNode extends PebbleNode {
+export interface PebbleUsersNode extends PebblecontainerNode {
   type: 'users',
 }
 export interface PebbleGroupNode extends PebbleNode {
   type: 'group',
 }
-export interface PebbleGroupsNode extends PebbleNode {
+export interface PebbleGroupsNode extends PebblecontainerNode {
   type: 'groups',
+}
+export interface PebbleSecurityNode extends PebblecontainerNode {
+  type: 'security',
+  users: PebbleUsersNode,
+  groups: PebbleGroupsNode,
 }
 
 export namespace PebbleNode {
@@ -81,5 +86,8 @@ export namespace PebbleNode {
   }
   export function isGroups(node?: TreeNode): node is PebbleGroupsNode {
     return PebbleNode.isContainer(node) && node.type === 'groups';
+  }
+  export function isSecurity(node?: TreeNode): node is PebbleSecurityNode {
+    return PebbleNode.isContainer(node) && node.type === 'security';
   }
 }
