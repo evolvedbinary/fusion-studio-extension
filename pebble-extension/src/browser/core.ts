@@ -405,6 +405,7 @@ export class PebbleCore {
       parent,
       uri: '/security',
       expanded: false,
+      selected: false,
     } as any, connectionNode) as PebbleSecurityNode;
     const users = await PebbleApi.getUsers(connectionNode.connection);
     connectionNode.connection.users.push(...users);
