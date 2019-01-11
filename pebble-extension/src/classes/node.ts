@@ -2,13 +2,14 @@ import { TreeNode, ExpandableTreeNode, SelectableTreeNode, CompositeTreeNode } f
 import { PebbleConnection } from "./connection";
 import { PebbleDocument, PebbleCollection } from "./item";
 
+export interface PebblecontainerNode extends CompositeTreeNode, ExpandableTreeNode {}
+
 export interface PebbleNode extends TreeNode {
   type: 'connection' | 'toolbar' | 'item';
   connection?: PebbleConnection;
   uri: string;
   loading?: boolean;
 }
-export interface PebblecontainerNode extends CompositeTreeNode, ExpandableTreeNode {}
 
 export interface PebbleConnectionNode extends PebbleNode, PebblecontainerNode, SelectableTreeNode {
   type: 'connection';

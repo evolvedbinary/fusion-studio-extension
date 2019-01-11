@@ -7,6 +7,7 @@ import { PebbleHome } from './home';
 import { PebbleToolbar } from './toolbar';
 import { PebbleItem } from './item';
 import { DragController } from './drag';
+import { PebbleTreeModel } from '../../classes/tree';
 
 export type PebbleViewWidgetFactory = () => PebbleViewWidget;
 export const PebbleViewWidgetFactory = Symbol('PebbleViewWidgetFactory');
@@ -16,7 +17,7 @@ export class PebbleViewWidget extends TreeWidget {
     @inject(PebbleCore) protected readonly core: PebbleCore,
     @inject(DragController) protected readonly drag: DragController,
     @inject(TreeProps) protected readonly treeProps: TreeProps,
-    @inject(TreeModel) model: TreeModel,
+    @inject(PebbleTreeModel) model: PebbleTreeModel,
     @inject(ContextMenuRenderer) protected readonly contextMenuRenderer: ContextMenuRenderer
   ) {
     super(treeProps, model, contextMenuRenderer);
@@ -32,7 +33,7 @@ export class PebbleViewWidget extends TreeWidget {
   @postConstruct()
   protected init(): void {
     super.init();
-    this.core.model = this.model;
+    this.core.model = this.model as PebbleTreeModel;
   }
 
   protected createContainerAttributes(): React.HTMLAttributes<HTMLElement> {

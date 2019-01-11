@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode } from "../classes/node";
-import { open, TreeModel, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
+import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
@@ -20,6 +20,7 @@ import { asyncForEach } from "../common/asyncForEach";
 import { PebbleStatusEntry } from "../classes/status";
 import { actProperties } from "./commands";
 import { PebblePropertiesDialog } from "./dialogs/properties-dialog";
+import { PebbleTreeModel } from "../classes/tree";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -39,14 +40,14 @@ export class PebbleCore {
   ) {}
 
   // tree model
-  private _model?: TreeModel;
-  public set model(model: TreeModel | undefined) {
+  private _model?: PebbleTreeModel;
+  public set model(model: PebbleTreeModel | undefined) {
     if (this._model != model) {
       this._model = model;
       this.createRoot();
     }
   }
-  public get model(): TreeModel | undefined {
+  public get model(): PebbleTreeModel | undefined {
     return this._model;
   }
 
@@ -65,9 +66,10 @@ export class PebbleCore {
     }
   }
 
-  protected addNode(child: PebbleNode, parent?: TreeNode): PebbleNode {
+  protected async addNode(child: PebbleNode, parent?: TreeNode): Promise<PebbleNode> {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
     this._model && this._model.refresh();
+    await this.refresh();
     return this.getNode(child.id) as PebbleNode;
   }
 
@@ -82,8 +84,9 @@ export class PebbleCore {
     } as PebbleToolbarNode, parent);
   }
 
-  protected removeNode(child: PebbleNode, parent?: TreeNode): void {
-    CompositeTreeNode.removeChild(parent as CompositeTreeNode, child);
+  protected removeNode(child: PebbleNode, parent?: TreeNode) {
+    this._model && this._model.removeNode(child);
+    this.refresh();
   }
 
   public get selected(): boolean {
@@ -110,12 +113,10 @@ export class PebbleCore {
     }
   }
 
-  protected empty(node: CompositeTreeNode) {
-    let child: PebbleNode;
-    while (child = CompositeTreeNode.getFirstChild(node) as PebbleNode) {
-      this.removeNode(child, node);
+  protected async empty(node: CompositeTreeNode) {
+    while (node.children.length) {
+      this.removeNode(node.children[node.children.length - 1] as PebbleNode, node);
     }
-    this.refresh();
   }
   
   public expanded(node: CompositeTreeNode) {
@@ -151,11 +152,13 @@ export class PebbleCore {
   protected async connect(node: CompositeTreeNode, connection: PebbleConnection) {
     if (this.startLoading(node)) {
       try {
-        const result = await PebbleApi.connect(connection);
+        const root = await PebbleApi.connect(connection);
         (node as PebbleConnectionNode).loaded = true;
-        const collection = result as PebbleCollection;
-        collection.collections.forEach(subCollection => this.addCollection(node, connection, subCollection));
-        collection.documents.forEach(document => this.addDocument(node, connection, document));
+        const rootNode = await this.addCollection(node, connection, root)
+        rootNode.loaded = true;
+        root.collections.forEach(subCollection => this.addCollection(rootNode, connection, subCollection));
+        root.documents.forEach(document => this.addDocument(rootNode, connection, document));
+        this.expand(rootNode);
       } catch (error) {
         (node as PebbleConnectionNode).expanded = false;
         console.error('caught:', error);
@@ -305,7 +308,7 @@ export class PebbleCore {
     return node;
   }
 
-  protected addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): PebbleCollectionNode {
+  protected async addCollection(parent: TreeNode, connection: PebbleConnection, collection: PebbleCollection): Promise<PebbleCollectionNode> {
     const name = this.getName(collection.name);
     if (PebbleNode.isCollection(parent)) {
       collection.name = this.collectionDir(parent.uri, name);
@@ -323,7 +326,7 @@ export class PebbleCore {
       expanded: false,
       collection,
       uri: collection.name,
-    } as PebbleCollectionNode, parent) as PebbleCollectionNode;
+    } as PebbleCollectionNode, parent) as Promise<PebbleCollectionNode>;
   }
 
   public status() {
@@ -640,7 +643,7 @@ export class PebbleCore {
         if (result) {
           let resultNode: PebbleItemNode;
           if (isCollection) {
-            resultNode = this.addCollection(operation.destinationContainer, source.connection, {
+            resultNode = await this.addCollection(operation.destinationContainer, source.connection, {
               ...(source as PebbleCollectionNode).collection,
               name: operation.destination[i],
             });
@@ -700,7 +703,7 @@ export class PebbleCore {
       const result = await dialog.open();
       if (result) {
         this.removeNode(node, this._model.root as CompositeTreeNode);
-        this._model.refresh();
+        // this._model.refresh();
       } else {
         this._model.selectNode(node);
       }
@@ -821,7 +824,7 @@ export class PebbleCore {
     }
   }
 
-  public refresh(node?: PebbleCollectionNode) {
+  public async refresh(node?: PebbleCollectionNode) {
     if (this._model) {
       if (PebbleNode.isCollection(node)) {
         this._model.collapseNode(node);
@@ -846,7 +849,6 @@ export class PebbleCore {
             // node.editor.saveable.setDirty(true);
           }
           core.removeNode(node, node.parent as CompositeTreeNode);
-          core.refresh();
         }
       } catch (error) {
         console.error('caught:', error);

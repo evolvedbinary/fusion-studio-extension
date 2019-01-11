@@ -7,7 +7,7 @@ import { ResourceResolver } from "@theia/core/lib/common";
 import { ContainerModule, interfaces } from "inversify";
 import { PebbleResourceResolver } from '../browser/resource';
 import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget/main';
-import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution, WebSocketConnectionProvider } from '@theia/core/lib/browser';
+import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution, WebSocketConnectionProvider, Tree, TreeModel } from '@theia/core/lib/browser';
 import { PebbleViewService } from './view-service';
 
 import '../../src/browser/style/index.css';
@@ -18,6 +18,7 @@ import { DragController } from "./widget/drag";
 import { PebbleFiles, pebbleFilesePath } from "../classes/files";
 import { LanguageGrammarDefinitionContribution } from "@theia/monaco/lib/browser/textmate";
 import { XQueryGrammaribution } from "./language-contribution";
+import { PebbleTree, PebbleTreeModel } from "../classes/tree";
 
 export default new ContainerModule(bind => {
 
@@ -52,6 +53,12 @@ const TREE_PROPS = {
 
 function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
   const child = createTreeContainer(parent);
+
+  child.bind(PebbleTree).toSelf();
+  child.rebind(Tree).toService(PebbleTree);
+
+  child.bind(PebbleTreeModel).toSelf();
+  child.rebind(TreeModel).toService(PebbleTreeModel);
 
   child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, ...TREE_PROPS });
 
