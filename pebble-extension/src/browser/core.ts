@@ -86,7 +86,7 @@ export class PebbleCore {
     } as PebbleToolbarNode, parent);
   }
 
-  protected removeNode(child: PebbleNode, parent?: TreeNode) {
+  protected removeNode(child: PebbleNode) {
     this._model && this._model.removeNode(child);
     this.refresh();
   }
@@ -113,7 +113,7 @@ export class PebbleCore {
 
   protected async empty(node: CompositeTreeNode) {
     while (node.children.length) {
-      this.removeNode(node.children[node.children.length - 1] as PebbleNode, node);
+      this.removeNode(node.children[node.children.length - 1] as PebbleNode);
     }
   }
   
@@ -159,6 +159,9 @@ export class PebbleCore {
     return this.isSelected && !!this.node && !!this.node.loading;
   }
 
+  public get isSecurity(): boolean {
+    return this.isSelected && PebbleNode.isSecurity(this.node);
+  }
   public get isUsers(): boolean {
     return this.isSelected && PebbleNode.isUsers(this.node);
   }
@@ -818,7 +821,7 @@ export class PebbleCore {
             });
           }
           if (!operation.copy) {
-            this.removeNode(source, source.parent);
+            this.removeNode(source);
           }
           return resultNode as PebbleItemNode;
         }
@@ -866,7 +869,7 @@ export class PebbleCore {
       });
       const result = await dialog.open();
       if (result) {
-        this.removeNode(node, this._model.root as CompositeTreeNode);
+        this.removeNode(node);
         // this._model.refresh();
       } else {
         this._model.selectNode(node);
@@ -1012,7 +1015,7 @@ export class PebbleCore {
             // TODO: keep the file in the editor as a new one
             // node.editor.saveable.setDirty(true);
           }
-          core.removeNode(node, node.parent as CompositeTreeNode);
+          core.removeNode(node);
         }
       } catch (error) {
         console.error('caught:', error);
@@ -1098,6 +1101,23 @@ export class PebbleCore {
             }
           }
         });
+      }
+    }
+  }
+
+  public async deleteUser() {
+    if (PebbleNode.isUser(this.node) && this._model) {
+      const dialog = new ConfirmDialog({
+        title: 'Delete connection',
+        msg: 'Are you sure you want to delete the user "' + this.node.name + '"?',
+        cancel: 'Keep',
+        ok: 'Delete'
+      });
+      const result = await dialog.open();
+      if (result) {
+        if (await PebbleApi.removeUser(this.node.connectionNode.connection, this.node.name)) {
+          this.removeNode(this.node);
+        }
       }
     }
   }

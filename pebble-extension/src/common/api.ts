@@ -195,6 +195,20 @@ export namespace PebbleApi {
     }
   }
 
+  export async function removeUser(connection: PebbleConnection, user: string): Promise<boolean> {
+    try {
+      const result = await _remove(connection, '/exist/restxq/pebble/user/' + user);
+      switch (result.status) {
+        case 204: return true;
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        case 404: throw createError(PebbleError.notFound, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
+  }
+
   export async function getGroups(connection: PebbleConnection): Promise<string[]> {
     return (await _get(connection, '/exist/restxq/pebble/group')).json();
   }

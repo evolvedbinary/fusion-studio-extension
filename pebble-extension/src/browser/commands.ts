@@ -148,7 +148,16 @@ export const actAddUser: PebbleAction = {
   contextMenu: CONTEXT_MENU_SECURITY,
   icon: 'fa fa-user-plus',
   execute: core => () => core.addUser(),
-  visible: core => () => core.isUsers,
+  visible: core => () => core.isUsers || core.isSecurity,
+};
+export const deleteUser: PebbleAction = {
+  id: 'delete-user',
+  order: 'c',
+  label: 'Delete',
+  contextMenu: CONTEXT_MENU_SECURITY,
+  icon: 'fa fa-trash',
+  execute: core => () => core.deleteUser(),
+  visible: core => () => core.isUser,
 };
 export const PEBBLE_COMMANDS: PebbleAction[] = [
   actConnect,
@@ -164,6 +173,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actDelete,
   actProperties,
   actAddUser,
+  deleteUser,
   ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New document...',

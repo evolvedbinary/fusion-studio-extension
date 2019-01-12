@@ -13,6 +13,7 @@ export namespace ErrorObject {
 export enum PebbleError {
   unknown = 0,
   permissionDenied = 401,
+  notFound = 404,
 }
 
 type ErrorMessages = {
@@ -30,4 +31,5 @@ export function createError(code: number, ...data: any[]) {
 export const ERROR_MESSAGES: ErrorMessages = {
   [PebbleError.unknown]: 'unknown error',
   [PebbleError.permissionDenied]: 'permission denied',
+  [PebbleError.notFound]: 'Not found',
 }
