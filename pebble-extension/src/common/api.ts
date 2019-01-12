@@ -2,7 +2,7 @@ import { PebbleCollection, PebbleDocument, readItem, readDate } from "../classes
 import { PebbleConnection } from "../classes/connection";
 import { createError, PebbleError } from "../classes/error";
 import { PebbleFileList } from "../classes/files";
-import { PebbleUser, PebbleGroup } from "../classes/user";
+import { PebbleUserData, PebbleUser } from "../classes/user";
 
 export namespace PebbleApi {
 
@@ -164,7 +164,7 @@ export namespace PebbleApi {
     return false;
   }
   
-  export async function chmod(connection: PebbleConnection, uri: string, owner: PebbleUser, group: PebbleGroup, isCollection?: boolean): Promise<boolean> {
+  export async function chmod(connection: PebbleConnection, uri: string, owner: string, group: string, isCollection?: boolean): Promise<boolean> {
     return (await _put(connection, '/exist/restxq/pebble/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri, {
       headers: {
         'x-pebble-owner': owner,
@@ -178,11 +178,24 @@ export namespace PebbleApi {
     })).status === 200;
   }
 
-  export async function getUsers(connection: PebbleConnection): Promise<PebbleUser[]> {
+  export async function getUsers(connection: PebbleConnection): Promise<string[]> {
     return (await _get(connection, '/exist/restxq/pebble/user')).json();
   }
 
-  export async function getGroups(connection: PebbleConnection): Promise<PebbleGroup[]> {
+  export async function addUser(connection: PebbleConnection, user: PebbleUserData): Promise<PebbleUser> {
+    try {
+      const result = await _put(connection, '/exist/restxq/pebble/user/' + user.userName, user);
+      switch (result.status) {
+        case 204: return result.json();
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
+  }
+
+  export async function getGroups(connection: PebbleConnection): Promise<string[]> {
     return (await _get(connection, '/exist/restxq/pebble/group')).json();
   }
 }

@@ -21,7 +21,7 @@ import { PebbleStatusEntry } from "../classes/status";
 import { actProperties } from "./commands";
 import { PebblePropertiesDialog } from "./dialogs/properties-dialog";
 import { PebbleTreeModel } from "../classes/tree";
-import { PebbleUser, PebbleGroup } from "../classes/user";
+import { PebbleUserDialog } from "./dialogs/user-dialog";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -365,7 +365,7 @@ export class PebbleCore {
     return this.addNode(node, parent) as Promise<PebbleCollectionNode>;
   }
 
-  protected async addUserNode(parent: PebbleUsersNode, user: PebbleUser): Promise<PebbleNode> {
+  protected async addUserNode(parent: PebbleUsersNode, user: string): Promise<PebbleNode> {
     const node: PebbleUserNode = {
       type: 'user',
       connectionNode: parent.connectionNode,
@@ -379,7 +379,7 @@ export class PebbleCore {
     return this.addNode(node, parent) as Promise<PebbleNode>;
   }
 
-  protected async addUsersNode(parent: PebbleSecurityNode, users: PebbleUser[]): Promise<PebbleUsersNode> {
+  protected async addUsersNode(parent: PebbleSecurityNode, users: string[]): Promise<PebbleUsersNode> {
     const usersNode = await this.addNode({
       type: 'users',
       connectionNode: parent.connectionNode,
@@ -396,7 +396,7 @@ export class PebbleCore {
     return usersNode as PebbleUsersNode;
   }
 
-  protected async addGroupNode(parent: PebbleGroupsNode, group: PebbleGroup): Promise<PebbleNode> {
+  protected async addGroupNode(parent: PebbleGroupsNode, group: string): Promise<PebbleNode> {
     const node: PebbleGroupNode = {
       type: 'group',
       connectionNode: parent.connectionNode,
@@ -410,7 +410,7 @@ export class PebbleCore {
     return this.addNode(node, parent) as Promise<PebbleNode>;
   }
 
-  protected async addGroupsNode(parent: PebbleSecurityNode, groups: PebbleGroup[]): Promise<PebbleGroupsNode> {
+  protected async addGroupsNode(parent: PebbleSecurityNode, groups: string[]): Promise<PebbleGroupsNode> {
     const groupsNode = await this.addNode({
       type: 'groups',
       connectionNode: parent.connectionNode,
@@ -604,11 +604,11 @@ export class PebbleCore {
     return this.connectionID(connection) + 'security' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
   }
 
-  protected userID(connection: PebbleConnection, user: PebbleUser = ''): string {
+  protected userID(connection: PebbleConnection, user: string = ''): string {
     return this.securityID(connection, 'user', user);
   }
 
-  protected groupID(connection: PebbleConnection, group: PebbleGroup = ''): string {
+  protected groupID(connection: PebbleConnection, group: string = ''): string {
     return this.securityID(connection, 'group', group);
   }
 
@@ -622,7 +622,7 @@ export class PebbleCore {
     return parent.join(TRAILING_SYMBOL);
   }
   
-  protected async changeOwner(node: PebbleItemNode, owner: PebbleUser, group: PebbleGroup): Promise<boolean> {
+  protected async changeOwner(node: PebbleItemNode, owner: string, group: string): Promise<boolean> {
     const isCollection = PebbleNode.isCollection(node);
     return await PebbleApi.chmod(node.connectionNode.connection, node.uri, owner, group, isCollection);
   }
@@ -1102,31 +1102,19 @@ export class PebbleCore {
     }
   }
 
-  public addUser() {
+  public async addUser() {
     if (PebbleNode.is(this.node)) {
       const connectionNode = this.node.connectionNode;
       console.log(connectionNode.security.users);
+      const dialog = new PebbleUserDialog({
+        title: 'Add User',
+        connection: connectionNode.connection
+      });
+      let user = await dialog.open();
+      if (user) {
+        // const result = await PebbleApi.addUser(connectionNode.connection, user);
+        console.log(user);
+      }
     }
-    // const validator = (input: string) => input !== '' && !this.fileExists(input);
-    // const dialog = new SingleTextInputDialog({
-    //   initialValue: this.newName(validator),
-    //   title: 'New ' + (isCollection ? 'collection' : 'document'),
-    //   confirmButtonLabel: 'Create',
-    //   validate: validator,
-    // });
-    // let name = await dialog.open();
-    // if (name) {
-    //   this.nextName(name);
-    //   name = collection.uri + '/' + name;
-    //   if (isCollection) {
-    //     const result = await PebbleApi.newCollection(collection.connection, name);
-    //     if (result) {
-    //       this.addCollection(collection, collection.connection, result);
-    //     }
-    //   } else {
-    //     this.createDocument(collection, name);
-    //   }
-    // }
-    // return false;
   }
 }

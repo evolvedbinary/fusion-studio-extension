@@ -8,8 +8,8 @@ import { createError, PebbleError } from "../../classes/error";
 import { PebbleApi } from "../../common/api";
 
 const SPINNER = 'fa-fw fa fa-spin fa-spinner';
-const ARROWS_XML = 'fa-fw fa fa-file-code-o';
-const ARROWS_BIN = 'fa-fw fa fa-file-o';
+const CONVERT_XML = 'fa-fw fa fa-file-code-o';
+const CONVERT_BIN = 'fa-fw fa fa-file-o';
 const CANT_CONVERT = 'fa-fw fa fa-exclamation';
 
 @injectable()
@@ -66,7 +66,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
         'Created': { type: 'date', value: item.created },
       }, this.keys);
       if (PebbleItem.isDocument(item)) {
-        this.convertBtn.icon.className = item.binaryDoc ? ARROWS_XML : ARROWS_BIN;
+        this.convertBtn.icon.className = item.binaryDoc ? CONVERT_XML : CONVERT_BIN;
         this.convertBtn.button.append(this.convertBtn.icon);
         this.convertBtn.text.innerHTML = 'Convert to ' + (item.binaryDoc ? 'non-' : '') + 'binary';
         this.convertBtn.button.append(this.convertBtn.text);
@@ -87,7 +87,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
             // TODO: error
             this.convertBtn.button.disabled = false;
           }
-          this.convertBtn.icon.className = item.binaryDoc ? ARROWS_XML : ARROWS_BIN;
+          this.convertBtn.icon.className = item.binaryDoc ? CONVERT_XML : CONVERT_BIN;
         })
         addKeys({
           'Modified': { type: 'date', value: item.lastModified },
@@ -109,10 +109,10 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
         this.ownerSelect.append(option);
       });
       this.ownerSelect.value = item.owner;
-      props.node.connectionNode.connection.groups.forEach(groups => {
+      props.node.connectionNode.connection.groups.forEach(group => {
         const option = document.createElement('option');
-        option.innerHTML = groups;
-        option.setAttribute('value', groups);
+        option.innerHTML = group;
+        option.setAttribute('value', group);
         this.groupSelect.append(option);
       });
       this.groupSelect.value = item.group;
