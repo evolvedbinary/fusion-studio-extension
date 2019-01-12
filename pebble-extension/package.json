@@ -13,14 +13,15 @@
   ],
   "dependencies": {
     "@theia/core": "^0.3.8",
-    "@types/filesize": "^3.6.0",
     "filesize": "^3.6.1",
     "mime-types": "^2.1.21",
     "moment": "^2.23.0",
-    "typescript": "^3.1.5",
-    "xml-js": "^1.6.8"
+    "ripemd160": "^2.0.2",
+    "typescript": "^3.1.5"
   },
   "devDependencies": {
+    "@types/filesize": "^3.6.0",
+    "@types/ripemd160": "^2.0.0",
     "rimraf": "latest"
   },
   "scripts": {

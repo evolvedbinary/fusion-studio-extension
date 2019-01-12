@@ -1,3 +1,4 @@
+import * as Hash from 'ripemd160';
 export interface PebbleAttributes {
   [k: string]: string;
 }
@@ -21,4 +22,12 @@ export interface PebbleGroup {
 
 export function encodePassword(password: string): string {
   return password;
+}
+
+export function writeUserData(user: PebbleUserData): string {
+  return JSON.stringify({
+    ...user,
+    password: new Hash().update(user.password).digest('base64'),
+    metadata: Object.keys(user.metadata).map(key => ({ key, value: user.metadata[key] })),
+  });
 }

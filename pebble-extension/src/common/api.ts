@@ -2,7 +2,7 @@ import { PebbleCollection, PebbleDocument, readItem, readDate } from "../classes
 import { PebbleConnection } from "../classes/connection";
 import { createError, PebbleError } from "../classes/error";
 import { PebbleFileList } from "../classes/files";
-import { PebbleUserData, PebbleUser } from "../classes/user";
+import { PebbleUserData, writeUserData } from "../classes/user";
 
 export namespace PebbleApi {
 
@@ -25,16 +25,16 @@ export namespace PebbleApi {
     return fetch(connection.server + uri, options);
   }
 
-  async function _put(connection: PebbleConnection, uri: string, body: any = '', binary = false): Promise<Response> {
-    const isReady = (body instanceof FormData) || (body instanceof File) || (body instanceof Blob);
+  async function _put(connection: PebbleConnection, uri: string, body: any = '', contentType = ''): Promise<Response> {
+    const isReady = contentType !== '' || (body instanceof FormData) || (body instanceof File) || (body instanceof Blob);
     const isString = typeof body === 'string';
     const isHeader = body && !isString && 'headers' in body;
     const headers: any = isHeader ? body.headers : {};
     if (connection.username !== '') {
       headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
     }
-    if (binary) {
-      headers['Content-Type'] = 'application/octet-stream';
+    if (contentType) {
+      headers['Content-Type'] = contentType == 'bin' ? 'application/octet-stream' : contentType;
     }
     if (body && !isReady && !isString) {
       const formData = new FormData();
@@ -86,9 +86,9 @@ export namespace PebbleApi {
     }
   }
   
-  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, binary = false): Promise<boolean> {
+  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, contentType = ''): Promise<boolean> {
     try {
-      const result = await _put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, binary);
+      const result = await _put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, contentType);
       switch (result.status) {
         case 201: return true;
         case 401: throw createError(PebbleError.permissionDenied, result);
@@ -182,11 +182,11 @@ export namespace PebbleApi {
     return (await _get(connection, '/exist/restxq/pebble/user')).json();
   }
 
-  export async function addUser(connection: PebbleConnection, user: PebbleUserData): Promise<PebbleUser> {
+  export async function addUser(connection: PebbleConnection, user: PebbleUserData): Promise<boolean> {
     try {
-      const result = await _put(connection, '/exist/restxq/pebble/user/' + user.userName, user);
+      const result = await _put(connection, '/exist/restxq/pebble/user/' + user.userName, writeUserData(user), 'application/json');
       switch (result.status) {
-        case 204: return result.json();
+        case 204: return true;
         case 401: throw createError(PebbleError.permissionDenied, result);
         default: throw createError(PebbleError.unknown, result);
       }

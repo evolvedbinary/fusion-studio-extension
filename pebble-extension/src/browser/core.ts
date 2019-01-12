@@ -256,9 +256,9 @@ export class PebbleCore {
     }
   }
 
-  protected async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, binary = false): Promise<boolean> {
+  protected async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, contenType = ''): Promise<boolean> {
     try {
-      return await PebbleApi.save(connection, uri, content, binary);
+      return await PebbleApi.save(connection, uri, content, contenType);
     } catch (error) {
       console.error('caught:', error);
       return false;
@@ -1125,15 +1125,16 @@ export class PebbleCore {
   public async addUser() {
     if (PebbleNode.is(this.node)) {
       const connectionNode = this.node.connectionNode;
-      console.log(connectionNode.security.users);
       const dialog = new PebbleUserDialog({
         title: 'Add User',
         connection: connectionNode.connection
       });
       let user = await dialog.open();
       if (user) {
-        // const result = await PebbleApi.addUser(connectionNode.connection, user);
-        console.log(user);
+        if (await PebbleApi.addUser(connectionNode.connection, user)) {
+          this.node.connectionNode.connection.users.push(user.userName);
+          this.addUserNode(connectionNode.security.users, user.userName);
+        }
       }
     }
   }

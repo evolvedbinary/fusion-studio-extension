@@ -13,15 +13,18 @@ export class PebbleUserDialogProps extends DialogProps {
   readonly initialValue?: PebbleUser;
 }
 
-export interface PebbleUserDialogResult extends PebbleUserData {};
+export interface PebbleUserDialogResult extends PebbleUserData {
+  passwordOld: string;
+  passwordConfirm: string;
+};
 
 export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
 
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly username: IDialogField = createField('username', '');
-  protected readonly password: IDialogField = createField('password', '');
-  protected readonly passwordConfirm: IDialogField = createField('confirm password', '');
-  protected readonly passwordOld: IDialogField = createField('old password', '');
+  protected readonly password: IDialogField = createField('password', '', 'password');
+  protected readonly passwordConfirm: IDialogField = createField('confirm password', '', 'password');
+  protected readonly passwordOld: IDialogField = createField('old password', '', 'password');
   protected readonly group: IDialogField;
 
   constructor(
@@ -52,14 +55,16 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       expired: false,
       groups: [],
       metadata: {},
+      passwordOld: this.passwordOld.input.value,
       password: this.password.input.value,
+      passwordConfirm: this.passwordConfirm.input.value,
       primaryGroup: this.group.input.value,
       userName: this.username.input.value,
     };
   }
 
   protected isValid(value: PebbleUserDialogResult, mode: DialogMode): DialogError {
-    return true;
+    return !!value.userName && !!value.password && value.password === value.passwordConfirm;
   }
 
   protected onAfterAttach(msg: Message): void {
