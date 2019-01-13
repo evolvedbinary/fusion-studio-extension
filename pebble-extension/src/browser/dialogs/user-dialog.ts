@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { createError, PebbleError } from "../../classes/error";
-import { PebbleUser, PebbleUserData, PebbleAttributes } from "../../classes/user";
+import { PebbleUser, PebbleUserData, PebbleAttributes, sameUser } from "../../classes/user";
 import { PebbleConnection } from "../../classes/connection";
 import { IDialogField, createField } from "../../classes/dialog-field";
 import { PebbleTabs } from "../../classes/tabs";
@@ -13,7 +13,7 @@ export class PebbleUserDialogProps extends DialogProps {
   readonly connection?: PebbleConnection;
   readonly acceptButton?: string;
   readonly cancelButton?: string;
-  readonly initialValue?: PebbleUser;
+  readonly user?: PebbleUser;
 }
 
 export type PebbleUserDialogResult = PebbleUserData;
@@ -62,14 +62,13 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
 
       this.groupsKeys.container.classList.add('no-label');
       props.connection.groups.forEach(group => {
-        this.groups[group] = new Checkbox(group, group === this.group.input.value);
+        this.groups[group] = new Checkbox(group, props.user ? props.user.groups.indexOf(group) > -1 : group === this.group.input.value);
         addKey(group, {
           type: 'string',
           value: '',
           el: this.groups[group].container,
         }, this.groupsKeys)
       });
-      this.group.input.dispatchEvent(new Event('change'));
       const label = document.createElement('div');
       label.style.fontWeight = 'bold';
       label.innerText = 'Groups';
@@ -77,7 +76,6 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.tabs.tabs[1].appendChild(label);
       this.tabs.tabs[1].appendChild(this.groupsKeys.container);
       
-      this.addMetadata();
       const addMetadataButton = document.createElement('button');
       addMetadataButton.innerHTML = 'Add attribute';
       addMetadataButton.addEventListener('click', e => {
@@ -87,6 +85,16 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.tabs.tabs[2].appendChild(this.metadataKeys.container);
       this.tabs.tabs[2].appendChild(addMetadataButton);
       
+      if (props.user) {
+        this.group.input.value = props.user.primaryGroup;
+        this.username.input.value = props.user.userName;
+        this.isEnabled.checked = props.user.enabled;
+        this.isExpired.checked = props.user.expired;
+        this.writeMetadata(props.user.metadata);
+      }
+      this.group.input.dispatchEvent(new Event('change'));
+      this.addMetadata();
+
       this.containerDiv.appendChild(this.tabs.container);
       this.containerDiv.className = 'dialog-container user-dialog-container';
       this.contentNode.appendChild(this.containerDiv);
@@ -152,7 +160,12 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   }
 
   protected isValid(value: PebbleUserDialogResult, mode: DialogMode): DialogError {
-    return !!value.userName && !!value.password;
+    const valid = !!value.userName && !!value.password;
+    if (this.props.user) {
+      return valid && !sameUser(value, this.props.user);
+    } else {
+      return valid;
+    }
   }
 
   protected onAfterAttach(msg: Message): void {
@@ -162,7 +175,16 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     this.addUpdateListener(this.password.input, 'input');
     this.addUpdateListener(this.passwordOld.input, 'input');
     this.addUpdateListener(this.passwordConfirm.input, 'input');
+    this.addUpdateListener(this.isEnabled.container, 'click')
+    this.addUpdateListener(this.isExpired.container, 'click')
     Object.keys(this.groups).forEach(group => this.addUpdateListener(this.groups[group].container, 'click'));
+    Object.keys(this.metadataKeys.data).forEach(key => {
+      const inputs = this.metadataKeys.data[key].inputs;
+      if (inputs) {
+        this.addUpdateListener(inputs.key, 'input');
+        this.addUpdateListener(inputs.value, 'input');
+      }
+    });
   }
 
   protected onActivateRequest(msg: Message): void {

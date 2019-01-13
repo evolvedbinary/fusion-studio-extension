@@ -1122,6 +1122,25 @@ export class PebbleCore {
     }
   }
 
+  public async editUser() {
+    if (PebbleNode.isUser(this.node)) {
+      const connectionNode = this.node.connectionNode;
+      const user = await PebbleApi.getUser(connectionNode.connection, this.node.name);
+      const dialog = new PebbleUserDialog({
+        title: 'Edit User: ' + this.node.name,
+        connection: connectionNode.connection,
+        user: user,
+      });
+      let userData = await dialog.open();
+      if (userData) {
+        if (await PebbleApi.addUser(connectionNode.connection, userData)) {
+          this.node.connectionNode.connection.users.push(user.userName);
+          this.addUserNode(connectionNode.security.users, user.userName);
+        }
+      }
+    }
+  }
+
   public async addUser() {
     if (PebbleNode.is(this.node)) {
       const connectionNode = this.node.connectionNode;

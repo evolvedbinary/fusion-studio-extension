@@ -150,6 +150,15 @@ export const actAddUser: PebbleAction = {
   execute: core => () => core.addUser(),
   visible: core => () => core.isUsers || core.isSecurity,
 };
+export const actEditUser: PebbleAction = {
+  id: 'edit-user',
+  order: 'b',
+  label: 'Edit',
+  contextMenu: CONTEXT_MENU_SECURITY,
+  icon: 'fa fa-pencil',
+  execute: core => () => core.editUser(),
+  visible: core => () => core.isUser,
+};
 export const deleteUser: PebbleAction = {
   id: 'delete-user',
   order: 'c',
@@ -173,6 +182,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actDelete,
   actProperties,
   actAddUser,
+  actEditUser,
   deleteUser,
   ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{

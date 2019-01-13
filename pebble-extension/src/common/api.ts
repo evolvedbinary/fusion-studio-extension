@@ -2,7 +2,7 @@ import { PebbleCollection, PebbleDocument, readItem, readDate } from "../classes
 import { PebbleConnection } from "../classes/connection";
 import { createError, PebbleError } from "../classes/error";
 import { PebbleFileList } from "../classes/files";
-import { PebbleUserData, writeUserData } from "../classes/user";
+import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
 
 export namespace PebbleApi {
 
@@ -180,6 +180,11 @@ export namespace PebbleApi {
 
   export async function getUsers(connection: PebbleConnection): Promise<string[]> {
     return (await _get(connection, '/exist/restxq/pebble/user')).json();
+  }
+
+  export async function getUser(connection: PebbleConnection, user: string): Promise<PebbleUser> {
+    const result = await (await _get(connection, '/exist/restxq/pebble/user/' + user)).json();
+    return readUser(result);
   }
 
   export async function addUser(connection: PebbleConnection, user: PebbleUserData): Promise<boolean> {
