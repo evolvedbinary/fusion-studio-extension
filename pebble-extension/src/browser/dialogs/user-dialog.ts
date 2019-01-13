@@ -21,9 +21,12 @@ export type PebbleUserDialogResult = PebbleUserData;
 export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
 
   protected metadataCounter: number = 0;
-  protected readonly keys: IKeysElement = createKeys({});
+  protected readonly statusKeys: IKeysElement = createKeys({});
+  protected readonly groupsKeys: IKeysElement = createKeys({});
   protected readonly metadataKeys: IKeysElement = createKeys({});
   protected readonly groups: { [k: string]: Checkbox } = {};
+  protected readonly isEnabled: Checkbox;
+  protected readonly isExpired: Checkbox;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly username: IDialogField = createField('Username', '');
   protected readonly password: IDialogField = createField('Password', '', 'password');
@@ -47,20 +50,24 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
         }
       }));
       this.tabs.tabs.forEach(tab => tab.classList.add('vertical-form'));
+      this.isEnabled = new Checkbox('Enabled', true);
+      this.isExpired = new Checkbox('Expired');
       
       this.tabs.tabs[0].appendChild(this.username.container);
       // this.tabs.tabs[0].appendChild(this.passwordOld.container);
       this.tabs.tabs[0].appendChild(this.password.container);
       this.tabs.tabs[0].appendChild(this.passwordConfirm.container);
+      this.tabs.tabs[0].appendChild(this.isEnabled.container);
+      this.tabs.tabs[0].appendChild(this.isExpired.container);
 
-      this.keys.container.classList.add('no-label');
+      this.groupsKeys.container.classList.add('no-label');
       props.connection.groups.forEach(group => {
         this.groups[group] = new Checkbox(group, group === this.group.input.value);
         addKey(group, {
           type: 'string',
           value: '',
           el: this.groups[group].container,
-        }, this.keys)
+        }, this.groupsKeys)
       });
       this.group.input.dispatchEvent(new Event('change'));
       const label = document.createElement('div');
@@ -68,7 +75,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       label.innerText = 'Groups';
       this.tabs.tabs[1].appendChild(this.group.container);
       this.tabs.tabs[1].appendChild(label);
-      this.tabs.tabs[1].appendChild(this.keys.container);
+      this.tabs.tabs[1].appendChild(this.groupsKeys.container);
       
       this.addMetadata();
       const addMetadataButton = document.createElement('button');
@@ -79,7 +86,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       });
       this.tabs.tabs[2].appendChild(this.metadataKeys.container);
       this.tabs.tabs[2].appendChild(addMetadataButton);
-
+      
       this.containerDiv.appendChild(this.tabs.container);
       this.containerDiv.className = 'dialog-container user-dialog-container';
       this.contentNode.appendChild(this.containerDiv);
@@ -134,8 +141,8 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     // passwordOld: this.passwordOld.input.value,
     const password = this.password.input.value === this.passwordConfirm.input.value ? this.password.input.value : '';
     return {
-      enabled: true,
-      expired: false,
+      enabled: this.isEnabled.checked,
+      expired: this.isExpired.checked,
       groups: Object.keys(this.groups).filter(group => this.groups[group].checked),
       metadata: this.readMetadata(),
       password,
