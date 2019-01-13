@@ -1105,6 +1105,10 @@ export class PebbleCore {
     }
   }
 
+  public canDeleteUser(): boolean {
+    return PebbleNode.isUser(this.node) && this.node.name != 'admin' && this.node.name != 'guest';
+  }
+
   public async deleteUser() {
     if (PebbleNode.isUser(this.node) && this._model) {
       const dialog = new ConfirmDialog({
