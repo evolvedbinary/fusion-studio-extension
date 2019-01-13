@@ -1,7 +1,38 @@
 import * as Hash from 'ripemd160';
-export interface PebbleAttributes {
-  [k: string]: string;
+export type PebbleAttributes = {
+  alias?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  email?: string;
+  country?: string;
+  language?: string;
+  timezone?: string;
+  description?: string;
+  [k: string]: string | undefined;
 }
+export const PEBBLE_ATTRIBUTE_LABELS: PebbleAttributes = {
+  alias:  'alias',
+  firstName:  'first name',
+  lastName:  'last name',
+  fullName:  'full name',
+  email:  'email',
+  country:  'country',
+  language:  'language',
+  timezone:  'timezone',
+  description:  'description',
+};
+export const PEBBLE_ATTRIBUTES: PebbleAttributes = {
+  alias:  'http://axschema.org/namePerson/friendly',
+  firstName:  'http://axschema.org/namePerson/first',
+  lastName:  'http://axschema.org/namePerson/last',
+  fullName:  'http://axschema.org/namePerson',
+  email:  'http://axschema.org/contact/email',
+  country:  'http://axschema.org/contact/country/home',
+  language:  'http://axschema.org/pref/language',
+  timezone:  'http://axschema.org/pref/timezone',
+  description:  'http://exist-db.org/security/description',
+};
 
 export interface PebbleUser {
   userName: string;
@@ -51,7 +82,7 @@ export function writeUserData(user: PebbleUserData): string {
   return JSON.stringify({
     ...user,
     password: new Hash().update(user.password).digest('base64'),
-    metadata: Object.keys(user.metadata).map(key => ({ key, value: user.metadata[key] })),
+    metadata: Object.keys(user.metadata).map(key => ({ key: PEBBLE_ATTRIBUTES[key], value: user.metadata[key] })),
   });
 }
 
@@ -60,7 +91,15 @@ export function readUser(userData: any): PebbleUser {
     userData = JSON.parse(userData);
   }
   const metadata: PebbleAttributes = {};
-  userData.metadata.forEach((attribute: any) => metadata[attribute.key] = attribute.value || '');
+  userData.metadata.forEach((attribute: any) => {
+    Object.keys(PEBBLE_ATTRIBUTES).find(v => {
+      if (PEBBLE_ATTRIBUTES[v] == attribute.key) {
+        metadata[v] = attribute.value || '';
+        return true;
+      }
+      return false;
+    });
+  });
   return {
     ...userData,
     metadata,

@@ -1,11 +1,11 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { createError, PebbleError } from "../../classes/error";
-import { PebbleUser, PebbleUserData, PebbleAttributes, sameUser } from "../../classes/user";
+import { PebbleUser, PebbleUserData, PebbleAttributes, sameUser, PEBBLE_ATTRIBUTE_LABELS } from "../../classes/user";
 import { PebbleConnection } from "../../classes/connection";
 import { IDialogField, createField } from "../../classes/dialog-field";
 import { PebbleTabs } from "../../classes/tabs";
-import { createKeys, IKeysElement, addKey } from "../../classes/keys";
+import { createKeys, IKeysElement, addKey, addKeys, IKeys } from "../../classes/keys";
 import { Checkbox } from "../../classes/checkbox";
 
 @injectable()
@@ -24,6 +24,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   protected readonly statusKeys: IKeysElement = createKeys({});
   protected readonly groupsKeys: IKeysElement = createKeys({});
   protected readonly metadataKeys: IKeysElement = createKeys({});
+  protected readonly attributes: { [k: string]: HTMLInputElement } = {};
   protected readonly groups: { [k: string]: Checkbox } = {};
   protected readonly isEnabled: Checkbox;
   protected readonly isExpired: Checkbox;
@@ -76,14 +77,19 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.tabs.tabs[1].appendChild(label);
       this.tabs.tabs[1].appendChild(this.groupsKeys.container);
       
-      const addMetadataButton = document.createElement('button');
-      addMetadataButton.innerHTML = 'Add attribute';
-      addMetadataButton.addEventListener('click', e => {
-        this.sortMetadata();
-        this.addMetadata();
-      });
+      const keys: IKeys = {};
+      for (let index in PEBBLE_ATTRIBUTE_LABELS) {
+        const el = document.createElement('input');
+        const i = PEBBLE_ATTRIBUTE_LABELS[index] || '';
+        keys[i] = {
+          type: 'string',
+          value: '',
+          el,
+        };
+        this.attributes[index] = el;
+      };
+      addKeys(keys, this.metadataKeys);
       this.tabs.tabs[2].appendChild(this.metadataKeys.container);
-      this.tabs.tabs[2].appendChild(addMetadataButton);
       
       if (props.user) {
         this.group.input.value = props.user.primaryGroup;
@@ -93,7 +99,6 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
         this.writeMetadata(props.user.metadata);
       }
       this.group.input.dispatchEvent(new Event('change'));
-      this.addMetadata();
 
       this.containerDiv.appendChild(this.tabs.container);
       this.containerDiv.className = 'dialog-container user-dialog-container';
@@ -108,41 +113,17 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
 
   readMetadata(): PebbleAttributes {
     const result: PebbleAttributes = {};
-    for (let i in this.metadataKeys.data) {
-      const item = this.metadataKeys.data[i];
-      if (item.inputs) {
-        if (item.inputs.key.value) {
-          result[item.inputs.key.value] = item.inputs.value.value;
-        }
+    for (let i in PEBBLE_ATTRIBUTE_LABELS) {
+      if (this.attributes[i].value) {
+        result[i] = this.attributes[i].value;
       }
     }
     return result;
   }
   writeMetadata(metadata: PebbleAttributes) {
-    for (let i in metadata) {
-      this.addMetadata(i, metadata[i]);
+    for (let i in PEBBLE_ATTRIBUTE_LABELS) {
+      this.attributes[i].value = metadata[i] || '';
     }
-  }
-  clearMetadata() {
-    for (let i in this.metadataKeys.data) {
-      const item = this.metadataKeys.data[i];
-      if (item.inputs) {
-        item.label.removeChild(item.inputs.key);
-        item.value.removeChild(item.inputs.value);
-      }
-      item.row.removeChild(item.label);
-      item.row.removeChild(item.value);
-      this.metadataKeys.container.removeChild(item.row);
-      delete(this.metadataKeys.data[i]);
-    }
-  }
-  sortMetadata() {
-    const metadata = this.readMetadata();
-    this.clearMetadata();
-    this.writeMetadata(metadata);
-  }
-  addMetadata(key: string = '', value: string = '') {
-    addKey(key, value, this.metadataKeys, (this.metadataCounter++).toString());
   }
 
   get value(): PebbleUserDialogResult {
@@ -178,13 +159,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     this.addUpdateListener(this.isEnabled.container, 'click')
     this.addUpdateListener(this.isExpired.container, 'click')
     Object.keys(this.groups).forEach(group => this.addUpdateListener(this.groups[group].container, 'click'));
-    Object.keys(this.metadataKeys.data).forEach(key => {
-      const inputs = this.metadataKeys.data[key].inputs;
-      if (inputs) {
-        this.addUpdateListener(inputs.key, 'input');
-        this.addUpdateListener(inputs.value, 'input');
-      }
-    });
+    Object.keys(this.attributes).forEach(key => this.addUpdateListener(this.attributes[key], 'input'));
   }
 
   protected onActivateRequest(msg: Message): void {

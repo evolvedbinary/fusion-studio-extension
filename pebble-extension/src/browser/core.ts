@@ -1128,6 +1128,7 @@ export class PebbleCore {
       const user = await PebbleApi.getUser(connectionNode.connection, this.node.name);
       const dialog = new PebbleUserDialog({
         title: 'Edit User: ' + this.node.name,
+        acceptButton: 'Save changes',
         connection: connectionNode.connection,
         user: user,
       });
