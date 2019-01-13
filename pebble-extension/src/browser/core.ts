@@ -1168,6 +1168,20 @@ export class PebbleCore {
   }
 
   public async deleteGroup() {
+    if (PebbleNode.isGroup(this.node) && this._model) {
+      const dialog = new ConfirmDialog({
+        title: 'Delete group',
+        msg: 'Are you sure you want to delete the group "' + this.node.name + '"?',
+        cancel: 'Keep',
+        ok: 'Delete'
+      });
+      const result = await dialog.open();
+      if (result) {
+        if (await PebbleApi.removeGroup(this.node.connectionNode.connection, this.node.name)) {
+          this.removeNode(this.node);
+  }
+      }
+    }
   }
 
   public async editGroup() {
