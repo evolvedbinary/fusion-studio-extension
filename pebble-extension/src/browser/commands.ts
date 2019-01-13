@@ -169,6 +169,34 @@ export const actDeleteUser: PebbleAction = {
   enabled: core => () => core.canDeleteUser(),
   visible: core => () => core.isUser,
 };
+export const actAddGroup: PebbleAction = {
+  id: 'add-group',
+  order: 'd',
+  label: 'Add group',
+  contextMenu: CONTEXT_MENU_SECURITY,
+  icon: 'fa fa-user-plus',
+  execute: core => () => core.addGroup(),
+  visible: core => () => core.isGroups || core.isSecurity,
+};
+export const actEditGroup: PebbleAction = {
+  id: 'edit-group',
+  order: 'e',
+  label: 'Edit',
+  contextMenu: CONTEXT_MENU_SECURITY,
+  icon: 'fa fa-pencil',
+  execute: core => () => core.editGroup(),
+  visible: core => () => core.isGroup,
+};
+export const actDeleteGroup: PebbleAction = {
+  id: 'delete-group',
+  order: 'f',
+  label: 'Delete',
+  contextMenu: CONTEXT_MENU_SECURITY,
+  icon: 'fa fa-trash',
+  execute: core => () => core.deleteGroup(),
+  enabled: core => () => core.canDeleteGroup(),
+  visible: core => () => core.isGroup,
+};
 export const PEBBLE_COMMANDS: PebbleAction[] = [
   actConnect,
   actDisconnect,
@@ -185,6 +213,9 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actAddUser,
   actEditUser,
   actDeleteUser,
+  actAddGroup,
+  actEditGroup,
+  actDeleteGroup,
   ...templates];
 export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
   label: 'New document...',

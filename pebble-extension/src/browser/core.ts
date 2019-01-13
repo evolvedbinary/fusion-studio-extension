@@ -1162,4 +1162,17 @@ export class PebbleCore {
       }
     }
   }
+
+  public canDeleteGroup(): boolean {
+    return PebbleNode.isGroup(this.node) && this.node.name != 'dba' && this.node.name != 'guest';
+  }
+
+  public async deleteGroup() {
+  }
+
+  public async editGroup() {
+  }
+
+  public async addGroup() {
+  }
 }
