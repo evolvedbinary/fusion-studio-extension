@@ -1112,7 +1112,7 @@ export class PebbleCore {
   public async deleteUser() {
     if (PebbleNode.isUser(this.node) && this._model) {
       const dialog = new ConfirmDialog({
-        title: 'Delete connection',
+        title: 'Delete user',
         msg: 'Are you sure you want to delete the user "' + this.node.name + '"?',
         cancel: 'Keep',
         ok: 'Delete'
