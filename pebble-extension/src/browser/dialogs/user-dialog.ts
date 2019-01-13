@@ -32,7 +32,6 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   protected readonly username: IDialogField = createField('Username', '');
   protected readonly password: IDialogField = createField('Password', '', 'password');
   protected readonly passwordConfirm: IDialogField = createField('Confirm password', '', 'password');
-  protected readonly passwordOld: IDialogField = createField('Old password', '', 'password');
   protected readonly group: IDialogField;
   protected readonly tabs: PebbleTabs = new PebbleTabs(['Credentials', 'Groups', 'Metadata']);
 
@@ -55,7 +54,6 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.isExpired = new Checkbox('Expired');
       
       this.tabs.tabs[0].appendChild(this.username.container);
-      // this.tabs.tabs[0].appendChild(this.passwordOld.container);
       this.tabs.tabs[0].appendChild(this.password.container);
       this.tabs.tabs[0].appendChild(this.passwordConfirm.container);
       this.tabs.tabs[0].appendChild(this.isEnabled.container);
@@ -94,6 +92,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       if (props.user) {
         this.group.input.value = props.user.primaryGroup;
         this.username.input.value = props.user.userName;
+        this.username.input.disabled = true;
         this.isEnabled.checked = props.user.enabled;
         this.isExpired.checked = props.user.expired;
         this.writeMetadata(props.user.metadata);
@@ -127,7 +126,6 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   }
 
   get value(): PebbleUserDialogResult {
-    // passwordOld: this.passwordOld.input.value,
     const password = this.password.input.value === this.passwordConfirm.input.value ? this.password.input.value : '';
     return {
       enabled: this.isEnabled.checked,
@@ -141,11 +139,10 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   }
 
   protected isValid(value: PebbleUserDialogResult, mode: DialogMode): DialogError {
-    const valid = !!value.userName && !!value.password;
     if (this.props.user) {
-      return valid && !sameUser(value, this.props.user);
+      return !!value.password || (this.password.input.value === this.passwordConfirm.input.value && !sameUser(value, this.props.user));
     } else {
-      return valid;
+      return !!value.userName && !!value.password;
     }
   }
 
@@ -154,7 +151,6 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     this.addUpdateListener(this.username.input, 'input');
     this.addUpdateListener(this.group.input, 'input');
     this.addUpdateListener(this.password.input, 'input');
-    this.addUpdateListener(this.passwordOld.input, 'input');
     this.addUpdateListener(this.passwordConfirm.input, 'input');
     this.addUpdateListener(this.isEnabled.container, 'click')
     this.addUpdateListener(this.isExpired.container, 'click')
