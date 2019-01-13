@@ -3,6 +3,7 @@ import { PebbleConnection } from "../classes/connection";
 import { createError, PebbleError } from "../classes/error";
 import { PebbleFileList } from "../classes/files";
 import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
+import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
 
 export namespace PebbleApi {
 
@@ -216,6 +217,24 @@ export namespace PebbleApi {
 
   export async function getGroups(connection: PebbleConnection): Promise<string[]> {
     return (await _get(connection, '/exist/restxq/pebble/group')).json();
+  }
+
+  export async function getGroup(connection: PebbleConnection, group: string): Promise<PebbleGroup> {
+    const result = await (await _get(connection, '/exist/restxq/pebble/group/' + group)).json();
+    return readGroup(result);
+  }
+
+  export async function addGroup(connection: PebbleConnection, group: PebbleGroupData): Promise<boolean> {
+    try {
+      const result = await _put(connection, '/exist/restxq/pebble/group/' + group.groupName, writeGroupData(group), 'application/json');
+      switch (result.status) {
+        case 204: return true;
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
   }
 
   export async function removeGroup(connection: PebbleConnection, group: string): Promise<boolean> {

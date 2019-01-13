@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { createError, PebbleError } from "../../classes/error";
-import { PebbleUser, PebbleUserData, PebbleAttributes, sameUser, PEBBLE_ATTRIBUTE_LABELS } from "../../classes/user";
+import { PebbleUser, PebbleUserData, PebbleUserAttributes, sameUser, PEBBLE_USER_ATTRIBUTE_LABELS } from "../../classes/user";
 import { PebbleConnection } from "../../classes/connection";
 import { IDialogField, createField } from "../../classes/dialog-field";
 import { PebbleTabs } from "../../classes/tabs";
@@ -76,9 +76,9 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.tabs.tabs[1].appendChild(this.groupsKeys.container);
       
       const keys: IKeys = {};
-      for (let index in PEBBLE_ATTRIBUTE_LABELS) {
+      for (let index in PEBBLE_USER_ATTRIBUTE_LABELS) {
         const el = document.createElement('input');
-        const i = PEBBLE_ATTRIBUTE_LABELS[index] || '';
+        const i = PEBBLE_USER_ATTRIBUTE_LABELS[index] || '';
         keys[i] = {
           type: 'string',
           value: '',
@@ -110,17 +110,17 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     }
   }
 
-  readMetadata(): PebbleAttributes {
-    const result: PebbleAttributes = {};
-    for (let i in PEBBLE_ATTRIBUTE_LABELS) {
+  readMetadata(): PebbleUserAttributes {
+    const result: PebbleUserAttributes = {};
+    for (let i in PEBBLE_USER_ATTRIBUTE_LABELS) {
       if (this.attributes[i].value) {
         result[i] = this.attributes[i].value;
       }
     }
     return result;
   }
-  writeMetadata(metadata: PebbleAttributes) {
-    for (let i in PEBBLE_ATTRIBUTE_LABELS) {
+  writeMetadata(metadata: PebbleUserAttributes) {
+    for (let i in PEBBLE_USER_ATTRIBUTE_LABELS) {
       this.attributes[i].value = metadata[i] || '';
     }
   }

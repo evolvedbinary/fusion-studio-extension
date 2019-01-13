@@ -22,6 +22,7 @@ import { actProperties } from "./commands";
 import { PebblePropertiesDialog } from "./dialogs/properties-dialog";
 import { PebbleTreeModel } from "../classes/tree";
 import { PebbleUserDialog } from "./dialogs/user-dialog";
+import { PebbleGroupDialog } from "./dialogs/group-dialog";
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -1134,7 +1135,7 @@ export class PebbleCore {
         title: 'Edit User: ' + this.node.name,
         acceptButton: 'Save changes',
         connection: connectionNode.connection,
-        user: user,
+        user,
       });
       let userData = await dialog.open();
       if (userData) {
@@ -1179,14 +1180,46 @@ export class PebbleCore {
       if (result) {
         if (await PebbleApi.removeGroup(this.node.connectionNode.connection, this.node.name)) {
           this.removeNode(this.node);
-  }
+        }
       }
     }
   }
 
   public async editGroup() {
+    if (PebbleNode.isGroup(this.node)) {
+      const connectionNode = this.node.connectionNode;
+      const group = await PebbleApi.getGroup(connectionNode.connection, this.node.name);
+      const dialog = new PebbleGroupDialog({
+        title: 'Edit User: ' + this.node.name,
+        acceptButton: 'Save changes',
+        connection: connectionNode.connection,
+        group,
+      });
+      let groupData = await dialog.open();
+      if (groupData) {
+        if (await PebbleApi.addGroup(connectionNode.connection, groupData)) {
+          this.node.connectionNode.connection.groups.push(group.groupName);
+          this.addGroupNode(connectionNode.security.groups, group.groupName);
+        }
+      }
+    }
   }
 
   public async addGroup() {
+    if (PebbleNode.is(this.node)) {
+      const connectionNode = this.node.connectionNode;
+      const dialog = new PebbleGroupDialog({
+        title: 'Add Group',
+        connection: connectionNode.connection
+      });
+      let group = await dialog.open();
+      if (group) {
+        console.log(group);
+        if (await PebbleApi.addGroup(connectionNode.connection, group)) {
+          this.node.connectionNode.connection.groups.push(group.groupName);
+          this.addGroupNode(connectionNode.security.groups, group.groupName);
+        }
+      }
+    }
   }
 }
