@@ -19,15 +19,19 @@ export interface IKeysElement {
   data: {
     [key: string]: {
       row: HTMLTableRowElement;
+      inputs?: {
+        key: HTMLInputElement;
+        value: HTMLInputElement;
+      };
       label: HTMLTableDataCellElement;
       value: HTMLTableDataCellElement;
     };
   }
 }
 
-export function addKeys(keys: IKeys, element: IKeysElement) {
+export function addKeys(keys: IKeys, element: IKeysElement, editable?: string) {
   for(let i in keys) {
-    addKey(i, keys[i], element);
+    addKey(i, keys[i], element, editable);
   }
 }
 export function renderKey(key: string | number | Date | IKey): string {
@@ -49,9 +53,10 @@ export function renderKey(key: string | number | Date | IKey): string {
   }
 }
 
-export function addKey(index: string, key: string | number | Date | IKey, element: IKeysElement) {
+export function addKey(index: string, key: string | number | Date | IKey, element: IKeysElement, editable?: string) {
   const row = document.createElement('tr');
   const label = document.createElement('td');
+  label.className = 'label';
   row.append(label);
   if (index[0] === '-' && key === '-') {
     label.colSpan = 2;
@@ -59,24 +64,38 @@ export function addKey(index: string, key: string | number | Date | IKey, elemen
     element.data[index] = { row, label, value: label };
   } else {
     const value = document.createElement('td');
-    label.innerHTML = index;
-    value.innerHTML = renderKey(key);
-    if (IKey.is(key) && key.el) {
-      value.append(key.el);
+    if (editable) {
+      label.classList.add('has-input');
+      const inputs = {
+        key: document.createElement('input'),
+        value: document.createElement('input'),
+      }
+      inputs.key.placeholder = 'key...';
+      inputs.key.value = index;
+      label.append(inputs.key);
+      inputs.value.placeholder = 'value...';
+      inputs.value.value = key as string;
+      value.append(inputs.value);
+      element.data[editable] = { row, label, value, inputs };
+    } else {
+      label.innerHTML = index;
+      value.innerHTML = renderKey(key);
+      if (IKey.is(key) && key.el) {
+        value.append(key.el);
+      }
+      element.data[index] = { row, label, value };
     }
-    label.className = 'label';
     value.className = 'value';
     row.append(value);
-    element.data[index] = { row, label, value };
   }
   element.container.append(row);
 }
-export function createKeys(keys: IKeys): IKeysElement {
+export function createKeys(keys: IKeys, editable?: string): IKeysElement {
   const result: IKeysElement = {
     container: document.createElement('table'),
     data: {},
   }
   result.container.className = 'keys';
-  addKeys(keys, result);
+  addKeys(keys, result, editable);
   return result;
 }
