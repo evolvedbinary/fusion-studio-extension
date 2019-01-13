@@ -40,7 +40,8 @@ export class PebbleGroupDialog extends AbstractDialog<PebbleGroupDialogResult> {
       
       this.managersKeys.container.classList.add('no-label');
       props.connection.users.forEach(user => {
-        this.managers[user] = new Checkbox(user, props.group ? props.group.managers.indexOf(user) > -1 : false);
+        this.managers[user] = new Checkbox(user, props.group ? props.group.managers.indexOf(user) > -1 : (props.connection ? user === props.connection.username : false));
+        this.managers[user].disabled = !props.group && !!props.connection && user === props.connection.username;
         addKey(user, {
           type: 'string',
           value: '',
