@@ -1,5 +1,5 @@
 .dialog-container {
-  &.vertical-form {
+  &.vertical-form, .vertical-form {
     > div {
       display: flex;
       flex-direction: column;

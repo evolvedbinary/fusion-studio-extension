@@ -15,7 +15,7 @@ export interface IKeys {
   [key: string]: string | number | Date | IKey;
 }
 export interface IKeysElement {
-  container: HTMLDivElement;
+  container: HTMLTableElement;
   data: {
     [key: string]: {
       row: HTMLTableRowElement;

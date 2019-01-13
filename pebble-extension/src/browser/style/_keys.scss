@@ -1,5 +1,8 @@
 table.keys {
   width: 100%;
+  &.no-label tr td.label {
+    display: none;
+  }
   tr {
     td {
       &.label {
@@ -11,8 +14,7 @@ table.keys {
       &.value {
         width: 100%;
         select,
-        input [type=text],
-        input [type=password]{
+        input {
           width: 100%;
         }
       }

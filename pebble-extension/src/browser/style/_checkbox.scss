@@ -4,6 +4,15 @@ span.checkbox {
   align-items: center;
   margin: 3px;
   cursor: pointer;
+  &.disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+  &.default-case {
+    > .checkbox-label {
+      text-transform: unset;
+    }
+  }
   > .checkbox-box {
     display: block;
     width: 14px;

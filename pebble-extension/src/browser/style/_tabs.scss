@@ -1,26 +1,29 @@
 .pebble-tabs {
   display: flex;
   flex-direction: column;
+  max-height: calc(100vh - 71px);
   .dialogContent & {
     margin: -12px -12px -4px;
   }
   .pb-headers {
     white-space: nowrap;
-    background: var(--theia-layout-color1);
+    background: var(--theia-layout-color0);
     .pb-header {
-      background: var(--theia-layout-color2);
+      background: var(--theia-layout-color1);
+      border: 1px solid var(--theia-layout-color0);
+      border-bottom: none;
       display: inline-block;
       padding: 8px 12px;
       cursor: pointer;
       &.active {
-        background: var(--theia-layout-color0);
+        background: var(--theia-ui-dialog-color);
+        border-color: var(--theia-ui-dialog-color);
       }
     }
   }
   .pb-body {
     display: flex;
     flex-direction: row;
-    padding: 8px;
     .pb-tab-container {
       overflow: hidden;
       width: 0;
@@ -29,7 +32,8 @@
         flex: 1;
       }
       .pb-tab {
-        min-width: 384px;
+        padding: 8px;
+        min-width: 400px;
       }
     }
   }

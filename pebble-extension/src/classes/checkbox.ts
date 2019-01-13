@@ -25,7 +25,21 @@ export class Checkbox {
       this.box.classList.remove('checked');
     }
   }
+  private _disabled: boolean = false;
+  public get disabled(): boolean {
+    return this._disabled;
+  }
+  public set disabled(value: boolean) {
+    this._disabled = value;
+    if (value) {
+      this.container.classList.add('disabled');
+    } else {
+      this.container.classList.remove('disabled');
+    }
+  }
   private onClick(e: MouseEvent) {
-    this.checked = !this.checked;
+    if (!this._disabled) {
+      this.checked = !this.checked;
+    }
   }
 }

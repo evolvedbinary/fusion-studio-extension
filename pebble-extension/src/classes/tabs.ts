@@ -60,7 +60,8 @@ export class PebbleTabs {
   }
   public set active(value: number) {
     if (this._active === value || value < 0 || value >= this._tabs.length) {
-      this.activate(value);
+      return;
     }
+    this.activate(value);
   }
 }
