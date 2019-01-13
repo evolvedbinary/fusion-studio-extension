@@ -109,10 +109,14 @@ export class PebbleGroupDialog extends AbstractDialog<PebbleGroupDialogResult> {
   }
 
   protected isValid(value: PebbleGroupDialogResult, mode: DialogMode): DialogError {
-    if (this.props.group) {
-      return !sameGroup(value, this.props.group);
+    if (value.managers.length > 0) {
+      if (this.props.group) {
+        return !sameGroup(value, this.props.group);
+      } else {
+        return !!value.groupName;
+      }
     } else {
-      return !!value.groupName && value.managers.length > 0;
+      return false;
     }
   }
 
