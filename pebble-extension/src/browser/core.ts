@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebblecontainerNode } from "../classes/node";
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebblecontainerNode, PebbleIndexesNode, PebbleIndexNode } from "../classes/node";
 import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
@@ -192,6 +192,7 @@ export class PebbleCore {
         root.documents.forEach(document => this.addDocument(connectionNode.db, document));
         this.expand(connectionNode.db);
         connectionNode.security = await this.addSecurity(connectionNode);
+        connectionNode.indexes = await this.addIndexes(connectionNode);
       } catch (error) {
         connectionNode.expanded = false;
         console.error('caught:', error);
@@ -294,6 +295,7 @@ export class PebbleCore {
       uri: connection.server,
       db: undefined as any,
       security: undefined as any,
+      indexes: undefined as any,
     } as PebbleConnectionNode, parent) as PebbleConnectionNode;
     connectionNode.connectionNode = connectionNode;
     return connectionNode;
@@ -434,9 +436,9 @@ export class PebbleCore {
   protected async addSecurity(connectionNode: PebbleConnectionNode): Promise<PebbleSecurityNode> {
     const securityNode = await this.addNode({
       type: 'security',
-      connectionNode: connectionNode.connectionNode,
+      connectionNode,
       children: [],
-      id: this.securityID(connectionNode.connectionNode.connection),
+      id: this.securityID(connectionNode.connection),
       description: 'Security',
       name: 'Security',
       parent,
@@ -444,13 +446,42 @@ export class PebbleCore {
       expanded: false,
       selected: false,
     } as any, connectionNode) as PebbleSecurityNode;
-    const users = await PebbleApi.getUsers(connectionNode.connectionNode.connection);
-    connectionNode.connectionNode.connection.users.push(...users);
+    const users = await PebbleApi.getUsers(connectionNode.connection);
+    connectionNode.connection.users.push(...users);
     securityNode.users = await this.addUsersNode(securityNode, users);
-    const groups = await PebbleApi.getGroups(connectionNode.connectionNode.connection);
-    connectionNode.connectionNode.connection.groups.push(...groups);
+    const groups = await PebbleApi.getGroups(connectionNode.connection);
+    connectionNode.connection.groups.push(...groups);
     securityNode.groups = await this.addGroupsNode(securityNode, groups);
     return securityNode;
+  }
+
+  protected async addIndex(indexesNode: PebbleIndexesNode, uri: string): Promise<PebbleIndexNode> {
+    return await this.addNode({
+      connectionNode: indexesNode.connectionNode,
+      id: this.indexID(indexesNode.connectionNode.connection, uri),
+      name: uri,
+      parent: indexesNode,
+      uri,
+      type: 'index',
+      selected: false,
+    } as PebbleIndexNode, indexesNode) as PebbleIndexNode;
+  }
+
+  protected async addIndexes(connectionNode: PebbleConnectionNode): Promise<PebbleIndexesNode> {
+    const indexes = await PebbleApi.getIndexes(connectionNode.connection);
+    const indexesNode = await this.addNode({
+      connectionNode,
+      children: [],
+      id: this.indexID(connectionNode.connection),
+      name: 'Indexes',
+      parent: connectionNode,
+      uri: '/index',
+      type: 'indexes',
+      selected: false,
+      expanded: false,
+    } as PebbleIndexesNode, connectionNode) as PebbleIndexesNode;
+    await Promise.all(indexes.map(index => this.addIndex(indexesNode, index)));
+    return indexesNode;
   }
 
   public status() {
@@ -534,6 +565,9 @@ export class PebbleCore {
     if (PebbleNode.isSecurity(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : 'lock');
     }
+    if (PebbleNode.isIndexes(node) || PebbleNode.isIndex(node)) {
+      return 'fa fa-fw fa-' + (node.loading ? loading : 'list-ul');
+    }
     return '';
   }
 
@@ -614,6 +648,10 @@ export class PebbleCore {
 
   protected groupID(connection: PebbleConnection, group: string = ''): string {
     return this.securityID(connection, 'group', group);
+  }
+
+  protected indexID(connection: PebbleConnection, uri: string = ''): string {
+    return this.connectionID(connection) + '/index' + uri;
   }
 
 
