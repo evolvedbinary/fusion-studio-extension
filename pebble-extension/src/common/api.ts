@@ -2,7 +2,8 @@ import { PebbleCollection, PebbleDocument, readItem, readDate } from "../classes
 import { PebbleConnection } from "../classes/connection";
 import { createError, PebbleError } from "../classes/error";
 import { PebbleFileList } from "../classes/files";
-import { PebbleUser, PebbleGroup } from "../classes/user";
+import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
+import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
 
 export namespace PebbleApi {
 
@@ -25,16 +26,16 @@ export namespace PebbleApi {
     return fetch(connection.server + uri, options);
   }
 
-  async function _put(connection: PebbleConnection, uri: string, body: any = '', binary = false): Promise<Response> {
-    const isReady = (body instanceof FormData) || (body instanceof File) || (body instanceof Blob);
+  async function _put(connection: PebbleConnection, uri: string, body: any = '', contentType = ''): Promise<Response> {
+    const isReady = contentType !== '' || (body instanceof FormData) || (body instanceof File) || (body instanceof Blob);
     const isString = typeof body === 'string';
     const isHeader = body && !isString && 'headers' in body;
     const headers: any = isHeader ? body.headers : {};
     if (connection.username !== '') {
       headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
     }
-    if (binary) {
-      headers['Content-Type'] = 'application/octet-stream';
+    if (contentType) {
+      headers['Content-Type'] = contentType == 'bin' ? 'application/octet-stream' : contentType;
     }
     if (body && !isReady && !isString) {
       const formData = new FormData();
@@ -86,9 +87,9 @@ export namespace PebbleApi {
     }
   }
   
-  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, binary = false): Promise<boolean> {
+  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, contentType = ''): Promise<boolean> {
     try {
-      const result = await _put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, binary);
+      const result = await _put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, contentType);
       switch (result.status) {
         case 201: return true;
         case 401: throw createError(PebbleError.permissionDenied, result);
@@ -164,7 +165,7 @@ export namespace PebbleApi {
     return false;
   }
   
-  export async function chmod(connection: PebbleConnection, uri: string, owner: PebbleUser, group: PebbleGroup, isCollection?: boolean): Promise<boolean> {
+  export async function chmod(connection: PebbleConnection, uri: string, owner: string, group: string, isCollection?: boolean): Promise<boolean> {
     return (await _put(connection, '/exist/restxq/pebble/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri, {
       headers: {
         'x-pebble-owner': owner,
@@ -178,11 +179,75 @@ export namespace PebbleApi {
     })).status === 200;
   }
 
-  export async function getUsers(connection: PebbleConnection): Promise<PebbleUser[]> {
+  export async function getUsers(connection: PebbleConnection): Promise<string[]> {
     return (await _get(connection, '/exist/restxq/pebble/user')).json();
   }
 
-  export async function getGroups(connection: PebbleConnection): Promise<PebbleGroup[]> {
+  export async function getUser(connection: PebbleConnection, user: string): Promise<PebbleUser> {
+    const result = await (await _get(connection, '/exist/restxq/pebble/user/' + user)).json();
+    return readUser(result);
+  }
+
+  export async function addUser(connection: PebbleConnection, user: PebbleUserData): Promise<boolean> {
+    try {
+      const result = await _put(connection, '/exist/restxq/pebble/user/' + user.userName, writeUserData(user), 'application/json');
+      switch (result.status) {
+        case 204: return true;
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
+  }
+
+  export async function removeUser(connection: PebbleConnection, user: string): Promise<boolean> {
+    try {
+      const result = await _remove(connection, '/exist/restxq/pebble/user/' + user);
+      switch (result.status) {
+        case 204: return true;
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        case 404: throw createError(PebbleError.notFound, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
+  }
+
+  export async function getGroups(connection: PebbleConnection): Promise<string[]> {
     return (await _get(connection, '/exist/restxq/pebble/group')).json();
+  }
+
+  export async function getGroup(connection: PebbleConnection, group: string): Promise<PebbleGroup> {
+    const result = await (await _get(connection, '/exist/restxq/pebble/group/' + group)).json();
+    return readGroup(result);
+  }
+
+  export async function addGroup(connection: PebbleConnection, group: PebbleGroupData): Promise<boolean> {
+    try {
+      const result = await _put(connection, '/exist/restxq/pebble/group/' + group.groupName, writeGroupData(group), 'application/json');
+      switch (result.status) {
+        case 204: return true;
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
+  }
+
+  export async function removeGroup(connection: PebbleConnection, group: string): Promise<boolean> {
+    try {
+      const result = await _remove(connection, '/exist/restxq/pebble/group/' + group);
+      switch (result.status) {
+        case 204: return true;
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        case 404: throw createError(PebbleError.notFound, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
   }
 }
