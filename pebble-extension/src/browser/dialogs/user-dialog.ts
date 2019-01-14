@@ -28,6 +28,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   protected readonly groups: { [k: string]: Checkbox } = {};
   protected readonly isEnabled: Checkbox;
   protected readonly isExpired: Checkbox;
+  protected readonly noPassword: Checkbox = new Checkbox('Empty');
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly username: IDialogField = createField('Username', '');
   protected readonly password: IDialogField = createField('Password', '', 'password');
@@ -50,8 +51,11 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
         }
       }));
       this.tabs.tabs.forEach(tab => tab.classList.add('vertical-form'));
-      this.isEnabled = new Checkbox('Enabled', true);
-      this.isExpired = new Checkbox('Expired');
+      this.isEnabled = new Checkbox('Enabled', props.user ? props.user.enabled : true);
+      this.isExpired = new Checkbox('Expired', props.user ? props.user.expired : false);
+      
+      this.noPassword.container.classList.add('inline');
+      this.password.label.appendChild(this.noPassword.container);
       
       this.tabs.tabs[0].appendChild(this.username.container);
       this.tabs.tabs[0].appendChild(this.password.container);
@@ -126,7 +130,20 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   }
 
   get value(): PebbleUserDialogResult {
-    const password = this.password.input.value === this.passwordConfirm.input.value ? this.password.input.value : '';
+    let password: string | null = this.password.input.value === this.passwordConfirm.input.value ? this.password.input.value : '';
+    if (password === '') {
+      password = null;
+    }
+    if (this.noPassword.checked) {
+      this.password.input.value = '';
+      this.passwordConfirm.input.value = '';
+      this.password.input.disabled = true;
+      this.passwordConfirm.input.disabled = true;
+      password = '';
+    } else {
+      this.password.input.disabled = false;
+      this.passwordConfirm.input.disabled = false;
+    }
     return {
       enabled: this.isEnabled.checked,
       expired: this.isExpired.checked,
@@ -139,10 +156,13 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   }
 
   protected isValid(value: PebbleUserDialogResult, mode: DialogMode): DialogError {
+    if (this.password.input.value !== this.passwordConfirm.input.value) {
+      return false;
+    }
     if (this.props.user) {
-      return !!value.password || (this.password.input.value === this.passwordConfirm.input.value && !sameUser(value, this.props.user));
+      return value.password !== null || !sameUser(value, this.props.user);
     } else {
-      return !!value.userName && !!value.password;
+      return !!value.userName;
     }
   }
 
@@ -154,6 +174,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     this.addUpdateListener(this.passwordConfirm.input, 'input');
     this.addUpdateListener(this.isEnabled.container, 'click')
     this.addUpdateListener(this.isExpired.container, 'click')
+    this.addUpdateListener(this.noPassword.container, 'click')
     Object.keys(this.groups).forEach(group => this.addUpdateListener(this.groups[group].container, 'click'));
     Object.keys(this.attributes).forEach(key => this.addUpdateListener(this.attributes[key], 'input'));
   }

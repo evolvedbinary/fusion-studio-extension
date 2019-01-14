@@ -8,6 +8,12 @@ span.checkbox {
     cursor: default;
     opacity: 0.5;
   }
+  &.inline {
+    margin-left: 12px;
+    position: relative;
+    top: 1px;
+
+  }
   &.default-case {
     > .checkbox-label {
       text-transform: unset;
@@ -35,5 +41,7 @@ span.checkbox {
   }
   > .checkbox-label {
     text-transform: capitalize;
+    position: relative;
+    top: 2px;
   }
 }

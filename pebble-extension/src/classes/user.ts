@@ -43,7 +43,7 @@ export interface PebbleUser {
   metadata: PebbleUserAttributes;
 };
 export interface PebbleUserData extends PebbleUser {
-  password: string;
+  password: string | null;
 };
 
 export function encodePassword(password: string): string {
@@ -74,9 +74,10 @@ export function sameUser(user1: PebbleUser, user2: PebbleUser): boolean {
 }
 
 export function writeUserData(user: PebbleUserData): string {
+  const password = user.password === null ? null : new Hash().update(user.password).digest('base64');
   return JSON.stringify({
     ...user,
-    password: new Hash().update(user.password).digest('base64'),
+    password,
     metadata: Object.keys(user.metadata).map(key => ({ key: PEBBLE_USER_ATTRIBUTES[key], value: user.metadata[key] })),
   });
 }

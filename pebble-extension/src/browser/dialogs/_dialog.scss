@@ -12,4 +12,9 @@
   select option {
     background-color: var(--theia-ui-dialog-color);
   }
+  input, select, button {
+    &:disbaled {
+      opacity: 0.5;;
+    }
+  }
 }
