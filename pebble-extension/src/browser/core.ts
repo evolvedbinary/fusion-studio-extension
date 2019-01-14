@@ -233,14 +233,15 @@ export class PebbleCore {
       try {
         const result = await PebbleApi.load(node.connectionNode.connection, uri);
         if (PebbleItem.isCollection(result)) {
-          (node as PebbleCollectionNode).loaded = true;
+          node.loaded = true;
           const collection = result as PebbleCollection;
+          await this.addCollectionIndex(node);
           collection.collections.forEach(subCollection => this.addCollection(node, subCollection));
           collection.documents.forEach(document => this.addDocument(node, document));
-          (node as PebbleCollectionNode).collection = collection;
+          node.collection = collection;
         }
       } catch (error) {
-        (node as PebbleCollectionNode).expanded = false;
+        node.expanded = false;
         console.error('caught:', error);
       }
       this.endLoading(node);
@@ -455,16 +456,25 @@ export class PebbleCore {
     return securityNode;
   }
 
-  protected async addIndex(indexesNode: PebbleIndexesNode, uri: string): Promise<PebbleIndexNode> {
-    return await this.addNode({
-      connectionNode: indexesNode.connectionNode,
-      id: this.indexID(indexesNode.connectionNode.connection, uri),
+  protected createIndexNode(parent: PebblecontainerNode, uri: string): PebbleIndexNode {
+    return {
+      connectionNode: parent.connectionNode,
+      id: this.indexID(parent.connectionNode.connection, uri),
       name: uri,
-      parent: indexesNode,
-      uri,
+      parent: parent,
+      uri: uri,
       type: 'index',
       selected: false,
-    } as PebbleIndexNode, indexesNode) as PebbleIndexNode;
+    };
+  }
+
+  protected async addCollectionIndex(collectionNode: PebbleCollectionNode): Promise<PebbleIndexNode | undefined> {
+    const index = await PebbleApi.getIndex(collectionNode.connectionNode.connection, collectionNode.uri);
+    return index ? await this.addNode(this.createIndexNode(collectionNode, collectionNode.uri), collectionNode) as PebbleIndexNode : undefined;
+  }
+
+  protected async addIndex(indexesNode: PebbleIndexesNode, uri: string): Promise<PebbleIndexNode> {
+    return await this.addNode(this.createIndexNode(indexesNode, uri), indexesNode) as PebbleIndexNode;
   }
 
   protected async addIndexes(connectionNode: PebbleConnectionNode): Promise<PebbleIndexesNode> {

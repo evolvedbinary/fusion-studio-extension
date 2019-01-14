@@ -4,6 +4,7 @@ import { createError, PebbleError } from "../classes/error";
 import { PebbleFileList } from "../classes/files";
 import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
 import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
+import { readIndex, PebbleIndex } from "../classes/indexes";
 
 export namespace PebbleApi {
 
@@ -255,10 +256,19 @@ export namespace PebbleApi {
     return (await _get(connection, '/exist/restxq/pebble/index')).json();
   }
 
-  // export async function getGroup(connection: PebbleConnection, group: string): Promise<PebbleGroup> {
-  //   const result = await (await _get(connection, '/exist/restxq/pebble/group/' + group)).json();
-  //   return readGroup(result);
-  // }
+  export async function getIndex(connection: PebbleConnection, uri: string): Promise<PebbleIndex | undefined> {
+    try {
+      const result = await (await _get(connection, '/exist/restxq/pebble/index?uri=' + uri));
+      switch (result.status) {
+        case 200: return readIndex(await result.json());
+        // case 404: throw createError(PebbleError.notFound, result);
+        case 404: return undefined;
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
+  }
 
   // export async function addGroup(connection: PebbleConnection, group: PebbleGroupData): Promise<boolean> {
   //   try {
