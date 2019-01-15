@@ -4,6 +4,21 @@ span.checkbox {
   align-items: center;
   margin: 3px;
   cursor: pointer;
+  &.disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+  &.inline {
+    margin-left: 12px;
+    position: relative;
+    top: 1px;
+
+  }
+  &.default-case {
+    > .checkbox-label {
+      text-transform: unset;
+    }
+  }
   > .checkbox-box {
     display: block;
     width: 14px;
@@ -26,5 +41,7 @@ span.checkbox {
   }
   > .checkbox-label {
     text-transform: capitalize;
+    position: relative;
+    top: 2px;
   }
 }

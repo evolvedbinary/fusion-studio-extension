@@ -1,12 +1,12 @@
 import { TreeNode, ExpandableTreeNode, SelectableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
-import { PebbleConnection } from "./connection";
 import { PebbleDocument, PebbleCollection } from "./item";
+import { PebbleConnection } from "./connection";
 
 
 export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group' | 'security';
 export interface PebbleNode extends TreeNode {
   type: PebbleNodeType;
-  connection: PebbleConnection;
+  connectionNode: PebbleConnectionNode;
   uri: string;
   loading?: boolean;
 }
@@ -15,6 +15,9 @@ export interface PebblecontainerNode extends PebbleNode, CompositeTreeNode, Expa
 export interface PebbleConnectionNode extends PebbleNode, PebblecontainerNode, SelectableTreeNode {
   type: 'connection';
   loaded?: boolean;
+  connection: PebbleConnection;
+  db: PebbleCollectionNode;
+  security: PebbleSecurityNode
 }
 export interface PebbleToolbarNode extends PebbleNode {
   type: 'toolbar';

@@ -1,5 +1,5 @@
 .dialog-container {
-  &.vertical-form {
+  &.vertical-form, .vertical-form {
     > div {
       display: flex;
       flex-direction: column;
@@ -11,5 +11,10 @@
   }
   select option {
     background-color: var(--theia-ui-dialog-color);
+  }
+  input, select, button {
+    &:disbaled {
+      opacity: 0.5;;
+    }
   }
 }
