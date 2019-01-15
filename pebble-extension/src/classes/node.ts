@@ -3,7 +3,7 @@ import { PebbleDocument, PebbleCollection } from "./item";
 import { PebbleConnection } from "./connection";
 
 
-export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group' | 'security';
+export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group' | 'security' | 'indexes' | 'index';
 export interface PebbleNode extends TreeNode {
   type: PebbleNodeType;
   connectionNode: PebbleConnectionNode;
@@ -18,6 +18,7 @@ export interface PebbleConnectionNode extends PebbleNode, PebblecontainerNode, S
   connection: PebbleConnection;
   db: PebbleCollectionNode;
   security: PebbleSecurityNode
+  indexes: PebbleIndexesNode
 }
 export interface PebbleToolbarNode extends PebbleNode {
   type: 'toolbar';
@@ -54,6 +55,12 @@ export interface PebbleSecurityNode extends PebblecontainerNode, SelectableTreeN
   type: 'security',
   users: PebbleUsersNode,
   groups: PebbleGroupsNode,
+}
+export interface PebbleIndexNode extends PebbleNode, SelectableTreeNode {
+  type: 'index',
+}
+export interface PebbleIndexesNode extends PebblecontainerNode, SelectableTreeNode {
+  type: 'indexes',
 }
 
 export namespace PebbleNode {
@@ -92,5 +99,11 @@ export namespace PebbleNode {
   }
   export function isSecurity(node?: TreeNode): node is PebbleSecurityNode {
     return PebbleNode.isContainer(node) && node.type === 'security';
+  }
+  export function isIndex(node?: TreeNode): node is PebbleIndexNode {
+    return PebbleNode.is(node) && node.type === 'index';
+  }
+  export function isIndexes(node?: TreeNode): node is PebbleIndexesNode {
+    return PebbleNode.isContainer(node) && node.type === 'indexes';
   }
 }

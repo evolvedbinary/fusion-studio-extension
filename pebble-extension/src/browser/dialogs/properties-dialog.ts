@@ -49,12 +49,12 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   ) {
     super(props);
     if (props.node) {
-      const slash = props.node.name.lastIndexOf('/');
-      this.name = props.node.name.substr(slash + 1);
-      this.nameField.type = 'text';
-      this.nameField.value = this.name;
-      this.nameField.addEventListener('focus', e => this.nameField.select());
       const item = PebbleNode.isCollection(props.node) ? props.node.collection as PebbleCollection : (props.node as PebbleDocumentNode).document as PebbleDocument;
+      const slash = item.name.lastIndexOf('/');
+      this.name = props.node.name;
+      this.nameField.value = this.name;
+      this.nameField.type = 'text';
+      this.nameField.addEventListener('focus', e => this.nameField.select());
       this.item = item;
       addKeys({
         'Name': {
