@@ -1,3 +1,47 @@
 .pebble-eval {
+  display: flex;
   color: var(--theia-ui-font-color1);
+  flex-direction: column;
+  &, & * {
+    white-space: nowrap;
+  }
+  .x-header {
+    display: flex;
+    min-height: 22px;
+    padding: 0px 8px 0px 12px;
+    > span {
+      line-height: 22px;
+      font-size: 14px;
+    }
+    .x-icon {
+      min-width: 22px;
+      color: var(--theia-ui-button-color);
+      text-align: center;
+    }
+    .x-title {
+      font-weight: bold;
+      margin-left: 12px;
+    }
+    .x-document {
+      flex: 1;
+      margin-left: 4px;
+    }
+    .x-btn {
+      user-select: none;
+      min-width: 22px;
+      margin-left: 0;
+    }
+    .x-select {
+      margin-left: 4px;
+      width: 96px;
+    }
+  }
+  .x-body {
+    flex: 1;
+    overflow: auto;
+    background-color: var(--theia-border-color1);
+    border: 4px solid var(--theia-border-color0);
+    padding: 4px;
+    font-family: Consolas, "Courier New", monospace;
+  }
 }
