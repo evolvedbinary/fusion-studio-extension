@@ -17,8 +17,10 @@ export type PebbleEvalWidgetFactory = () => PebbleEvalWidget;
 export const PebbleEvalWidgetFactory = Symbol('PebbleEditorWidgetFactory');
 
 export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
-  protected listener: Disposable | undefined;
+  protected listenerConnections: Disposable;
+  protected listenerEditor: Disposable | undefined;
   protected documentNode: PebbleDocumentNode | undefined;
+  protected editorWidget: EditorWidget | undefined;
   protected editor: TextEditor | undefined;
   protected elBody = React.createRef<HTMLDivElement>();
   protected elTitle = React.createRef<HTMLSpanElement>();
@@ -38,8 +40,19 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     this.update();
     this.scrollBar && this.scrollBar.destroy();
 
+    this.listenerConnections = this.core.onConnectionsChange(e => {
+      console.log(e);
+      this.update();
+    });
+
     manager.onActiveEditorChanged(this.editorChanged.bind(this));
     this.editorChanged(manager.activeEditor);
+  }
+
+  public dispose() {
+    this.listenerConnections.dispose();
+    this.listenerEditor && this.listenerEditor.dispose();
+    super.dispose();
   }
 
   protected getScrollContainer(): MaybePromise<HTMLElement> {
@@ -48,6 +61,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   }
 
   editorChanged(widget: EditorWidget | undefined) {
+    this.editorWidget = widget;
     if (widget) {
       const node = this.core.getNode(widget.editor.uri.path.toString());
       if (PebbleNode.isDocument(node)) {
@@ -59,11 +73,11 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   }
 
   changeTo(widget?: EditorWidget, node?: PebbleDocumentNode) {
-    if (this.listener) {
-      this.listener.dispose();
+    if (this.listenerEditor) {
+      this.listenerEditor.dispose();
     }
     this.editor = widget && widget.editor;
-    this.listener = this.editor && this.editor.document.onDirtyChanged(() => this.update());
+    this.listenerEditor = this.editor && this.editor.document.onDirtyChanged(() => this.update());
     this.documentNode = node;
     this.update();
   }
@@ -78,21 +92,37 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     return SERIALIZATION_TYPES.map(mode => <option value={mode.value} key={mode.value}>{mode.text}</option>);
   }
 
+  connections(node?: PebbleDocumentNode) {
+    return Object.keys(this.core.connections).map(id => <option value={id} key={id} selected={node && node.connectionNode.id === id}>{this.core.connections[id].name}</option>);
+  }
+
   eval() {
 
   }
   
   protected render(): React.ReactNode {
+    let fileOpen;
+    let connected = !!this.documentNode;
+    let connectionsAvailable = Object.keys(this.core.connections).length > 0;
+    let title = this.editorWidget ? this.editorWidget.title.caption : 'Open a document to evaluate.';
+    if (this.editor) {
+      fileOpen = true;
+    } else {
+      fileOpen = false;
+    }
     return <React.Fragment>
       <div className='x-header'>
-        <span className="x-icon fa fa-code" />
-        <span className='x-title' ref={this.elTitle}>XQuery Evaluation: </span>
-        <span className='x-document'>{this.documentNode ? this.documentNode.name : 'Open a document to evaluate.'}</span>
-        <span className='x-label'>Serialization Type</span>
-        <select className="x-select">
+        <span>{title}</span>
+        <span className='x-separator' />
+        <span className={connected || !connectionsAvailable ? 'disabled' : ''}>Connection:</span>
+        <select className="x-select" disabled={connected || !connectionsAvailable}>
+          {this.connections(this.documentNode)}
+        </select>
+        <span className={!fileOpen ? 'disabled' : ''}>Serialization Type:</span>
+        <select className="x-select" disabled={!fileOpen}>
           {this.serializationTypess()}
         </select>
-        <button className="x-btn" ref={this.elEval}><span className="fa fa-play" /> Evaluate</button>
+        <button className="x-btn" ref={this.elEval} disabled={!fileOpen}><span className="fa fa-play" /> Evaluate</button>
       </div>
       <div className='x-body' ref={this.elBody}></div>
     </React.Fragment>
