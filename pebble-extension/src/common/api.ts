@@ -173,10 +173,24 @@ export namespace PebbleApi {
       },
     })).status === 200;
   }
+
   export async function convert(connection: PebbleConnection, document: PebbleDocument): Promise<boolean> {
     return (await _put(connection, '/exist/restxq/pebble/document?uri=' + document.name, {
       headers: { 'x-pebble-convert': !document.binaryDoc },
     })).status === 200;
+  }
+
+  export async function evaluate(connection: PebbleConnection, serialization: string, value: string, isContent?: boolean): Promise<string> {
+    try {
+      const result = await _put(connection, '/exist/restxq/pebble/evaluate?serialization=' + serialization + (isContent ? '' : '&uri=' + value), isContent ? value : undefined, 'text/plain');
+      switch (result.status) {
+        case 200: return result.text();
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
   }
 
   export async function getUsers(connection: PebbleConnection): Promise<string[]> {

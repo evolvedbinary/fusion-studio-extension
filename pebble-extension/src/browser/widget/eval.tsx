@@ -2,9 +2,10 @@ import * as React from 'react';
 import { ReactWidget, StatefulWidget } from "@theia/core/lib/browser";
 import { inject } from "inversify";
 import { PebbleCore } from '../core';
-import { EditorManager, TextEditor, EditorWidget } from '@theia/editor/lib/browser';
-import { PebbleDocumentNode } from '../../classes/node';
+import { EditorManager, EditorWidget, TextEditor } from '@theia/editor/lib/browser';
+import { PebbleDocumentNode, PebbleConnectionNode } from '../../classes/node';
 import { Disposable, MaybePromise } from '@theia/core';
+import { PebbleApi } from '../../common/api';
 
 const SERIALIZATION_TYPES = [
   { value: 'adaptive', text: 'Adaptive' },
@@ -43,7 +44,6 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     this.scrollBar && this.scrollBar.destroy();
 
     this.listenerConnections = this.core.onConnectionsChange(e => {
-      console.log(e);
       this.update();
     });
 
@@ -58,7 +58,6 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   }
 
   protected getScrollContainer(): MaybePromise<HTMLElement> {
-    console.log(this.elBody.current);
     return this.elBody.current || this.node;
   }
 
@@ -97,8 +96,15 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     return Object.keys(this.core.connections).map(id => <option value={id} key={id}>{this.core.connections[id].name}</option>);
   }
 
-  eval() {
-
+  async evaluate() {
+    if (this.editor) {
+      const node = this.documentNode ? this.documentNode.connectionNode : this.core.getNode(this.connection) as PebbleConnectionNode;
+      const value = this.editor.document.dirty || !this.documentNode ? this.editor.document.getText() : this.documentNode.uri;
+      if (node) {
+        const result = await PebbleApi.evaluate(node.connection, this.serialization, value, this.editor.document.dirty || !this.documentNode);
+        console.log(JSON.parse(result));
+      }
+    }
   }
   
   protected render(): React.ReactNode {
@@ -122,7 +128,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
         <select className="x-select" disabled={!editor} onChange={e => this.serialization = e.target.value}>
           {this.serializationTypes()}
         </select>
-        <button className="x-btn" ref={this.elEval} disabled={!editor} onClick={() => this.eval()}><span className="fa fa-play" /> Evaluate</button>
+        <button className="x-btn" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate()}><span className="fa fa-play" /> Evaluate</button>
       </div>
       <div className='x-body' ref={this.elBody}>{this.connection} - {this.serialization}</div>
     </React.Fragment>

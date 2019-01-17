@@ -43,6 +43,7 @@ export class PebbleResource implements Resource {
     const document = this.getDocument();
     if (!document.isNew && document.connectionNode) {
       const result = await PebbleApi.load(document.connectionNode.connection, document.uri) as PebbleDocument;
+      document.document = result;
       return result.content;
     }
     return document.document ? document.document.content : '';
