@@ -611,27 +611,27 @@ export class PebbleCore {
     return id.split('/').pop() || id;
   }
   
-  protected generateID(connection: PebbleConnection, text: string, prefix?: string): string {
+  public generateID(connection: PebbleConnection, text: string, prefix?: string): string {
     return this.connectionID(connection) + (prefix ? prefix + '/' : '') + text;
   }
   
-  protected connectionID(connection: PebbleConnection): string {
+  public connectionID(connection: PebbleConnection): string {
     return (connection.username ? connection.username : '(guest)') + '@' + connection.server;
   }
 
-  protected itemID(connection: PebbleConnection, item: PebbleItem): string {
+  public itemID(connection: PebbleConnection, item: PebbleItem): string {
     return this.connectionID(connection) + item.name;
   }
   
-  protected securityID(connection: PebbleConnection, prefix?: string, text?: string): string {
+  public securityID(connection: PebbleConnection, prefix?: string, text?: string): string {
     return this.connectionID(connection) + 'security' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
   }
 
-  protected userID(connection: PebbleConnection, user: string = ''): string {
+  public userID(connection: PebbleConnection, user: string = ''): string {
     return this.securityID(connection, 'user', user);
   }
 
-  protected groupID(connection: PebbleConnection, group: string = ''): string {
+  public groupID(connection: PebbleConnection, group: string = ''): string {
     return this.securityID(connection, 'group', group);
   }
 

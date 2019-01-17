@@ -21,14 +21,18 @@
       &.x-separator {
         flex: 1;
       }
+      &.x-connection {
+        border-right: 1px solid var(--theia-layout-color1);
+        padding-right: 8px;
+      }
     }
     .x-document {
-      flex: 1;
-      margin-left: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .x-btn {
       user-select: none;
-      min-width: 22px;
+      min-width: 82px;
       margin-left: 0;
     }
     .x-select {

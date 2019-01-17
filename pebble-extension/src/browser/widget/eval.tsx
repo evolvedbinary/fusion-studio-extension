@@ -3,7 +3,7 @@ import { ReactWidget, StatefulWidget } from "@theia/core/lib/browser";
 import { inject } from "inversify";
 import { PebbleCore } from '../core';
 import { EditorManager, TextEditor, EditorWidget } from '@theia/editor/lib/browser';
-import { PebbleDocumentNode, PebbleNode } from '../../classes/node';
+import { PebbleDocumentNode } from '../../classes/node';
 import { Disposable, MaybePromise } from '@theia/core';
 
 const SERIALIZATION_TYPES = [
@@ -25,6 +25,8 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   protected elBody = React.createRef<HTMLDivElement>();
   protected elTitle = React.createRef<HTMLSpanElement>();
   protected elEval = React.createRef<HTMLButtonElement>();
+  protected connection = '';
+  protected serialization = 'adaptive';
   constructor(
     @inject(EditorManager) protected readonly manager: EditorManager,
     @inject(PebbleCore) protected readonly core: PebbleCore,
@@ -63,12 +65,8 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   editorChanged(widget: EditorWidget | undefined) {
     this.editorWidget = widget;
     if (widget) {
-      const node = this.core.getNode(widget.editor.uri.path.toString());
-      if (PebbleNode.isDocument(node)) {
-        this.changeTo(widget, node);
-      } else {
-        this.changeTo();
-      }
+      const node = this.core.getNode(widget.editor.uri.path.toString()) as PebbleDocumentNode;
+      this.changeTo(widget, node);
     }
   }
 
@@ -88,12 +86,15 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   
   restoreState(state: object) {}
 
-  serializationTypess() {
+  serializationTypes() {
     return SERIALIZATION_TYPES.map(mode => <option value={mode.value} key={mode.value}>{mode.text}</option>);
   }
 
   connections(node?: PebbleDocumentNode) {
-    return Object.keys(this.core.connections).map(id => <option value={id} key={id} selected={node && node.connectionNode.id === id}>{this.core.connections[id].name}</option>);
+    if (this.connection === '' &&Object.keys(this.core.connections).length > 0) {
+      this.connection = this.core.connectionID(this.core.connections[Object.keys(this.core.connections)[0]]);
+    }
+    return Object.keys(this.core.connections).map(id => <option value={id} key={id}>{this.core.connections[id].name}</option>);
   }
 
   eval() {
@@ -101,30 +102,29 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   }
   
   protected render(): React.ReactNode {
-    let fileOpen;
-    let connected = !!this.documentNode;
-    let connectionsAvailable = Object.keys(this.core.connections).length > 0;
-    let title = this.editorWidget ? this.editorWidget.title.caption : 'Open a document to evaluate.';
-    if (this.editor) {
-      fileOpen = true;
-    } else {
-      fileOpen = false;
-    }
+    const editor = !!this.editorWidget;
+    const title = this.editorWidget ? this.editorWidget.title.label : 'Open a document to evaluate.';
+    const connectionsAvailable = Object.keys(this.core.connections).length > 0;
+    const connection = this.documentNode ? this.documentNode.connectionNode.id : this.connection;
     return <React.Fragment>
       <div className='x-header'>
-        <span>{title}</span>
+        <span className="x-document">{title}</span>
         <span className='x-separator' />
-        <span className={connected || !connectionsAvailable ? 'disabled' : ''}>Connection:</span>
-        <select className="x-select" disabled={connected || !connectionsAvailable}>
-          {this.connections(this.documentNode)}
+        {editor && <React.Fragment>
+          <span className={!this.documentNode && !connectionsAvailable ? 'disabled' : ''} >Connection:</span>
+          {this.documentNode ? <span className="x-connection">{this.documentNode.connectionNode.connection.name}</span> :
+            <select className="x-select" disabled={!connectionsAvailable} value={connection} onChange={e => this.connection = e.target.value}>
+              {this.connections(this.documentNode)}
+            </select>
+          }</React.Fragment>
+        }
+        <span className={!editor ? 'disabled' : ''}>Serialization Type:</span>
+        <select className="x-select" disabled={!editor} onChange={e => this.serialization = e.target.value}>
+          {this.serializationTypes()}
         </select>
-        <span className={!fileOpen ? 'disabled' : ''}>Serialization Type:</span>
-        <select className="x-select" disabled={!fileOpen}>
-          {this.serializationTypess()}
-        </select>
-        <button className="x-btn" ref={this.elEval} disabled={!fileOpen}><span className="fa fa-play" /> Evaluate</button>
+        <button className="x-btn" ref={this.elEval} disabled={!editor} onClick={() => this.eval()}><span className="fa fa-play" /> Evaluate</button>
       </div>
-      <div className='x-body' ref={this.elBody}></div>
+      <div className='x-body' ref={this.elBody}>{this.connection} - {this.serialization}</div>
     </React.Fragment>
   }
 }
