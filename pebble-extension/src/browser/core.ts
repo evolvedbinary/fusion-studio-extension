@@ -121,8 +121,12 @@ export class PebbleCore {
   public expanded(node: CompositeTreeNode) {
     if (PebbleNode.isConnection(node) && !node.loaded) {
       this.connect(node);
-    } else if (PebbleNode.isCollection(node) && !node.loaded) {
-      this.load(node, node.uri);
+    } else if (PebbleNode.isCollection(node)) {
+      if (node.loaded) {
+        this.asyncLoad(node);
+      } else {
+        this.load(node, node.uri);
+      }
     }
   }
 
@@ -224,6 +228,47 @@ export class PebbleCore {
     if (PebbleNode.is(node)) {
       node.loading = false;
       this.refresh();
+    }
+  }
+  
+  protected async asyncLoad(node: PebbleCollectionNode) {
+    try {
+      const result = await PebbleApi.load(node.connectionNode.connection, node.uri);
+      if (PebbleItem.isCollection(result)) {
+        const collection = result;
+        // refresh collections
+        let collectionsOld = node.children.filter(child => PebbleNode.isCollection(child)) as PebbleCollectionNode[];
+        const collectionsNew = collection.collections.filter(subCollection => {
+          const collectionNode = this.getNode(this.itemID(node.connectionNode.connection, subCollection));
+          if (PebbleNode.isCollection(collectionNode) && collectionNode.parent === node) {
+            collectionsOld = collectionsOld.filter(old => old !== collectionNode);
+            collectionNode.collection = subCollection;
+            return false;
+          }
+          return true;
+        });
+        collectionsOld.forEach(node => this.removeNode(node));
+        collectionsNew.forEach(collection => this.addCollection(node, collection));
+        // refresh documents
+        let documentsOld = node.children.filter(child => PebbleNode.isDocument(child)) as PebbleDocumentNode[];
+        const documentsNew = collection.documents.filter(subDocument => {
+          const documentNode = this.getNode(this.itemID(node.connectionNode.connection, subDocument));
+          if (PebbleNode.isDocument(documentNode) && documentNode.parent === node) {
+            documentsOld = documentsOld.filter(old => old !== documentNode);
+            documentNode.document = subDocument;
+            return false;
+          }
+          return true;
+        });
+        documentsOld.forEach(node => this.removeNode(node));
+        documentsNew.forEach(document => this.addDocument(node, document));
+        // done refreshing
+        (node as PebbleCollectionNode).collection = collection;
+      }
+    } catch (error) {
+      (node as PebbleCollectionNode).loaded = false;
+      (node as PebbleCollectionNode).expanded = false;
+      console.error('caught:', error);
     }
   }
   
