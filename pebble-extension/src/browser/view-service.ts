@@ -26,8 +26,8 @@ export class PebbleViewService implements WidgetFactory {
       const document = node as PebbleDocumentNode;
       document.editor = await this.core.openDocument(document);
       this.widget && this.widget.model.refresh();
-    } else if (PebbleNode.isCollection(node as any)) {
-      this.core.refresh(node as any);
+    } else if (PebbleNode.isConnection(node as any)) {
+      this.core.showPropertiesDialog();
     }
   }
   
