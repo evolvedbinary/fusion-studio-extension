@@ -68,3 +68,20 @@ $ yarn watch
 ```bash
 $ yarn run sass
 ```
+**Known issues**
+- Building the extension will throw 3 non-breaking errors:
+```
+error TS2688: Cannot find type definition file for 'monaco-editor-core/monaco'.
+
+1 /// <reference types="monaco-editor-core/monaco" />
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+to fix this you'll need to give the correct reference in these 3 files:
+  - node_modules/monaco-languageclient/lib/monaco-converter.d.ts
+  - node_modules/monaco-languageclient/lib/monaco-languages.d.ts
+  - node_modules/monaco-languageclient/lib/monaco-workspace.d.ts
+and change the first line:
+```diff
+- /// <reference types="monaco-editor-core/monaco" />
++ /// <reference types="@typefox/monaco-editor-core/monaco" />
+```
