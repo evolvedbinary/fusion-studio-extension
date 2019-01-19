@@ -126,6 +126,8 @@ export class PebbleCore {
         this.refreshUsers(node.connectionNode.security);
       } else if (PebbleNode.isGroups(node)) {
         this.refreshGroups(node.connectionNode.security);
+      } else if (PebbleNode.isIndexes(node)) {
+        this.refreshIndexes(node.connectionNode);
       }
     } else {
       if (PebbleNode.isConnection(node)) {
@@ -558,6 +560,21 @@ export class PebbleCore {
     return await this.addNode(this.createIndexNode(indexesNode, uri), indexesNode) as PebbleIndexNode;
   }
 
+  protected async refreshIndexes(connectionNode: PebbleConnectionNode): Promise<void> {
+    const indexes = await PebbleApi.getIndexes(connectionNode.connection);
+    let indexesOld = connectionNode.indexes.children.filter(child => PebbleNode.isIndex(child)) as PebbleIndexNode[];
+    const indexesNew = indexes.filter(index => {
+      const indexNode = this.getNode(this.indexID(connectionNode.connection, index));
+      if (PebbleNode.isIndex(indexNode) && indexNode.parent === connectionNode.indexes) {
+        indexesOld = indexesOld.filter(old => old !== indexNode);
+        return false;
+      }
+      return true;
+    });
+    indexesOld.forEach(node => this.removeNode(node));
+    indexesNew.forEach(index => this.addIndex(connectionNode.indexes, index));
+  }
+
   protected async addIndexes(connectionNode: PebbleConnectionNode): Promise<PebbleIndexesNode> {
     const indexes = await PebbleApi.getIndexes(connectionNode.connection);
     const indexesNode = await this.addNode({
@@ -572,6 +589,7 @@ export class PebbleCore {
       expanded: false,
     } as PebbleIndexesNode, connectionNode) as PebbleIndexesNode;
     await Promise.all(indexes.map(index => this.addIndex(indexesNode, index)));
+    indexesNode.loaded = true;
     return indexesNode;
   }
 
