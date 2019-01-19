@@ -99,10 +99,11 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   async evaluate() {
     if (this.editor) {
       const node = this.documentNode ? this.documentNode.connectionNode : this.core.getNode(this.connection) as PebbleConnectionNode;
-      const value = this.editor.document.dirty || !this.documentNode ? this.editor.document.getText() : this.documentNode.uri;
+      // const value = this.editor.document.dirty || !this.documentNode ? this.editor.document.getText() : this.documentNode.uri;
+      const value = this.editor.document.getText();
       if (node) {
-        const result = await PebbleApi.evaluate(node.connection, this.serialization, value, this.editor.document.dirty || !this.documentNode);
-        console.log(JSON.parse(result));
+        const result = await PebbleApi.evaluate(node.connection, this.serialization, value, true);
+        console.log(result);
       }
     }
   }

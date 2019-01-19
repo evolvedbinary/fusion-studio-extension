@@ -5,6 +5,11 @@ import { PebbleFileList } from "../classes/files";
 import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
 import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
 
+export interface PebblePostOptions {
+  headers?: any;
+  contentType?: string;
+}
+
 export namespace PebbleApi {
 
   // private methods
@@ -49,6 +54,19 @@ export namespace PebbleApi {
       headers,
       method: 'PUT',
       body: isHeader ? undefined : body
+    });
+  }
+
+  async function _post(connection: PebbleConnection, uri: string, body: any = '', options?: PebblePostOptions): Promise<Response> {
+    const headers: any = options && options.headers || {};
+    if (connection.username !== '') {
+      headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
+    }
+    headers['Content-Type'] = options && options.contentType || 'application/json';
+    return fetch(connection.server + uri, {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(body),
     });
   }
 
@@ -180,11 +198,21 @@ export namespace PebbleApi {
     })).status === 200;
   }
 
-  export async function evaluate(connection: PebbleConnection, serialization: string, value: string, isContent?: boolean): Promise<string> {
+  export async function evaluate(connection: PebbleConnection, serialization: string, value: string, isContent?: boolean, start?: number, length?: number): Promise<string> {
     try {
-      const result = await _put(connection, '/exist/restxq/pebble/evaluate?serialization=' + serialization + (isContent ? '' : '&uri=' + value), isContent ? value : undefined, 'text/plain');
+      const body = {
+        query: value,
+        defaultSerialization: { method: serialization }
+      };
+      const headers = {
+        Range: `items=${start || 1}-${(start || 1) + (length || 4) - 1}`,
+      };
+      const result = await _post(connection, '/exist/restxq/pebble/query', body, { headers });
       switch (result.status) {
-        case 200: return result.text();
+        case 206:
+          const json = await result.json();
+          const results = json.results;
+          return results;
         case 401: throw createError(PebbleError.permissionDenied, result);
         default: throw createError(PebbleError.unknown, result);
       }
