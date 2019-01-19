@@ -118,13 +118,19 @@ export class PebbleCore {
     }
   }
   
-  public expanded(node: CompositeTreeNode) {
-    if (PebbleNode.isConnection(node) && !node.loaded) {
-      this.connect(node);
-    } else if (PebbleNode.isCollection(node)) {
-      if (node.loaded) {
+  public expanded(node: PebblecontainerNode) {
+    if (node.loaded) {
+      if (PebbleNode.isCollection(node)) {
         this.asyncLoad(node);
-      } else {
+      } else if (PebbleNode.isUsers(node)) {
+        this.refreshUsers(node.connectionNode.security);
+      } else if (PebbleNode.isGroups(node)) {
+        this.refreshGroups(node.connectionNode.security);
+      }
+    } else {
+      if (PebbleNode.isConnection(node)) {
+        this.connect(node);
+      } else if (PebbleNode.isCollection(node)) {
         this.load(node, node.uri);
       }
     }
@@ -431,6 +437,21 @@ export class PebbleCore {
     return this.addNode(node, parent) as Promise<PebbleNode>;
   }
 
+  protected async refreshUsers(node: PebbleSecurityNode): Promise<void> {
+    const users = await PebbleApi.getUsers(node.users.connectionNode.connection);
+    let usersOld = node.users.children.filter(child => PebbleNode.isUser(child)) as PebbleUserNode[];
+    const usersNew = users.filter(user => {
+      const userNode = this.getNode(this.userID(node.users.connectionNode.connection, user));
+      if (PebbleNode.isUser(userNode) && userNode.parent === node.users) {
+        usersOld = usersOld.filter(old => old !== userNode);
+        return false;
+      }
+      return true;
+    });
+    usersOld.forEach(node => this.removeNode(node));
+    usersNew.forEach(user => this.addUserNode(node.connectionNode.security.users, user));
+  }
+
   protected async addUsersNode(parent: PebbleSecurityNode, users: string[]): Promise<PebbleUsersNode> {
     const usersNode = await this.addNode({
       type: 'users',
@@ -445,6 +466,7 @@ export class PebbleCore {
       selected: false,
     } as PebbleUsersNode, parent) as PebbleUsersNode;
     await Promise.all(users.map(user => this.addUserNode(usersNode, user)));
+    usersNode.loaded = true;
     return usersNode as PebbleUsersNode;
   }
 
@@ -462,6 +484,21 @@ export class PebbleCore {
     return this.addNode(node, parent) as Promise<PebbleNode>;
   }
 
+  protected async refreshGroups(node: PebbleSecurityNode): Promise<void> {
+    const groups = await PebbleApi.getGroups(node.groups.connectionNode.connection);
+    let groupsOld = node.groups.children.filter(child => PebbleNode.isGroup(child)) as PebbleGroupNode[];
+    const groupsNew = groups.filter(group => {
+      const groupNode = this.getNode(this.groupID(node.groups.connectionNode.connection, group));
+      if (PebbleNode.isGroup(groupNode) && groupNode.parent === node.groups) {
+        groupsOld = groupsOld.filter(old => old !== groupNode);
+        return false;
+      }
+      return true;
+    });
+    groupsOld.forEach(node => this.removeNode(node));
+    groupsNew.forEach(group => this.addGroupNode(node.connectionNode.security.groups, group));
+  }
+
   protected async addGroupsNode(parent: PebbleSecurityNode, groups: string[]): Promise<PebbleGroupsNode> {
     const groupsNode = await this.addNode({
       type: 'groups',
@@ -476,6 +513,7 @@ export class PebbleCore {
       selected: false,
     } as PebbleGroupsNode, parent) as PebbleGroupsNode;
     await Promise.all(groups.map(group => this.addGroupNode(groupsNode, group)));
+    groupsNode.loaded = true;
     return groupsNode as PebbleGroupsNode;
   }
 
@@ -493,10 +531,8 @@ export class PebbleCore {
       selected: false,
     } as any, connectionNode) as PebbleSecurityNode;
     const users = await PebbleApi.getUsers(connectionNode.connection);
-    connectionNode.connection.users.push(...users);
     securityNode.users = await this.addUsersNode(securityNode, users);
     const groups = await PebbleApi.getGroups(connectionNode.connection);
-    connectionNode.connection.groups.push(...groups);
     securityNode.groups = await this.addGroupsNode(securityNode, groups);
     return securityNode;
   }

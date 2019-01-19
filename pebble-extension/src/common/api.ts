@@ -181,7 +181,10 @@ export namespace PebbleApi {
   }
 
   export async function getUsers(connection: PebbleConnection): Promise<string[]> {
-    return (await _get(connection, '/exist/restxq/pebble/user')).json();
+    const result = await (await _get(connection, '/exist/restxq/pebble/user')).json();
+    connection.users.length = 0;
+    connection.users.push(...result);
+    return result;
   }
 
   export async function getUser(connection: PebbleConnection, user: string): Promise<PebbleUser> {
@@ -217,7 +220,10 @@ export namespace PebbleApi {
   }
 
   export async function getGroups(connection: PebbleConnection): Promise<string[]> {
-    return (await _get(connection, '/exist/restxq/pebble/group')).json();
+    const result = await (await _get(connection, '/exist/restxq/pebble/group')).json();
+    connection.groups.length = 0;
+    connection.groups.push(...result);
+    return result;
   }
 
   export async function getGroup(connection: PebbleConnection, group: string): Promise<PebbleGroup> {
