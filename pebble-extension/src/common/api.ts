@@ -131,7 +131,7 @@ export namespace PebbleApi {
   }
   
   export async function connect(connection: PebbleConnection): Promise<PebbleCollection> {
-    const root = await load(connection, '/db') as PebbleCollection;
+    const root = await load(connection, '/') as PebbleCollection;
     return root;
   }
 

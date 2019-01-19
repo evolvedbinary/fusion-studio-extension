@@ -198,11 +198,12 @@ export class PebbleCore {
       try {
         const root = await PebbleApi.connect(connectionNode.connection);
         connectionNode.loaded = true;
-        connectionNode.db = await this.addCollection(connectionNode, root)
-        connectionNode.db.loaded = true;
-        root.collections.forEach(subCollection => this.addCollection(connectionNode.db, subCollection));
-        root.documents.forEach(document => this.addDocument(connectionNode.db, document));
-        this.expand(connectionNode.db);
+        // connectionNode.db = await this.addCollection(connectionNode, root);
+        // connectionNode.db.loaded = true;
+        // root.collections.forEach(subCollection => this.addCollection(connectionNode, subCollection));
+        this.addCollection(connectionNode, root.collections[0]);
+        // root.documents.forEach(document => this.addDocument(connectionNode, document));
+        // this.expand(connectionNode.db);
         connectionNode.security = await this.addSecurity(connectionNode);
         connectionNode.indexes = await this.addIndexes(connectionNode);
       } catch (error) {
