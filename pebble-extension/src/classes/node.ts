@@ -9,12 +9,12 @@ export interface PebbleNode extends TreeNode {
   connectionNode: PebbleConnectionNode;
   uri: string;
   loading?: boolean;
+  loaded?: boolean;
 }
 export interface PebblecontainerNode extends PebbleNode, CompositeTreeNode, ExpandableTreeNode {}
 
 export interface PebbleConnectionNode extends PebbleNode, PebblecontainerNode, SelectableTreeNode {
   type: 'connection';
-  loaded?: boolean;
   connection: PebbleConnection;
   db: PebbleCollectionNode;
   security: PebbleSecurityNode
@@ -26,7 +26,6 @@ export interface PebbleToolbarNode extends PebbleNode {
 export interface PebbleItemNode extends PebbleNode, SelectableTreeNode {
   // type: 'item';
   link: string;
-  loaded?: boolean;
   isCollection: boolean;
 }
 export interface PebbleCollectionNode extends PebbleItemNode, PebblecontainerNode {
