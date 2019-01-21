@@ -5,6 +5,8 @@ import { PebbleFileList } from "../classes/files";
 import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
 import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
 
+export const RANGE_START = 1;
+export const RANGE_LENGTH = 4;
 export interface PebblePostOptions {
   headers?: any;
   contentType?: string;
@@ -205,7 +207,7 @@ export namespace PebbleApi {
         defaultSerialization: { method: serialization }
       };
       const headers = {
-        Range: `items=${start || 1}-${(start || 1) + (length || 4) - 1}`,
+        Range: `items=${start || RANGE_START}-${length || RANGE_LENGTH}`,
       };
       const result = await _post(connection, '/exist/restxq/pebble/query', body, { headers });
       switch (result.status) {

@@ -48,4 +48,11 @@
     padding: 4px;
     font-family: Consolas, "Courier New", monospace;
   }
+  .x-footer {
+    border-bottom: 4px solid var(--theia-layout-color0);
+    button {
+      min-width: 23px;
+      margin-left: 4px;
+    }
+  }
 }

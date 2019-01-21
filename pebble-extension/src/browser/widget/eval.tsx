@@ -5,7 +5,7 @@ import { PebbleCore } from '../core';
 import { EditorManager, EditorWidget, TextEditor } from '@theia/editor/lib/browser';
 import { PebbleDocumentNode, PebbleConnectionNode } from '../../classes/node';
 import { Disposable, MaybePromise } from '@theia/core';
-import { PebbleApi } from '../../common/api';
+import { PebbleApi, RANGE_LENGTH } from '../../common/api';
 
 const SERIALIZATION_TYPES = [
   { value: 'adaptive', text: 'Adaptive' },
@@ -22,12 +22,21 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   protected listenerEditor: Disposable | undefined;
   protected documentNode: PebbleDocumentNode | undefined;
   protected editorWidget: EditorWidget | undefined;
+  protected lastEditorWidget: EditorWidget | undefined;
   protected editor: TextEditor | undefined;
   protected elBody = React.createRef<HTMLDivElement>();
   protected elTitle = React.createRef<HTMLSpanElement>();
   protected elEval = React.createRef<HTMLButtonElement>();
   protected connection = '';
+  protected result = '';
   protected serialization = 'adaptive';
+  protected pager = {
+    start: 1,
+    size: RANGE_LENGTH,
+    pages: 1,
+    enabled: false,
+    loaded: false,
+  };
   constructor(
     @inject(EditorManager) protected readonly manager: EditorManager,
     @inject(PebbleCore) protected readonly core: PebbleCore,
@@ -61,11 +70,17 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     return this.elBody.current || this.node;
   }
 
-  editorChanged(widget: EditorWidget | undefined) {
-    this.editorWidget = widget;
-    if (widget) {
-      const node = this.core.getNode(widget.editor.uri.path.toString()) as PebbleDocumentNode;
-      this.changeTo(widget, node);
+  editorChanged(widget?: EditorWidget) {
+    if (widget && widget != this.lastEditorWidget) {
+      this.lastEditorWidget = this.editorWidget;
+      this.editorWidget = widget;
+      if (widget) {
+        const node = this.core.getNode(widget.editor.uri.path.toString()) as PebbleDocumentNode;
+        this.changeTo(widget, node);
+      }
+    }
+    if (this.editorWidget) {
+      this.lastEditorWidget = this.editorWidget;
     }
   }
 
@@ -74,6 +89,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
       this.listenerEditor.dispose();
     }
     this.editor = widget && widget.editor;
+    this.result = '';
     this.listenerEditor = this.editor && this.editor.document.onDirtyChanged(() => this.update());
     this.documentNode = node;
     this.update();
@@ -96,14 +112,56 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     return Object.keys(this.core.connections).map(id => <option value={id} key={id}>{this.core.connections[id].name}</option>);
   }
 
-  async evaluate() {
+  renderPager() {
+    const disabled = !this.pager.enabled || !this.documentNode && (!this.editorWidget || !this.connection);
+    const result: any[] = [];
+    const { start, size } = this.pager;
+    for (let i = 1; i <= this.pager.pages; i++) {
+      result.push(<button key={'btn-' + i} disabled={disabled || (start - 1) / size === i - 1} onClick={() => this.evaluate(i)}>{i}</button>);
+    }
+    if (!this.pager.loaded) {
+      result.push(<button key="more" disabled={disabled} onClick={() => this.evaluate(this.pager.pages + 1)}>load more...</button>)
+    }
+    return result;
+  }
+
+  resetPager() {
+    this.pager.enabled = false;
+    this.pager.loaded = false;
+    this.pager.pages = 1;
+    this.pager.start = 1;
+  }
+
+  async evaluate(page = 1) {
     if (this.editor) {
-      const node = this.documentNode ? this.documentNode.connectionNode : this.core.getNode(this.connection) as PebbleConnectionNode;
-      // const value = this.editor.document.dirty || !this.documentNode ? this.editor.document.getText() : this.documentNode.uri;
-      const value = this.editor.document.getText();
-      if (node) {
-        const result = await PebbleApi.evaluate(node.connection, this.serialization, value, true);
-        console.log(result);
+      if (page === 0) {
+        page =1;
+        this.result = '';
+        this.resetPager();
+      }
+      const { size } = this.pager;
+      const start = (page - 1) * size + 1;
+      try {
+        const node = this.documentNode ? this.documentNode.connectionNode : this.core.getNode(this.connection) as PebbleConnectionNode;
+        // const value = this.editor.document.dirty || !this.documentNode ? this.editor.document.getText() : this.documentNode.uri;
+        const value = this.editor.document.getText();
+        if (node) {
+          const result = await PebbleApi.evaluate(node.connection, this.serialization, value, true, start, size);
+          if (result !== '') {
+            this.pager.start = start;
+            this.pager.pages = Math.max(this.pager.pages, page);
+            this.pager.enabled = true;
+            this.result = result;
+          } else {
+            this.pager.loaded = true;
+          }
+          this.update();
+        }
+      } catch(e) {
+        this.editorWidget = undefined;
+        this.editor = undefined;
+        this.editorChanged();
+        this.update();
       }
     }
   }
@@ -126,12 +184,16 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
           }</React.Fragment>
         }
         <span className={!editor ? 'disabled' : ''}>Serialization Type:</span>
-        <select className="x-select" disabled={!editor} onChange={e => this.serialization = e.target.value}>
+        <select className="x-select" disabled={!editor} onChange={e => {
+          this.serialization = e.target.value;
+          this.update();
+        }}>
           {this.serializationTypes()}
         </select>
-        <button className="x-btn" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate()}><span className="fa fa-play" /> Evaluate</button>
+        <button className="x-btn" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
       </div>
-      <div className='x-body' ref={this.elBody}>{this.connection} - {this.serialization}</div>
+      <div className='x-body' ref={this.elBody}>{this.result}</div>
+      {((this.serialization === 'xml' || this.serialization === 'json') && (this.pager.pages > 1 || !this.pager.loaded)) && <div className='x-footer'>{this.renderPager()}</div>}
     </React.Fragment>
   }
 }
