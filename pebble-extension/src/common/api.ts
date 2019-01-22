@@ -212,6 +212,7 @@ export namespace PebbleApi {
       const result = await _post(connection, '/exist/restxq/pebble/query', body, { headers });
       switch (result.status) {
         case 206:
+        case 200:
           const json = await result.json();
           const results = json.results;
           return results;
