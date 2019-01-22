@@ -276,30 +276,7 @@ export namespace PebbleApi {
     }
   }
 
-  // export async function addGroup(connection: PebbleConnection, group: PebbleGroupData): Promise<boolean> {
-  //   try {
-  //     const result = await _put(connection, '/exist/restxq/pebble/group/' + group.groupName, writeGroupData(group), 'application/json');
-  //     switch (result.status) {
-  //       case 204: return true;
-  //       case 401: throw createError(PebbleError.permissionDenied, result);
-  //       default: throw createError(PebbleError.unknown, result);
-  //     }
-  //   } catch (error) {
-  //     throw createError(PebbleError.unknown, error);
-  //   }
-  // }
-
-  // export async function removeGroup(connection: PebbleConnection, group: string): Promise<boolean> {
-  //   try {
-  //     const result = await _remove(connection, '/exist/restxq/pebble/group/' + group);
-  //     switch (result.status) {
-  //       case 204: return true;
-  //       case 401: throw createError(PebbleError.permissionDenied, result);
-  //       case 404: throw createError(PebbleError.notFound, result);
-  //       default: throw createError(PebbleError.unknown, result);
-  //     }
-  //   } catch (error) {
-  //     throw createError(PebbleError.unknown, error);
-  //   }
-  // }
+  export async function restxq(connection: PebbleConnection): Promise<any> {
+    return (await _get(connection, '/exist/restxq/pebble/restxq')).json();
+  }
 }
