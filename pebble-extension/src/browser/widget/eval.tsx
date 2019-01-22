@@ -151,7 +151,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
             this.pager.start = start;
             this.pager.pages = Math.max(this.pager.pages, page);
             this.pager.enabled = true;
-            this.result = result;
+            this.result = this.core.result = result;
           } else {
             this.pager.loaded = true;
           }
@@ -193,7 +193,11 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
         <button className="x-btn" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
       </div>
       <div className='x-body' ref={this.elBody}>{this.result}</div>
-      {((this.serialization === 'xml' || this.serialization === 'json') && (this.pager.pages > 1 || !this.pager.loaded)) && <div className='x-footer'>{this.renderPager()}</div>}
+      <div className='x-footer'>
+        {((this.serialization === 'xml' || this.serialization === 'json') && (this.pager.pages > 1 || !this.pager.loaded)) && this.renderPager()}
+        <span className="x-separator"></span>
+        <button disabled={this.result === ''} onClick={() => this.core.newItemFromResult()}><i className="fa fa-fw fa-file-code-o"></i> New file</button>
+      </div>
     </React.Fragment>
   }
 }

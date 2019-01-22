@@ -49,10 +49,16 @@
     font-family: Consolas, "Courier New", monospace;
   }
   .x-footer {
+    display: flex;
+    flex-direction: row;
     border-bottom: 4px solid var(--theia-layout-color0);
+    padding-right: 4px;
     button {
       min-width: 23px;
       margin-left: 4px;
+    }
+    span.x-separator {
+      flex: 1;
     }
   }
 }

@@ -32,6 +32,7 @@ export class PebbleCore {
   protected statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
   protected clipboard: Partial<PebbleDragOperation> = {};
   protected lastNameID: number = 1;
+  public result: string = '';
   public connectionsChange = new Emitter<PebbleConnectionsChangeEvent>();
   public connections: PebbleConnections = {};
   constructor(
@@ -948,6 +949,34 @@ export class PebbleCore {
     }
     this.saveDocuments(collectionNode, formData);
     return true;
+  }
+
+  public async newItemFromResult(collection?: PebbleCollectionNode): Promise<boolean> {
+    if (!this.result) {
+      return false;
+    }
+    if (!PebbleNode.isCollection(collection)) {
+      if (PebbleNode.isCollection(this.node)) {
+        collection = this.node;
+      } else if (PebbleNode.isDocument(this.node)) {
+        collection = this.node.parent as PebbleCollectionNode;
+      }
+    }
+    if (PebbleNode.isCollection(collection)) {
+      const validator = (input: string) => input !== '' && !this.fileExists(input);
+      const dialog = new SingleTextInputDialog({
+        initialValue: this.newName(validator),
+        title: 'New document',
+        confirmButtonLabel: 'Create',
+        validate: validator,
+      });
+      let name = await dialog.open();
+      if (name) {
+        await this.createDocument(collection, name, this.result);
+        return true;
+      }
+    }
+    return false;
   }
 
   public async newItemFromTemplate(template: PebbleTemplate): Promise<boolean> {
