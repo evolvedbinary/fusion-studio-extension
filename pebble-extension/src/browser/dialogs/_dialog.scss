@@ -18,3 +18,31 @@
     }
   }
 }
+.awesomplete {
+  input {
+    box-sizing: border-box;
+    width: 100%;
+  }
+  ul[role=listbox] {
+    margin-top: -1px;
+    border: 1px solid var(--theia-accent-color3);
+    border-top-style: none;
+    li {
+      &:hover, &[aria-selected=true] {
+        color: var(--theia-ui-button-font-color);
+        background-color: var(--theia-ui-button-color);
+        mark {
+          color: inherit;
+          background-color: transparent;
+        }
+      }
+      mark {
+        color: inherit;
+        background-color: transparent;
+        text-decoration: underline;
+      }
+      background-color: var(--theia-ui-dialog-color);
+      padding: 2px 5px
+    }
+  }
+}
