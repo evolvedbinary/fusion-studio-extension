@@ -152,6 +152,12 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   }
 
   protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
+    if (this.props.node && this.props.node.connectionNode.connection.groups.indexOf(value.group) < 0) {
+      return false;
+    }
+    if (this.props.node && this.props.node.connectionNode.connection.users.indexOf(value.owner) < 0) {
+      return false;
+    }
     const sameName = value.name === this.name;
     const sameOwner = value.owner === (this.item ? this.item.owner : '');
     const sameGroup = value.group === (this.item ? this.item.group : '');
