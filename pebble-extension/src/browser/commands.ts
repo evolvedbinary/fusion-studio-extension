@@ -51,6 +51,16 @@ export const actNewDocument: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isCollection,
 };
+export const actNewDocumentFromResult: PebbleAction = {
+  id: 'new-document-from-result',
+  order: 'b',
+  label: 'From last evaluation',
+  contextMenu: CONTEXT_MENU_NEW_SUBMENU,
+  icon: 'fa fa-file-code-o',
+  execute: core => () => core.newItemFromResult(),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isCollection && !!core.result,
+};
 export const actUploadDocument: PebbleAction = {
   id: 'upload-document',
   order: 'c2',
@@ -64,7 +74,7 @@ export const actUploadDocument: PebbleAction = {
 const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: number) => ({
   id: 'new-document-template:' + template.name,
   label: template.name,
-  order: 'b' + i.toString(),
+  order: 'c' + i.toString(),
   contextMenu: CONTEXT_MENU_NEW_SUBMENU,
   icon: 'fa fa-file-o',
   execute: core => () => core.newItemFromTemplate(template),
@@ -202,6 +212,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actDisconnect,
   actNewCollection,
   actNewDocument,
+  actNewDocumentFromResult,
   actUploadDocument,
   actCut,
   actCopy,

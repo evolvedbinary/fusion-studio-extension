@@ -4,8 +4,8 @@ import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
-import { PebbleConnection } from "../classes/connection";
-import { CommandRegistry } from "@theia/core";
+import { PebbleConnection, PebbleConnections, PebbleConnectionsChangeEvent } from "../classes/connection";
+import { CommandRegistry, Event, Emitter } from "@theia/core";
 import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
@@ -32,6 +32,9 @@ export class PebbleCore {
   protected statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
   protected clipboard: Partial<PebbleDragOperation> = {};
   protected lastNameID: number = 1;
+  public result: string = '';
+  public connectionsChange = new Emitter<PebbleConnectionsChangeEvent>();
+  public connections: PebbleConnections = {};
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -51,6 +54,22 @@ export class PebbleCore {
   }
   public get model(): PebbleTreeModel | undefined {
     return this._model;
+  }
+
+  // connections list
+
+  get onConnectionsChange(): Event<PebbleConnectionsChangeEvent> {
+    return this.connectionsChange.event;
+  }
+
+  protected connectionAdded(connectionNode: PebbleConnectionNode) {
+    this.connectionsChange.fire({ id: connectionNode.id, action: 'add' })
+    this.connections[connectionNode.id] = connectionNode.connection;
+  }
+
+  protected connectionDeleted(connectionNode: PebbleConnectionNode) {
+    this.connectionsChange.fire({ id: connectionNode.id, action: 'delete' })
+    delete(this.connections[connectionNode.id]);
   }
 
   // nodes:
@@ -353,6 +372,7 @@ export class PebbleCore {
       indexes: undefined as any,
     } as PebbleConnectionNode, parent) as PebbleConnectionNode;
     connectionNode.connectionNode = connectionNode;
+    this.connectionAdded(connectionNode);
     return connectionNode;
   }
   protected async addCollectionRecursive(connection: PebbleConnection, uri: string): Promise<PebbleCollectionNode> {
@@ -642,11 +662,11 @@ export class PebbleCore {
   // info
 
   // functionalities
-
+  
   protected getConnectionIcon(node: PebbleConnectionNode): string {
     return 'toggle-' + (node.loaded ? 'on' : 'off');
   }
-
+  
   protected getCollectionIcon(node: PebbleCollectionNode): string {
     return 'folder' + (node.expanded ? '-open' : '') + (node.loaded ? '' : '-o');
   }
@@ -736,27 +756,27 @@ export class PebbleCore {
     return id.split('/').pop() || id;
   }
   
-  protected generateID(connection: PebbleConnection, text: string, prefix?: string): string {
+  public generateID(connection: PebbleConnection, text: string, prefix?: string): string {
     return this.connectionID(connection) + (prefix ? prefix + '/' : '') + text;
   }
   
-  protected connectionID(connection: PebbleConnection): string {
+  public connectionID(connection: PebbleConnection): string {
     return (connection.username ? connection.username : '(guest)') + '@' + connection.server;
   }
 
-  protected itemID(connection: PebbleConnection, item: PebbleItem): string {
+  public itemID(connection: PebbleConnection, item: PebbleItem): string {
     return this.connectionID(connection) + item.name;
   }
   
-  protected securityID(connection: PebbleConnection, prefix?: string, text?: string): string {
+  public securityID(connection: PebbleConnection, prefix?: string, text?: string): string {
     return this.connectionID(connection) + 'security' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
   }
 
-  protected userID(connection: PebbleConnection, user: string = ''): string {
+  public userID(connection: PebbleConnection, user: string = ''): string {
     return this.securityID(connection, 'user', user);
   }
 
-  protected groupID(connection: PebbleConnection, group: string = ''): string {
+  public groupID(connection: PebbleConnection, group: string = ''): string {
     return this.securityID(connection, 'group', group);
   }
 
@@ -1018,6 +1038,7 @@ export class PebbleCore {
       });
       const result = await dialog.open();
       if (result) {
+        this.connectionDeleted(node);
         this.removeNode(node);
         // this._model.refresh();
       } else {
@@ -1076,6 +1097,34 @@ export class PebbleCore {
     }
     this.saveDocuments(collectionNode, formData);
     return true;
+  }
+
+  public async newItemFromResult(collection?: PebbleCollectionNode): Promise<boolean> {
+    if (!this.result) {
+      return false;
+    }
+    if (!PebbleNode.isCollection(collection)) {
+      if (PebbleNode.isCollection(this.node)) {
+        collection = this.node;
+      } else if (PebbleNode.isDocument(this.node)) {
+        collection = this.node.parent as PebbleCollectionNode;
+      }
+    }
+    if (PebbleNode.isCollection(collection)) {
+      const validator = (input: string) => input !== '' && !this.fileExists(input);
+      const dialog = new SingleTextInputDialog({
+        initialValue: this.newName(validator),
+        title: 'New document',
+        confirmButtonLabel: 'Create',
+        validate: validator,
+      });
+      let name = await dialog.open();
+      if (name) {
+        await this.createDocument(collection, name, this.result);
+        return true;
+      }
+    }
+    return false;
   }
 
   public async newItemFromTemplate(template: PebbleTemplate): Promise<boolean> {

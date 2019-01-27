@@ -6,6 +6,13 @@ import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/
 import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
 import { readIndex, PebbleIndex } from "../classes/indexes";
 
+export const RANGE_START = 1;
+export const RANGE_LENGTH = 4;
+export interface PebblePostOptions {
+  headers?: any;
+  contentType?: string;
+}
+
 export namespace PebbleApi {
 
   // private methods
@@ -50,6 +57,19 @@ export namespace PebbleApi {
       headers,
       method: 'PUT',
       body: isHeader ? undefined : body
+    });
+  }
+
+  async function _post(connection: PebbleConnection, uri: string, body: any = '', options?: PebblePostOptions): Promise<Response> {
+    const headers: any = options && options.headers || {};
+    if (connection.username !== '') {
+      headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
+    }
+    headers['Content-Type'] = options && options.contentType || 'application/json';
+    return fetch(connection.server + uri, {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(body),
     });
   }
 
@@ -174,10 +194,35 @@ export namespace PebbleApi {
       },
     })).status === 200;
   }
+
   export async function convert(connection: PebbleConnection, document: PebbleDocument): Promise<boolean> {
     return (await _put(connection, '/exist/restxq/pebble/document?uri=' + document.name, {
       headers: { 'x-pebble-convert': !document.binaryDoc },
     })).status === 200;
+  }
+
+  export async function evaluate(connection: PebbleConnection, serialization: string, value: string, isContent?: boolean, start?: number, length?: number): Promise<string> {
+    try {
+      const body = {
+        query: value,
+        defaultSerialization: { method: serialization }
+      };
+      const headers = {
+        Range: `items=${start || RANGE_START}-${length || RANGE_LENGTH}`,
+      };
+      const result = await _post(connection, '/exist/restxq/pebble/query', body, { headers });
+      switch (result.status) {
+        case 206:
+        case 200:
+          const json = await result.json();
+          const results = json.results;
+          return results;
+        case 401: throw createError(PebbleError.permissionDenied, result);
+        default: throw createError(PebbleError.unknown, result);
+      }
+    } catch (error) {
+      throw createError(PebbleError.unknown, error);
+    }
   }
 
   export async function getUsers(connection: PebbleConnection): Promise<string[]> {

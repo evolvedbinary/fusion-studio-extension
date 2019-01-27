@@ -4,21 +4,22 @@
 
 import { ResourceResolver } from "@theia/core/lib/common";
 
-import { ContainerModule, interfaces } from "inversify";
+import { ContainerModule } from "inversify";
 import { PebbleResourceResolver } from '../browser/resource';
-import { PebbleViewWidgetFactory, PebbleViewWidget } from './widget/main';
-import { createTreeContainer, TreeProps, defaultTreeProps, TreeWidget, WidgetFactory, bindViewContribution, FrontendApplicationContribution, WebSocketConnectionProvider, Tree, TreeModel } from '@theia/core/lib/browser';
-import { PebbleViewService } from './view-service';
-
-import '../../src/browser/style/index.css';
+import { PebbleViewWidgetFactory } from './widget/main';
+import { PebbleEvalWidgetFactory } from "./widget/eval";
+import { WidgetFactory, bindViewContribution, WebSocketConnectionProvider } from '@theia/core/lib/browser';
+import { PebbleViewService, createPebbleViewWidget } from './view-service';
+import { createPebbleEvalWidget, PebbleEvalService } from "./eval-service";
 import { PebbleContribution } from "./contribution";
+import { PebbleEvalContribution } from "./eval-contribution";
 import { PebbleCore } from "./core";
-import { CONTEXT_MENU } from "./commands";
 import { DragController } from "./widget/drag";
 import { PebbleFiles, pebbleFilesePath } from "../classes/files";
 import { LanguageGrammarDefinitionContribution } from "@theia/monaco/lib/browser/textmate";
 import { XQueryGrammaribution } from "./language-contribution";
-import { PebbleTree, PebbleTreeModel } from "../classes/tree";
+
+import '../../src/browser/style/index.css';
 
 export default new ContainerModule(bind => {
 
@@ -30,12 +31,17 @@ export default new ContainerModule(bind => {
   bind(PebbleViewWidgetFactory).toFactory(ctx =>
     () => createPebbleViewWidget(ctx.container)
   );
+  bind(PebbleEvalWidgetFactory).toFactory(ctx =>
+    () => createPebbleEvalWidget(ctx.container)
+  );
 
   bind(PebbleViewService).toSelf().inSingletonScope();
   bind(WidgetFactory).toDynamicValue(context => context.container.get(PebbleViewService));
+  bind(PebbleEvalService).toSelf().inSingletonScope();
+  bind(WidgetFactory).toDynamicValue(context => context.container.get(PebbleEvalService));
 
   bindViewContribution(bind, PebbleContribution);
-  bind(FrontendApplicationContribution).toService(PebbleContribution);
+  bindViewContribution(bind, PebbleEvalContribution);
 
   bind(PebbleCore).toSelf().inSingletonScope();
   bind(DragController).toSelf().inSingletonScope();
@@ -45,25 +51,3 @@ export default new ContainerModule(bind => {
   bind(LanguageGrammarDefinitionContribution).to(XQueryGrammaribution).inSingletonScope();
   
 });
-
-const TREE_PROPS = {
-  multiSelect: true,
-  contextMenuPath: CONTEXT_MENU,
-}
-
-function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
-  const child = createTreeContainer(parent);
-
-  child.bind(PebbleTree).toSelf();
-  child.rebind(Tree).toService(PebbleTree);
-
-  child.bind(PebbleTreeModel).toSelf();
-  child.rebind(TreeModel).toService(PebbleTreeModel);
-
-  child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, ...TREE_PROPS });
-
-  child.unbind(TreeWidget);
-  child.bind(PebbleViewWidget).toSelf();
-
-  return child.get(PebbleViewWidget);
-}

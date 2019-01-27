@@ -1,0 +1,64 @@
+.pebble-eval {
+  :disabled, .disabled {
+    opacity: 0.5;
+  }
+  display: flex;
+  color: var(--theia-ui-font-color1);
+  flex-direction: column;
+  &, & * {
+    white-space: nowrap;
+  }
+  .x-header {
+    display: flex;
+    min-height: 22px;
+    padding: 0px 8px 0px 12px;
+    border-top: 4px solid var(--theia-layout-color0);
+    > span {
+      position: relative;
+      top: 2px;
+      line-height: 22px;
+      padding-left: 8px;
+      &.x-separator {
+        flex: 1;
+      }
+      &.x-connection {
+        border-right: 1px solid var(--theia-layout-color1);
+        padding-right: 8px;
+      }
+    }
+    .x-document {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .x-btn {
+      user-select: none;
+      min-width: 82px;
+      margin-left: 0;
+    }
+    .x-select {
+      margin-left: 4px;
+      width: 96px;
+    }
+  }
+  .x-body {
+    flex: 1;
+    overflow: auto;
+    background-color: var(--theia-layout-color1);
+    border: 4px solid var(--theia-border-color0);
+    padding: 4px;
+    font-family: Consolas, "Courier New", monospace;
+  }
+  .x-footer {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 4px solid var(--theia-layout-color0);
+    padding-right: 4px;
+    button {
+      min-width: 23px;
+      margin-left: 4px;
+    }
+    span.x-separator {
+      flex: 1;
+    }
+  }
+}
