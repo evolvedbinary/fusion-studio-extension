@@ -3,7 +3,7 @@ import { PebbleDocument, PebbleCollection } from "./item";
 import { PebbleConnection } from "./connection";
 
 
-export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group' | 'security' | 'indexes' | 'index';
+export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group' | 'security' | 'indexes' | 'index' | 'rest' | 'rest-uri' | 'rest-method';
 export interface PebbleNode extends TreeNode {
   type: PebbleNodeType;
   connectionNode: PebbleConnectionNode;
@@ -11,14 +11,15 @@ export interface PebbleNode extends TreeNode {
   loading?: boolean;
   loaded?: boolean;
 }
-export interface PebblecontainerNode extends PebbleNode, CompositeTreeNode, ExpandableTreeNode {}
+export interface PebbleContainerNode extends PebbleNode, CompositeTreeNode, ExpandableTreeNode {}
 
-export interface PebbleConnectionNode extends PebbleNode, PebblecontainerNode, SelectableTreeNode {
+export interface PebbleConnectionNode extends PebbleNode, PebbleContainerNode, SelectableTreeNode {
   type: 'connection';
   connection: PebbleConnection;
   db: PebbleCollectionNode;
   security: PebbleSecurityNode
   indexes: PebbleIndexesNode
+  rest: PebbleRestNode
 }
 export interface PebbleToolbarNode extends PebbleNode {
   type: 'toolbar';
@@ -28,7 +29,7 @@ export interface PebbleItemNode extends PebbleNode, SelectableTreeNode {
   link: string;
   isCollection: boolean;
 }
-export interface PebbleCollectionNode extends PebbleItemNode, PebblecontainerNode {
+export interface PebbleCollectionNode extends PebbleItemNode, PebbleContainerNode {
   collection: PebbleCollection;
   isCollection: true;
 }
@@ -41,16 +42,16 @@ export interface PebbleDocumentNode extends PebbleItemNode {
 export interface PebbleUserNode extends PebbleNode, SelectableTreeNode {
   type: 'user',
 }
-export interface PebbleUsersNode extends PebblecontainerNode, SelectableTreeNode {
+export interface PebbleUsersNode extends PebbleContainerNode, SelectableTreeNode {
   type: 'users',
 }
 export interface PebbleGroupNode extends PebbleNode, SelectableTreeNode {
   type: 'group',
 }
-export interface PebbleGroupsNode extends PebblecontainerNode, SelectableTreeNode {
+export interface PebbleGroupsNode extends PebbleContainerNode, SelectableTreeNode {
   type: 'groups',
 }
-export interface PebbleSecurityNode extends PebblecontainerNode, SelectableTreeNode {
+export interface PebbleSecurityNode extends PebbleContainerNode, SelectableTreeNode {
   type: 'security',
   users: PebbleUsersNode,
   groups: PebbleGroupsNode,
@@ -58,15 +59,25 @@ export interface PebbleSecurityNode extends PebblecontainerNode, SelectableTreeN
 export interface PebbleIndexNode extends PebbleNode, SelectableTreeNode {
   type: 'index',
 }
-export interface PebbleIndexesNode extends PebblecontainerNode, SelectableTreeNode {
+export interface PebbleIndexesNode extends PebbleContainerNode, SelectableTreeNode {
   type: 'indexes',
+}
+
+export interface PebbleRestNode extends PebbleContainerNode, SelectableTreeNode {
+  type: 'rest',
+}
+export interface PebbleRestURINode extends PebbleContainerNode, SelectableTreeNode {
+  type: 'rest-uri',
+}
+export interface PebbleRestMethodNode extends PebbleNode, SelectableTreeNode {
+  type: 'rest-method',
 }
 
 export namespace PebbleNode {
   export function is(node?: TreeNode): node is PebbleNode {
     return !!node && 'type' in node;
   }
-  export function isContainer(node?: TreeNode): node is PebblecontainerNode {
+  export function isContainer(node?: TreeNode): node is PebbleContainerNode {
     return PebbleNode.is(node) && CompositeTreeNode.is(node) && ExpandableTreeNode.is(node);
   }
   export function isConnection(node?: TreeNode): node is PebbleConnectionNode {
@@ -104,5 +115,14 @@ export namespace PebbleNode {
   }
   export function isIndexes(node?: TreeNode): node is PebbleIndexesNode {
     return PebbleNode.isContainer(node) && node.type === 'indexes';
+  }
+  export function isRest(node?: TreeNode): node is PebbleIndexesNode {
+    return PebbleNode.isContainer(node) && node.type === 'rest';
+  }
+  export function isRestURI(node?: TreeNode): node is PebbleIndexesNode {
+    return PebbleNode.isContainer(node) && node.type === 'rest-uri';
+  }
+  export function isRestMethod(node?: TreeNode): node is PebbleIndexesNode {
+    return PebbleNode.is(node) && node.type === 'rest-method';
   }
 }

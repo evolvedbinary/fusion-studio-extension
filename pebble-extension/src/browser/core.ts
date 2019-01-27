@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebblecontainerNode, PebbleIndexesNode, PebbleIndexNode } from "../classes/node";
+import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebbleContainerNode, PebbleIndexesNode, PebbleIndexNode, PebbleRestNode, PebbleRestURINode, PebbleRestMethodNode } from "../classes/node";
 import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
@@ -137,7 +137,7 @@ export class PebbleCore {
     }
   }
   
-  public expanded(node: PebblecontainerNode) {
+  public expanded(node: PebbleContainerNode) {
     if (node.loaded) {
       if (PebbleNode.isCollection(node)) {
         this.asyncLoad(node);
@@ -225,6 +225,7 @@ export class PebbleCore {
         // this.expand(connectionNode.db);
         connectionNode.security = await this.addSecurity(connectionNode);
         connectionNode.indexes = await this.addIndexes(connectionNode);
+        connectionNode.rest = await this.addRestNode(connectionNode);
       } catch (error) {
         connectionNode.expanded = false;
         console.error('caught:', error);
@@ -362,7 +363,7 @@ export class PebbleCore {
       expanded,
       id: this.connectionID(connection),
       name: connection.name,
-      connectionNode: (parent as PebblecontainerNode).connectionNode,
+      connectionNode: (parent as PebbleContainerNode).connectionNode,
       connection,
       parent: parent as any,
       selected: false,
@@ -370,6 +371,7 @@ export class PebbleCore {
       db: undefined as any,
       security: undefined as any,
       indexes: undefined as any,
+      rest: undefined as any,
     } as PebbleConnectionNode, parent) as PebbleConnectionNode;
     connectionNode.connectionNode = connectionNode;
     this.connectionAdded(connectionNode);
@@ -560,7 +562,7 @@ export class PebbleCore {
     return securityNode;
   }
 
-  protected createIndexNode(parent: PebblecontainerNode, uri: string): PebbleIndexNode {
+  protected createIndexNode(parent: PebbleContainerNode, uri: string): PebbleIndexNode {
     return {
       connectionNode: parent.connectionNode,
       id: this.indexID(parent.connectionNode.connection, uri),
@@ -612,6 +614,44 @@ export class PebbleCore {
     await Promise.all(indexes.map(index => this.addIndex(indexesNode, index)));
     indexesNode.loaded = true;
     return indexesNode;
+  }
+
+  protected async addRestNode(connectionNode: PebbleConnectionNode): Promise<PebbleRestNode> {
+    const rest = await this.addNode({
+      type: 'rest',
+      children: [],
+      id: this.restID(connectionNode.connection),
+      uri: 'rest',
+      name: 'RestXQ',
+      parent: connectionNode,
+      selected: false,
+      expanded: false,
+      connectionNode,
+    } as PebbleRestNode, connectionNode) as PebbleRestNode;
+    const uris = await PebbleApi.restxq(connectionNode.connection);
+    uris.filter((uri: any) => uri.uri !== '/').forEach(async (uri: any) => {
+      const uriNode = await this.addNode({
+        type: 'rest-uri',
+        children: [],
+        id: this.restID(connectionNode.connection, uri.uri),
+        uri: 'rest',
+        name: uri.uri,
+        parent: rest,
+        selected: false,
+        expanded: false,
+        connectionNode,
+      } as PebbleRestURINode, rest) as PebbleRestURINode;
+      uri.methods.forEach((method: any) => this.addNode({
+        type: 'rest-method',
+        id: this.restID(connectionNode.connection, uri.uri, method.name),
+        uri: 'rest',
+        name: method.name,
+        parent: uriNode,
+        selected: false,
+        connectionNode,
+      } as PebbleRestMethodNode, uriNode))
+    });
+    return rest;
   }
 
   public status() {
@@ -698,6 +738,23 @@ export class PebbleCore {
     if (PebbleNode.isIndexes(node) || PebbleNode.isIndex(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : 'list-ul');
     }
+    if (PebbleNode.isRest(node)) {
+      return 'fa fa-fw fa-reply-all';
+    }
+    if (PebbleNode.isRestURI(node)) {
+      return 'fa fa-fw fa-link';
+    }
+    if (PebbleNode.isRestMethod(node)) {
+      let icon: string;
+      switch(node.name) {
+        case 'GET': icon = 'upload'; break;
+        case 'PUT': icon = 'download'; break;
+        case 'POST': icon = 'paper-plane'; break;
+        case 'DELETE': icon = 'trash'; break;
+        default: icon = 'link'; break;
+      }
+      return 'fa fa-fw fa-' + icon;
+    }
     return '';
   }
 
@@ -783,10 +840,10 @@ export class PebbleCore {
   protected indexID(connection: PebbleConnection, uri: string = ''): string {
     return this.connectionID(connection) + '/index' + uri;
   }
-
-
-
-
+  
+  protected restID(connection: PebbleConnection, prefix?: string, text?: string): string {
+    return this.connectionID(connection) + 'rest' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
+  }
 
   protected parentCollection(uri: string): string {
     const parent = uri.split(TRAILING_SYMBOL);
