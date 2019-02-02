@@ -77,11 +77,15 @@ export class PebbleCore {
   protected async sort(node: CompositeTreeNode) {
     if (this._model) {
       if (PebbleNode.isCollection(node)) {
-        node.children = (node.children as PebbleItemNode[]).sort((a, b) => {
-          if (a.isCollection === b.isCollection) {
-            return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+        node.children = (node.children as PebbleNode[]).sort((a, b) => {
+          if (PebbleNode.isItem(a) && PebbleNode.isItem(b)) {
+            if (a.isCollection === b.isCollection) {
+              return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+            } else {
+              return a.isCollection ? -1 : 1;
+            }
           } else {
-            return a.isCollection ? -1 : 1;
+            return PebbleNode.isItem(a) ? 1 : PebbleNode.isItem(b) ? -1 : a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
           }
         });
       }
@@ -591,7 +595,9 @@ export class PebbleCore {
 
   protected async addCollectionIndex(collectionNode: PebbleCollectionNode): Promise<PebbleIndexNode | undefined> {
     const index = await PebbleApi.getIndex(collectionNode.connectionNode.connection, collectionNode.uri);
-    return index ? await this.addNode(this.createIndexNode(collectionNode, collectionNode.uri), collectionNode) as PebbleIndexNode : undefined;
+    const indexNode = this.createIndexNode(collectionNode, collectionNode.uri);
+    (indexNode as any).name = 'Indexes';
+    return index ? await this.addNode(indexNode, collectionNode) as PebbleIndexNode : undefined;
   }
 
   protected async addIndex(indexesNode: PebbleIndexesNode, uri: string): Promise<PebbleIndexNode> {
