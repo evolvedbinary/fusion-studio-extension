@@ -6,6 +6,7 @@ import { PebblePermissionsEditor } from "./permissions-editor";
 import { PebbleNode, PebbleDocumentNode } from "../../classes/node";
 import { createError, PebbleError } from "../../classes/error";
 import { PebbleApi } from "../../common/api";
+import { autocomplete, autocompleteChanges } from '../../classes/autocomplete';
 
 const SPINNER = 'fa-fw fa fa-spin fa-spinner';
 const CONVERT_XML = 'fa-fw fa fa-file-code-o';
@@ -35,8 +36,8 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   protected name: string = '';
   protected item?: PebbleCollection | PebbleDocument;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
-  protected readonly ownerSelect: HTMLSelectElement = document.createElement('select');
-  protected readonly groupSelect: HTMLSelectElement = document.createElement('select');
+  protected readonly ownerSelect: HTMLInputElement = document.createElement('input');
+  protected readonly groupSelect: HTMLInputElement = document.createElement('input');
   protected readonly convertBtn = {
     button: document.createElement('button'),
     text: document.createElement('span'),
@@ -102,20 +103,6 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
           addKey('size', { type: 'size', value: item.size }, this.keys);
         }
       }
-      props.node.connectionNode.connection.users.forEach(user => {
-        const option = document.createElement('option');
-        option.innerHTML = user;
-        option.setAttribute('value', user);
-        this.ownerSelect.append(option);
-      });
-      this.ownerSelect.value = item.owner;
-      props.node.connectionNode.connection.groups.forEach(group => {
-        const option = document.createElement('option');
-        option.innerHTML = group;
-        option.setAttribute('value', group);
-        this.groupSelect.append(option);
-      });
-      this.groupSelect.value = item.group;
       addKeys({
         '-owner/group': '-',
         'Owner': {
@@ -131,6 +118,10 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
         '-separator': '-',
       }, this.keys);
       this.permissionsEditor.permissions = item.permissions;
+      autocomplete(this.ownerSelect, props.node.connectionNode.connection.users);
+      this.ownerSelect.value = item.owner;
+      autocomplete(this.groupSelect, props.node.connectionNode.connection.groups);
+      this.groupSelect.value = item.group;
     }
     this.containerDiv.appendChild(this.keys.container);
     this.containerDiv.appendChild(this.permissionsEditor.table);
@@ -161,6 +152,12 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   }
 
   protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
+    if (this.props.node && this.props.node.connectionNode.connection.groups.indexOf(value.group) < 0) {
+      return false;
+    }
+    if (this.props.node && this.props.node.connectionNode.connection.users.indexOf(value.owner) < 0) {
+      return false;
+    }
     const sameName = value.name === this.name;
     const sameOwner = value.owner === (this.item ? this.item.owner : '');
     const sameGroup = value.group === (this.item ? this.item.group : '');
@@ -177,7 +174,9 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     super.onAfterAttach(msg);
     this.addUpdateListener(this.nameField, 'input');
     this.addUpdateListener(this.ownerSelect, 'input');
+    autocompleteChanges(this.ownerSelect, this.addUpdateListener.bind(this));
     this.addUpdateListener(this.groupSelect, 'input');
+    autocompleteChanges(this.groupSelect, this.addUpdateListener.bind(this));
     this.permissionsEditor.addUpdateListeners(this.addUpdateListener.bind(this));
   }
 

@@ -13,6 +13,7 @@ table.keys {
       }
       &.value {
         width: 100%;
+        .awesomplete,
         select,
         input {
           width: 100%;

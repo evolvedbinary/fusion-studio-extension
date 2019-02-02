@@ -7,6 +7,7 @@ import { IDialogField, createField } from "../../classes/dialog-field";
 import { PebbleTabs } from "../../classes/tabs";
 import { createKeys, IKeysElement, addKey, addKeys, IKeys } from "../../classes/keys";
 import { Checkbox } from "../../classes/checkbox";
+import { autocomplete, autocompleteChanges } from '../../classes/autocomplete';
 
 @injectable()
 export class PebbleUserDialogProps extends DialogProps {
@@ -41,7 +42,8 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   ) {
     super(props);
     if (props.connection) {
-      this.group = createField('Primary group', '', props.connection.groups.map(group => ({ label: group, value: group })));
+      this.group = createField('Primary group', '');
+      autocomplete(this.group.input, props.connection.groups);
       this.group.input.addEventListener('change', e => Object.keys(this.groups).forEach(group => {
         if (group === this.group.input.value) {
           this.groups[group].disabled = true;
@@ -159,6 +161,9 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     if (this.password.input.value !== this.passwordConfirm.input.value) {
       return false;
     }
+    if (this.props.connection && this.props.connection.groups.indexOf(value.primaryGroup) < 0) {
+      return false;
+    }
     if (this.props.user) {
       return value.password !== null || !sameUser(value, this.props.user);
     } else {
@@ -170,11 +175,12 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     super.onAfterAttach(msg);
     this.addUpdateListener(this.username.input, 'input');
     this.addUpdateListener(this.group.input, 'input');
+    autocompleteChanges(this.group.input, this.addUpdateListener.bind(this));
     this.addUpdateListener(this.password.input, 'input');
     this.addUpdateListener(this.passwordConfirm.input, 'input');
-    this.addUpdateListener(this.isEnabled.container, 'click')
-    this.addUpdateListener(this.isExpired.container, 'click')
-    this.addUpdateListener(this.noPassword.container, 'click')
+    this.addUpdateListener(this.isEnabled.container, 'click');
+    this.addUpdateListener(this.isExpired.container, 'click');
+    this.addUpdateListener(this.noPassword.container, 'click');
     Object.keys(this.groups).forEach(group => this.addUpdateListener(this.groups[group].container, 'click'));
     Object.keys(this.attributes).forEach(key => this.addUpdateListener(this.attributes[key], 'input'));
   }
