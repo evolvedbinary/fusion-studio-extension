@@ -69,7 +69,7 @@ $ yarn watch
 $ yarn run sass
 ```
 **Known issues**
-- Building the extension will throw 3 non-breaking errors:
+- Building the extension after updating the dependencies may throw 3 non-breaking errors:
 ```
 error TS2688: Cannot find type definition file for 'monaco-editor-core/monaco'.
 
@@ -85,3 +85,4 @@ and change the first line:
 - /// <reference types="monaco-editor-core/monaco" />
 + /// <reference types="@typefox/monaco-editor-core/monaco" />
 ```
+or simply run `yarn run dependencies`

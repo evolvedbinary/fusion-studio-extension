@@ -7,9 +7,10 @@
   },
   "homepage": "https://github.com/evolvedbinary/pebble-extension#readme",
   "scripts": {
-    "postinstall": "yarn sass",
+    "postinstall": "yarn sass & yarn dependencies",
     "sass" : "node-sass ./pebble-extension/src/browser/style/index.scss ./pebble-extension/src/browser/style/index.css",
     "sass:watch" : "node-sass ./pebble-extension/src/browser/style/index.scss ./pebble-extension/src/browser/style/index.css --watch",
+    "dependencies" : "node ./dependencies.js",
     "prepare": "lerna run prepare",
     "rebuild:browser": "theia rebuild:browser",
     "rebuild:electron": "theia rebuild:electron"
