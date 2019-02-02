@@ -5,7 +5,7 @@ environment:
 
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
 
 cache:
   - node_modules                        # local npm modules
