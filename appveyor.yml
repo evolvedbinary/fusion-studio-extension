@@ -7,6 +7,10 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
 
+cache:
+  - node_modules                        # local npm modules
+  - '%APPDATA%\npm-cache'               # npm cache
+
 install:
   - cmd: yarn
   - sh: yarn
