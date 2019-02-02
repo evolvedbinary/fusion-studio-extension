@@ -237,7 +237,7 @@ export class PebbleCore {
         this.addCollection(connectionNode, root.collections[0]);
         // root.documents.forEach(document => this.addDocument(connectionNode, document));
         // this.expand(connectionNode.db);
-        this.sort(connectionNode.db);
+        await this.sort(connectionNode.db);
         connectionNode.security = await this.addSecurity(connectionNode);
         connectionNode.indexes = await this.addIndexes(connectionNode);
         connectionNode.rest = await this.addRestNode(connectionNode);
