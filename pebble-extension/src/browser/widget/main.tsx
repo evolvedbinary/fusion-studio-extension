@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps } from "@theia/core/lib/browser";
+import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, TreeDecoration } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
 import { PebbleNode } from '../../classes/node';
 import { PebbleCore } from '../core';
@@ -68,6 +68,10 @@ export class PebbleViewWidget extends TreeWidget {
       event.stopPropagation();
       this.core.select(node);
       this.core.showPropertiesDialog(node.id);
+    } else if (PebbleNode.isRestMethod(node)) {
+      event.stopPropagation();
+      this.core.select(node);
+      this.core.showMethodInfo(node.id);
     } else {
       defaultHandler && defaultHandler(event);
     }
@@ -84,13 +88,23 @@ export class PebbleViewWidget extends TreeWidget {
     model = model || this.model;
     return !model.root || (model.root as CompositeTreeNode).children.length < 2;
   }
+
+  protected getDecorations(node: TreeNode): TreeDecoration.Data[] {
+    const decorations = super.getDecorations(node);
+    if (PebbleNode.isRestMethod(node)) {
+      decorations.push({ tooltip: node.restMethod.function.name });
+      decorations.push({ tooltip: node.restMethod.function.src });
+    }
+    return decorations;
+  }
   
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
+    const tooltip = this.getDecorationData(node, 'tooltip').filter(tooltip => !!tooltip).join('\n');
     if (PebbleNode.is(node)) {
       if (PebbleNode.isToolbar(node)) {
         return this.isEmpty(this.model) ? <PebbleHome core={this.core} /> : <PebbleToolbar core={this.core} />;
       } else {
-        return <PebbleItem core={this.core} node={node} />;
+        return <PebbleItem tooltip={tooltip} core={this.core} node={node} />;
       }
     }
     console.error('unknown node:', node);

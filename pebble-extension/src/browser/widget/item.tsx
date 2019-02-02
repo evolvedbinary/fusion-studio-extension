@@ -5,6 +5,7 @@ import { PebbleCore } from '../core';
 interface PebbleItemProps {
   node: PebbleNode;
   core: PebbleCore;
+  tooltip?: string;
 }
 
 export class PebbleItem extends React.Component<PebbleItemProps, any> {
@@ -20,7 +21,7 @@ export class PebbleItem extends React.Component<PebbleItemProps, any> {
     }
     if (PebbleNode.is(node)) {
       return (
-        <div className={'pebble-item pebble-item-' + (PebbleNode.isCollection(node) ? 'collection' : 'document') + (PebbleNode.isDocument(node) && node.isNew ? ' pebble-item-new' : '')}>
+        <div className={'pebble-item pebble-item-' + (PebbleNode.isCollection(node) ? 'collection' : 'document') + (PebbleNode.isDocument(node) && node.isNew ? ' pebble-item-new' : '')} title={this.props.tooltip || ''}>
           <i className={core.getIcon(node)}></i>
           <span className='name'>{node.name}</span>
         </div>

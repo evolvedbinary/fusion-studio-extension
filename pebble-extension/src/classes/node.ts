@@ -1,6 +1,7 @@
 import { TreeNode, ExpandableTreeNode, SelectableTreeNode, CompositeTreeNode } from "@theia/core/lib/browser";
 import { PebbleDocument, PebbleCollection } from "./item";
 import { PebbleConnection } from "./connection";
+import { PebbleRestURI, PebbleRestMethod } from "./rest";
 
 
 export type PebbleNodeType = 'connection' | 'toolbar' | 'item' | 'users' | 'groups' | 'user' | 'group' | 'security' | 'indexes' | 'index' | 'rest' | 'rest-uri' | 'rest-method';
@@ -68,9 +69,11 @@ export interface PebbleRestNode extends PebbleContainerNode, SelectableTreeNode 
 }
 export interface PebbleRestURINode extends PebbleContainerNode, SelectableTreeNode {
   type: 'rest-uri',
+  restURI: PebbleRestURI,
 }
 export interface PebbleRestMethodNode extends PebbleNode, SelectableTreeNode {
   type: 'rest-method',
+  restMethod: PebbleRestMethod,
 }
 
 export namespace PebbleNode {
@@ -116,13 +119,13 @@ export namespace PebbleNode {
   export function isIndexes(node?: TreeNode): node is PebbleIndexesNode {
     return PebbleNode.isContainer(node) && node.type === 'indexes';
   }
-  export function isRest(node?: TreeNode): node is PebbleIndexesNode {
+  export function isRest(node?: TreeNode): node is PebbleRestNode {
     return PebbleNode.isContainer(node) && node.type === 'rest';
   }
-  export function isRestURI(node?: TreeNode): node is PebbleIndexesNode {
+  export function isRestURI(node?: TreeNode): node is PebbleRestURINode {
     return PebbleNode.isContainer(node) && node.type === 'rest-uri';
   }
-  export function isRestMethod(node?: TreeNode): node is PebbleIndexesNode {
+  export function isRestMethod(node?: TreeNode): node is PebbleRestMethodNode {
     return PebbleNode.is(node) && node.type === 'rest-method';
   }
 }

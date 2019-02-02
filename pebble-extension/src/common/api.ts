@@ -5,6 +5,7 @@ import { PebbleFileList } from "../classes/files";
 import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
 import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
 import { readIndex, PebbleIndex } from "../classes/indexes";
+import { PebbleRestURI } from "../classes/rest";
 
 export const RANGE_START = 1;
 export const RANGE_LENGTH = 4;
@@ -323,7 +324,7 @@ export namespace PebbleApi {
     }
   }
 
-  export async function restxq(connection: PebbleConnection): Promise<any> {
+  export async function restxq(connection: PebbleConnection): Promise<PebbleRestURI[]> {
     return (await _get(connection, '/exist/restxq/pebble/restxq')).json();
   }
 }
