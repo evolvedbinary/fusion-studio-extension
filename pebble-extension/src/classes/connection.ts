@@ -6,3 +6,12 @@ export interface PebbleConnection {
   users: string[];
   groups: string[];
 }
+
+export interface PebbleConnections {
+  [key: string]: PebbleConnection;
+}
+
+export interface PebbleConnectionsChangeEvent {
+  id: string;
+  action: 'delete' | 'add';
+}
