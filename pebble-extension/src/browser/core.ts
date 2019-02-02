@@ -74,6 +74,21 @@ export class PebbleCore {
 
   // nodes:
 
+  protected async sort(node: CompositeTreeNode) {
+    if (this._model) {
+      if (PebbleNode.isCollection(node)) {
+        node.children = (node.children as PebbleItemNode[]).sort((a, b) => {
+          if (a.isCollection === b.isCollection) {
+            return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+          } else {
+            return a.isCollection ? -1 : 1;
+          }
+        });
+      }
+      await this._model.refresh(node);
+    }
+  }
+
   protected createRoot() {
     if (this._model) {
       this._model.root = {
@@ -87,10 +102,9 @@ export class PebbleCore {
     }
   }
 
-  protected async addNode(child: PebbleNode, parent?: TreeNode): Promise<PebbleNode> {
+  protected async addNode(child: PebbleNode, parent: CompositeTreeNode): Promise<PebbleNode> {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
-    this._model && this._model.refresh();
-    await this.refresh();
+    await this.sort(parent);
     return this.getNode(child.id) as PebbleNode;
   }
 
@@ -223,6 +237,7 @@ export class PebbleCore {
         this.addCollection(connectionNode, root.collections[0]);
         // root.documents.forEach(document => this.addDocument(connectionNode, document));
         // this.expand(connectionNode.db);
+        this.sort(connectionNode.db);
         connectionNode.security = await this.addSecurity(connectionNode);
         connectionNode.indexes = await this.addIndexes(connectionNode);
         connectionNode.rest = await this.addRestNode(connectionNode);
@@ -356,7 +371,7 @@ export class PebbleCore {
     }
   }
 
-  protected async addConnection(connection: PebbleConnection, parent?: TreeNode, expanded?: boolean): Promise<PebbleConnectionNode> {
+  protected async addConnection(connection: PebbleConnection, parent: CompositeTreeNode, expanded?: boolean): Promise<PebbleConnectionNode> {
     const connectionNode = await this.addNode({
       type: 'connection',
       children: [],
@@ -1073,7 +1088,7 @@ export class PebbleCore {
     });
     const result = await dialog.open();
     if (result) {
-      this.addConnection(result.connection, this._model.root, result.autoConnect);  
+      this.addConnection(result.connection, this._model.root as CompositeTreeNode, result.autoConnect);  
     }
   }
 
@@ -1255,7 +1270,7 @@ export class PebbleCore {
         this.expand(node);
         return;
       } else {
-        this._model.refresh();
+        this._model.refresh(node);
       }
     }
   }
