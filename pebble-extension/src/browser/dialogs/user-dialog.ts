@@ -68,6 +68,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.groupsKeys.container.classList.add('no-label');
       props.connection.groups.forEach(group => {
         this.groups[group] = new Checkbox(group, props.user ? props.user.groups.indexOf(group) > -1 : group === this.group.input.value);
+        this.groups[group].container.classList.add('default-case');
         addKey(group, {
           type: 'string',
           value: '',
