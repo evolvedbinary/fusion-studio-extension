@@ -108,18 +108,20 @@ export namespace PebbleApi {
     }
   }
   
-  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, contentType = ''): Promise<boolean> {
+  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, contentType = ''): Promise<PebbleDocument | undefined> {
     try {
       const result = await _put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, contentType);
       switch (result.status) {
-        case 201: return true;
+        case 201:
+          const object = await result.json();
+          return readDocument(object);
         case 401: throw createError(PebbleError.permissionDenied, result);
         default: throw createError(PebbleError.unknown, result);
       }
     } catch (error) {
       throw createError(PebbleError.unknown, error);
     }
-    return false;
+    return undefined;
   }
   
   export async function saveDocuments(connection: PebbleConnection, collection: PebbleCollection, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {

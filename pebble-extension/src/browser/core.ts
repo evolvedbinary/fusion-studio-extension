@@ -189,6 +189,10 @@ export class PebbleCore {
     return !!this._model && this._model.selectedNodes.length > 0;
   }
 
+  public get isNew(): boolean {
+    return PebbleNode.isDocument(this.node) && this.node.isNew;
+  }
+
   public get isItem(): boolean {
     return this.isSelected && PebbleNode.isItem(this.node);
   }
@@ -343,8 +347,10 @@ export class PebbleCore {
 
   public async save(document: PebbleDocumentNode, content: string) {
     try {
-      if (await PebbleApi.save(document.connectionNode.connection, document.uri, content)) {
+      const doc = await PebbleApi.save(document.connectionNode.connection, document.uri, content);
+      if (doc) {
         document.isNew = false;
+        document.document = doc;
         this.refresh();
       }
     } catch (error) {
@@ -354,7 +360,7 @@ export class PebbleCore {
 
   protected async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, contenType = ''): Promise<boolean> {
     try {
-      return await PebbleApi.save(connection, uri, content, contenType);
+      return await !!PebbleApi.save(connection, uri, content, contenType);
     } catch (error) {
       console.error('caught:', error);
       return false;
