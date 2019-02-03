@@ -15,7 +15,7 @@ export const MENU = CommonMenus.FILE;
 export const actConnect: PebbleAction = {
   id: 'connect',
   order: 'a',
-  label: 'Connect to a database',
+  label: 'Connect to a server',
   menu: MENU,
   menuLabel: 'Connect...',
   keys: 'ctrlcmd+alt+c',

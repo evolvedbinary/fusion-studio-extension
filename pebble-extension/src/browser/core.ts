@@ -1107,8 +1107,8 @@ export class PebbleCore {
       return;
     }
     const dialog = new PebbleConnectionDialog({
-      title: 'New connection',
-      name: 'Localhost',
+      title: 'New Connection',
+      name: 'localhost',
       server: 'http://localhost:8080',
       username: 'admin',
       password: '',
@@ -1127,10 +1127,10 @@ export class PebbleCore {
       const node = this.node as PebbleConnectionNode;
       const msg = document.createElement('p');
       msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connectionNode.name + '</strong>?<br/>' +
-      'Server: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
+      'Server URI: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
       'Username: <strong>' + node.connectionNode.connection.username + '</strong>';
       const dialog = new ConfirmDialog({
-        title: 'Delete connection',
+        title: 'Remove Connection',
         msg,
         cancel: 'Keep',
         ok: 'Delete'
@@ -1374,8 +1374,8 @@ export class PebbleCore {
     if (node) {
       if (PebbleNode.isConnection(node)) {
         const dialog = new PebbleConnectionDialog({
-          title: 'Edit connection',
-          acceptButton: 'Update',
+          title: 'Edit Connection',
+          acceptButton: 'Save',
           ...node.connectionNode.connection,
         });
         dialog.open().then(result => {
