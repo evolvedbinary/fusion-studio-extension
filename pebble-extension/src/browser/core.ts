@@ -4,7 +4,7 @@ import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
-import { PebbleConnection, PebbleConnections, PebbleConnectionsChangeEvent } from "../classes/connection";
+import { PebbleConnection, ServerConnections, ServerConnectionsChangeEvent } from "../classes/connection";
 import { CommandRegistry, Event, Emitter } from "@theia/core";
 import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
@@ -32,8 +32,8 @@ export class PebbleCore {
   protected clipboard: Partial<PebbleDragOperation> = {};
   protected lastNameID: number = 1;
   public result: string = '';
-  public connectionsChange = new Emitter<PebbleConnectionsChangeEvent>();
-  public connections: PebbleConnections = {};
+  public connectionsChange = new Emitter<ServerConnectionsChangeEvent>();
+  public connections: ServerConnections = {};
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -57,7 +57,7 @@ export class PebbleCore {
 
   // connections list
 
-  get onConnectionsChange(): Event<PebbleConnectionsChangeEvent> {
+  get onConnectionsChange(): Event<ServerConnectionsChangeEvent> {
     return this.connectionsChange.event;
   }
 

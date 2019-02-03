@@ -7,11 +7,11 @@ export interface PebbleConnection {
   groups: string[];
 }
 
-export interface PebbleConnections {
+export interface ServerConnections {
   [key: string]: PebbleConnection;
 }
 
-export interface PebbleConnectionsChangeEvent {
+export interface ServerConnectionsChangeEvent {
   id: string;
   action: 'delete' | 'add';
 }
