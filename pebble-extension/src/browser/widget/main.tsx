@@ -23,8 +23,8 @@ export class PebbleViewWidget extends TreeWidget {
     super(treeProps, model, contextMenuRenderer);
 
     this.id = 'pebble-view';
-    this.title.label = 'Connections';
-    this.title.caption = 'Connections';
+    this.title.label = 'Servers';
+    this.title.caption = 'Servers';
     this.title.iconClass = 'fa fa-plug';
     this.title.closable = true;
     this.addClass('pebble-view');

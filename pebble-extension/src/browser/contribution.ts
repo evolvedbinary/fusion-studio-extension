@@ -15,7 +15,7 @@ export class PebbleContribution extends AbstractViewContribution<PebbleViewWidge
   ) {
     super({
       widgetId: PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID,
-      widgetName: 'Pebble Connections',
+      widgetName: 'Servers',
       defaultWidgetOptions: {
         area: 'left'
       },

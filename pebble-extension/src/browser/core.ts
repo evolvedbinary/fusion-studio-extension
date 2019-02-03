@@ -103,7 +103,7 @@ export class PebbleCore {
     if (this._model) {
       this._model.root = {
         id: 'pebble-connections-view-root',
-        name: 'Pebble Connections Root',
+        name: 'Servers Root',
         visible: false,
         children: [],
         parent: undefined

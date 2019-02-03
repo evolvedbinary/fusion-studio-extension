@@ -11,7 +11,7 @@ export class PebbleHome extends React.Component<PebbleHomeProps, any> {
       <div id="pebble-home" className='theia-navigator-container'>
         <div className="title">
           <p><i className="fa fa-plug fa-fw fa-5x" /></p>
-          <p>Pebble Connections</p>
+          <p>Servers</p>
         </div>
         <div className="description">
           <p>No connections available yet.</p>

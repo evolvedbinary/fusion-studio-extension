@@ -30,7 +30,7 @@ export class PebbleToolbar extends React.Component<PebbleToolbarProps, any> {
   public render() {
     return (
       <div id='pebble-toolbar'>
-        <span className="title"><i className="fa fa-plug fa-fw"></i>Pebble Connections</span>
+        <span className="title"><i className="fa fa-plug fa-fw"></i>Servers</span>
         {this.button('pebble-toolbar-button-add', actConnect)}
         {/* {this.button('pebble-toolbar-button-delete', 'Delete connection', 'minus', this.deleteConnection, 'red')} */}
       </div>
