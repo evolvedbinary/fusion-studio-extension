@@ -5,6 +5,7 @@ import { PebbleFileList } from "../classes/files";
 import { PebbleUserData, writeUserData, readUser, PebbleUser } from "../classes/user";
 import { PebbleGroupData, writeGroupData, readGroup, PebbleGroup } from "../classes/group";
 import { readIndex, PebbleIndex } from "../classes/indexes";
+import { PebbleRestURI } from "../classes/rest";
 
 export const RANGE_START = 1;
 export const RANGE_LENGTH = 4;
@@ -108,18 +109,20 @@ export namespace PebbleApi {
     }
   }
   
-  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, contentType = ''): Promise<boolean> {
+  export async function save(connection: PebbleConnection, uri: string, content: string | Blob, contentType = ''): Promise<PebbleDocument | undefined> {
     try {
       const result = await _put(connection, '/exist/restxq/pebble/document?uri=' + uri, content, contentType);
       switch (result.status) {
-        case 201: return true;
+        case 201:
+          const object = await result.json();
+          return readDocument(object);
         case 401: throw createError(PebbleError.permissionDenied, result);
         default: throw createError(PebbleError.unknown, result);
       }
     } catch (error) {
       throw createError(PebbleError.unknown, error);
     }
-    return false;
+    return undefined;
   }
   
   export async function saveDocuments(connection: PebbleConnection, collection: PebbleCollection, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {
@@ -321,7 +324,7 @@ export namespace PebbleApi {
     }
   }
 
-  export async function restxq(connection: PebbleConnection): Promise<any> {
+  export async function restxq(connection: PebbleConnection): Promise<PebbleRestURI[]> {
     return (await _get(connection, '/exist/restxq/pebble/restxq')).json();
   }
 }

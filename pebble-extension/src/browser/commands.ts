@@ -149,7 +149,7 @@ export const actProperties: PebbleAction = {
   keys: 'alt+enter',
   icon: 'fa fa-info-circle',
   execute: core => core.showPropertiesDialog.bind(core),
-  visible: core => () => core.isItem || core.isConnection,
+  visible: core => () => (core.isItem && !core.isNew) || core.isConnection,
 };
 export const actAddUser: PebbleAction = {
   id: 'add-user',

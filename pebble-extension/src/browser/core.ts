@@ -11,7 +11,7 @@ import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
-import { PebbleConnectionDialog, NewFromTemplateDialog } from "./dialogs";
+import { PebbleConnectionDialog, NewFromTemplateDialog, PebblePropertiesDialog, PebbleAlertDialog } from "./dialogs";
 import { PebbleFiles, PebbleFileList } from "../classes/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
@@ -19,7 +19,6 @@ import { createError, PebbleError } from "../classes/error";
 import { asyncForEach } from "../common/asyncForEach";
 import { PebbleStatusEntry } from "../classes/status";
 import { actProperties } from "./commands";
-import { PebblePropertiesDialog } from "./dialogs/properties-dialog";
 import { PebbleTreeModel } from "../classes/tree";
 import { PebbleUserDialog } from "./dialogs/user-dialog";
 import { PebbleGroupDialog } from "./dialogs/group-dialog";
@@ -74,16 +73,27 @@ export class PebbleCore {
 
   // nodes:
 
-  protected async sort(node: CompositeTreeNode) {
+  protected sortItems(a: PebbleNode, b: PebbleNode): number {
+    if (PebbleNode.isItem(a) && PebbleNode.isItem(b)) {
+      if (a.isCollection === b.isCollection) {
+        return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+      } else {
+        return a.isCollection ? -1 : 1;
+      }
+    } else {
+      return PebbleNode.isItem(a) ? 1 : PebbleNode.isItem(b) ? -1 : a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+    }
+  }
+
+  protected sortRest(a: PebbleNode, b: PebbleNode): number {
+    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+  }
+
+  protected async sort(node: CompositeTreeNode, sortfunc: (a: PebbleNode, b: PebbleNode) => number) {
     if (this._model) {
-      if (PebbleNode.isCollection(node)) {
-        node.children = (node.children as PebbleItemNode[]).sort((a, b) => {
-          if (a.isCollection === b.isCollection) {
-            return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-          } else {
-            return a.isCollection ? -1 : 1;
-          }
-        });
+      console.log('sorting...', node.id);
+      if (PebbleNode.isContainer(node)) {
+        node.children = (node.children as PebbleNode[]).sort(sortfunc);
       }
       await this._model.refresh(node);
     }
@@ -104,7 +114,13 @@ export class PebbleCore {
 
   protected async addNode(child: PebbleNode, parent: CompositeTreeNode): Promise<PebbleNode> {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
-    await this.sort(parent);
+    if (PebbleNode.isCollection(parent)) {
+      await this.sort(parent, this.sortItems);
+    } else {
+      if (this._model) {
+        await this._model.refresh();
+      }
+    }
     return this.getNode(child.id) as PebbleNode;
   }
 
@@ -139,7 +155,7 @@ export class PebbleCore {
     return this._model ? this._model.selectedNodes as any : [];
   }
 
-  public select(node: PebbleItemNode | PebbleConnectionNode) {
+  public select(node: PebbleItemNode | PebbleConnectionNode | PebbleRestMethodNode | PebbleUserNode | PebbleGroupNode) {
     if (!PebbleNode.isToolbar(node)) {
       this._model && this._model.selectNode(node);
     }
@@ -183,6 +199,10 @@ export class PebbleCore {
 
   public get isSelected(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0;
+  }
+
+  public get isNew(): boolean {
+    return PebbleNode.isDocument(this.node) && this.node.isNew;
   }
 
   public get isItem(): boolean {
@@ -236,8 +256,8 @@ export class PebbleCore {
         // root.collections.forEach(subCollection => this.addCollection(connectionNode, subCollection));
         this.addCollection(connectionNode, root.collections[0]);
         // root.documents.forEach(document => this.addDocument(connectionNode, document));
-        // this.expand(connectionNode.db);
-        this.sort(connectionNode.db);
+        this.expand(connectionNode.db);
+        // await this.sort(connectionNode.db, this.sortItems);
         connectionNode.security = await this.addSecurity(connectionNode);
         connectionNode.indexes = await this.addIndexes(connectionNode);
         connectionNode.rest = await this.addRestNode(connectionNode);
@@ -325,8 +345,8 @@ export class PebbleCore {
           node.loaded = true;
           const collection = result as PebbleCollection;
           await this.addCollectionIndex(node);
-          collection.collections.forEach(subCollection => this.addCollection(node, subCollection));
-          collection.documents.forEach(document => this.addDocument(node, document));
+          await Promise.all(collection.collections.map(subCollection => this.addCollection(node, subCollection)));
+          await Promise.all(collection.documents.map(document => this.addDocument(node, document)));
           node.collection = collection;
         }
       } catch (error) {
@@ -339,8 +359,10 @@ export class PebbleCore {
 
   public async save(document: PebbleDocumentNode, content: string) {
     try {
-      if (await PebbleApi.save(document.connectionNode.connection, document.uri, content)) {
+      const doc = await PebbleApi.save(document.connectionNode.connection, document.uri, content);
+      if (doc) {
         document.isNew = false;
+        document.document = doc;
         this.refresh();
       }
     } catch (error) {
@@ -350,7 +372,7 @@ export class PebbleCore {
 
   protected async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, contenType = ''): Promise<boolean> {
     try {
-      return await PebbleApi.save(connection, uri, content, contenType);
+      return await !!PebbleApi.save(connection, uri, content, contenType);
     } catch (error) {
       console.error('caught:', error);
       return false;
@@ -591,7 +613,9 @@ export class PebbleCore {
 
   protected async addCollectionIndex(collectionNode: PebbleCollectionNode): Promise<PebbleIndexNode | undefined> {
     const index = await PebbleApi.getIndex(collectionNode.connectionNode.connection, collectionNode.uri);
-    return index ? await this.addNode(this.createIndexNode(collectionNode, collectionNode.uri), collectionNode) as PebbleIndexNode : undefined;
+    const indexNode = this.createIndexNode(collectionNode, collectionNode.uri);
+    (indexNode as any).name = 'Indexes';
+    return index ? await this.addNode(indexNode, collectionNode) as PebbleIndexNode : undefined;
   }
 
   protected async addIndex(indexesNode: PebbleIndexesNode, uri: string): Promise<PebbleIndexNode> {
@@ -644,28 +668,31 @@ export class PebbleCore {
       connectionNode,
     } as PebbleRestNode, connectionNode) as PebbleRestNode;
     const uris = await PebbleApi.restxq(connectionNode.connection);
-    uris.filter((uri: any) => uri.uri !== '/').forEach(async (uri: any) => {
+    await Promise.all(uris.filter(uri => uri.uri !== '/').map(async uri => {
       const uriNode = await this.addNode({
         type: 'rest-uri',
         children: [],
         id: this.restID(connectionNode.connection, uri.uri),
         uri: 'rest',
+        restURI: uri,
         name: uri.uri,
         parent: rest,
         selected: false,
         expanded: false,
         connectionNode,
       } as PebbleRestURINode, rest) as PebbleRestURINode;
-      uri.methods.forEach((method: any) => this.addNode({
+      uri.methods.forEach(method => this.addNode({
         type: 'rest-method',
         id: this.restID(connectionNode.connection, uri.uri, method.name),
         uri: 'rest',
         name: method.name,
+        restMethod: method,
         parent: uriNode,
         selected: false,
         connectionNode,
       } as PebbleRestMethodNode, uriNode))
-    });
+    }));
+    await this.sort(rest, this.sortRest);
     return rest;
   }
 
@@ -754,7 +781,7 @@ export class PebbleCore {
       return 'fa fa-fw fa-' + (node.loading ? loading : 'list-ul');
     }
     if (PebbleNode.isRest(node)) {
-      return 'fa fa-fw fa-reply-all';
+      return 'fa fa-fw fa-server';
     }
     if (PebbleNode.isRestURI(node)) {
       return 'fa fa-fw fa-link';
@@ -1327,6 +1354,18 @@ export class PebbleCore {
         this._model.selectNode(node);
         this.endLoading(node);
       }
+    }
+  }
+
+  public showMethodInfo(nodeId = '') {
+    const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
+    if (PebbleNode.isRestMethod(node)) {
+      const dialog = new PebbleAlertDialog({
+        title: 'Method ' + node.name + ' for ' + (node.parent as PebbleRestURINode).name,
+        message: node.restMethod.function.name,
+        secondaryMessage: node.restMethod.function.src,
+      });
+      dialog.open();
     }
   }
 
