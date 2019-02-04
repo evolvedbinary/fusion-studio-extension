@@ -357,9 +357,13 @@ export class PebbleCore {
     }
   }
 
+  public async saveByUri(uri: string, connection: PebbleConnection, content: string) {
+    return await PebbleApi.save(connection, uri, content);
+  }
+
   public async save(document: PebbleDocumentNode, content: string) {
     try {
-      const doc = await PebbleApi.save(document.connectionNode.connection, document.uri, content);
+      const doc = await this.saveByUri(document.uri, document.connectionNode.connection, content);
       if (doc) {
         document.isNew = false;
         document.document = doc;

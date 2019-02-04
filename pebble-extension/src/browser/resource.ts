@@ -84,8 +84,22 @@ export class PebbleResource implements Resource {
     if (!this.core) {
       return;
     }
-    const document = this.getDocument();
-    this.core.save(document, content);
+    try {
+      const document = this.getDocument();
+      this.core.save(document, content);
+    } catch (e) {
+      if (ErrorObject.is(e) && e.code === PebbleError.nodeNotFound) {
+        const match = this.uri.path.toString().match(/([^@]+@.*)(\/db\/.*)/);
+        if (match) {
+          const connectionNode = this.getConnectionNode(match[1]);
+          const uri = match[2];
+          await this.core.saveByUri(uri, connectionNode.connection, content);
+        }
+        throw createError(0);
+      } else {
+        throw createError(e);
+      }
+    }
   }
 
   dispose(): void { }
