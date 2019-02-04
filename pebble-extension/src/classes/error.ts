@@ -14,22 +14,24 @@ export enum PebbleError {
   unknown = 0,
   permissionDenied = 401,
   notFound = 404,
+  nodeNotFound,
 }
 
 type ErrorMessages = {
   [key in PebbleError]: string;
 }
 
-export function createError(code: number, ...data: any[]) {
+export function createError(code: number, ...data: any[]): ErrorObject {
   const error = data.length > 0 ? data[0] : data;
   return ErrorObject.is(error) ? error : {
     code,
     data,
-  }
+  };
 }
 
 export const ERROR_MESSAGES: ErrorMessages = {
   [PebbleError.unknown]: 'unknown error',
   [PebbleError.permissionDenied]: 'permission denied',
   [PebbleError.notFound]: 'Not found',
+  [PebbleError.nodeNotFound]: 'Node not found',
 }

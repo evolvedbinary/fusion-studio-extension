@@ -71,7 +71,7 @@ export class PebbleViewWidget extends TreeWidget {
     } else if (PebbleNode.isRestMethod(node)) {
       event.stopPropagation();
       this.core.select(node);
-      this.core.showMethodInfo(node.id);
+      this.core.openMethodFunctionDocument(node.id);
     } else {
       defaultHandler && defaultHandler(event);
     }

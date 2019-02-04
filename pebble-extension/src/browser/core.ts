@@ -11,7 +11,7 @@ import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
-import { PebbleConnectionDialog, NewFromTemplateDialog, PebblePropertiesDialog, PebbleAlertDialog } from "./dialogs";
+import { PebbleConnectionDialog, NewFromTemplateDialog, PebblePropertiesDialog } from "./dialogs";
 import { PebbleFiles, PebbleFileList } from "../classes/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
@@ -919,6 +919,14 @@ export class PebbleCore {
     }
   }
 
+  public async openDocumentByURI(uri: string, connection: PebbleConnection): Promise<any> {
+    const uriObj = new URI(PEBBLE_RESOURCE_SCHEME + ':' + this.connectionID(connection) + uri);
+    const result = await open(this.openerService, uriObj, {
+      node: 123,
+    });
+    return result;
+  }
+
   public async openDocument(node: PebbleDocumentNode): Promise<any> {
     if (this.startLoading(node)) {
       const result = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
@@ -1357,15 +1365,10 @@ export class PebbleCore {
     }
   }
 
-  public showMethodInfo(nodeId = '') {
+  public openMethodFunctionDocument(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
     if (PebbleNode.isRestMethod(node)) {
-      const dialog = new PebbleAlertDialog({
-        title: 'Method ' + node.name + ' for ' + (node.parent as PebbleRestURINode).name,
-        message: node.restMethod.function.name,
-        secondaryMessage: node.restMethod.function.src,
-      });
-      dialog.open();
+      this.openDocumentByURI(node.restMethod.function.src, node.connectionNode.connection);
     }
   }
 
