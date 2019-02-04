@@ -207,7 +207,7 @@ export namespace PebbleApi {
   export async function evaluate(connection: PebbleConnection, serialization: string, value: string, isContent?: boolean, start?: number, length?: number): Promise<string> {
     try {
       const body = {
-        query: value,
+        [isContent ? 'query' : 'query-uri']: value,
         defaultSerialization: { method: serialization }
       };
       const headers = {

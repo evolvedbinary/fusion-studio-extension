@@ -143,10 +143,17 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
       const start = (page - 1) * size + 1;
       try {
         const node = this.documentNode ? this.documentNode.connectionNode : this.core.getNode(this.connection) as PebbleConnectionNode;
-        // const value = this.editor.document.dirty || !this.documentNode ? this.editor.document.getText() : this.documentNode.uri;
-        const value = this.editor.document.getText();
+        let isContent: boolean;
+        let value: string;
+        if (this.documentNode && !this.editor.document.dirty) {
+          value = this.documentNode.uri;
+          isContent = false;
+        } else {
+          value = this.editor.document.getText();
+          isContent = true;
+        }
         if (node) {
-          const result = await PebbleApi.evaluate(node.connection, this.serialization, value, true, start, size);
+          const result = await PebbleApi.evaluate(node.connection, this.serialization, value, isContent, start, size);
           if (result !== '') {
             this.pager.start = start;
             this.pager.pages = Math.max(this.pager.pages, page);
