@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebbleContainerNode, PebbleIndexesNode, PebbleIndexNode, PebbleRestNode, PebbleRestURINode, PebbleRestMethodNode } from "../classes/node";
-import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
+import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment, WidgetManager } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
@@ -22,6 +22,7 @@ import { actProperties } from "./commands";
 import { PebbleTreeModel } from "../classes/tree";
 import { PebbleUserDialog } from "./dialogs/user-dialog";
 import { PebbleGroupDialog } from "./dialogs/group-dialog";
+import { PEBBLE_EVAL_WIDGET_FACTORY_ID, XQ_EXT } from '../classes/eval';
 
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
@@ -41,6 +42,7 @@ export class PebbleCore {
     @inject(PebbleFiles) protected readonly files: PebbleFiles,
     @inject(OpenerService) private readonly openerService: OpenerService,
     @inject(StatusBar) protected readonly statusBar: StatusBar,
+    @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {}
 
   // tree model
@@ -925,6 +927,13 @@ export class PebbleCore {
 
   public async openDocumentByURI(uri: string, connection: PebbleConnection): Promise<any> {
     const uriObj = new URI(PEBBLE_RESOURCE_SCHEME + ':' + this.connectionID(connection) + uri);
+    const evalWidget = await this.widgetManager.getWidget(PEBBLE_EVAL_WIDGET_FACTORY_ID);
+    if (!evalWidget) {
+      const ext = uri.substr(uri.lastIndexOf('.') + 1);
+      if (XQ_EXT.indexOf(ext) >= 0) {
+        this.commands.executeCommand('PebbleEval:toggle');
+      }
+    }
     const result = await open(this.openerService, uriObj, {
       node: 123,
     });
@@ -933,7 +942,7 @@ export class PebbleCore {
 
   public async openDocument(node: PebbleDocumentNode): Promise<any> {
     if (this.startLoading(node)) {
-      const result = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
+      const result = await this.openDocumentByURI(node.uri, node.connectionNode.connection);
       this.endLoading(node);
       node.loaded = true;
       return result;
