@@ -2,8 +2,8 @@ import { injectable, inject } from "inversify";
 import { AbstractViewContribution } from "@theia/core/lib/browser";
 import { PebbleEvalWidget } from "./widget/eval";
 import { PebbleCore } from "./core";
+import { PEBBLE_EVAL_WIDGET_FACTORY_ID } from '../classes/eval';
 
-export const PEBBLE_EVAL_WIDGET_FACTORY_ID = 'pebble-eval';
 @injectable()
 export class PebbleEvalContribution extends AbstractViewContribution<PebbleEvalWidget> {
 

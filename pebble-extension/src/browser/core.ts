@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebbleContainerNode, PebbleIndexesNode, PebbleIndexNode, PebbleRestNode, PebbleRestURINode, PebbleRestMethodNode } from "../classes/node";
-import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
+import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment, WidgetManager } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
@@ -11,7 +11,7 @@ import { PebbleApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { PebbleDragOperation } from "./widget/drag";
 import { PebbleTemplate } from "../classes/template";
-import { PebbleConnectionDialog, NewFromTemplateDialog, PebblePropertiesDialog, PebbleAlertDialog } from "./dialogs";
+import { PebbleConnectionDialog, NewFromTemplateDialog, PebblePropertiesDialog } from "./dialogs";
 import { PebbleFiles, PebbleFileList } from "../classes/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
@@ -22,6 +22,7 @@ import { actProperties } from "./commands";
 import { PebbleTreeModel } from "../classes/tree";
 import { PebbleUserDialog } from "./dialogs/user-dialog";
 import { PebbleGroupDialog } from "./dialogs/group-dialog";
+import { PEBBLE_EVAL_WIDGET_FACTORY_ID, XQ_EXT } from '../classes/eval';
 
 function sortText(A: string, B: string, caseSensetive = false): number {
   let a = A;
@@ -51,6 +52,7 @@ export class PebbleCore {
     @inject(PebbleFiles) protected readonly files: PebbleFiles,
     @inject(OpenerService) private readonly openerService: OpenerService,
     @inject(StatusBar) protected readonly statusBar: StatusBar,
+    @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {}
 
   // tree model
@@ -367,9 +369,13 @@ export class PebbleCore {
     }
   }
 
+  public async saveByUri(uri: string, connection: PebbleConnection, content: string) {
+    return await PebbleApi.save(connection, uri, content);
+  }
+
   public async save(document: PebbleDocumentNode, content: string) {
     try {
-      const doc = await PebbleApi.save(document.connectionNode.connection, document.uri, content);
+      const doc = await this.saveByUri(document.uri, document.connectionNode.connection, content);
       if (doc) {
         document.isNew = false;
         document.document = doc;
@@ -929,9 +935,24 @@ export class PebbleCore {
     }
   }
 
+  public async openDocumentByURI(uri: string, connection: PebbleConnection): Promise<any> {
+    const uriObj = new URI(PEBBLE_RESOURCE_SCHEME + ':' + this.connectionID(connection) + uri);
+    const evalWidget = await this.widgetManager.getWidget(PEBBLE_EVAL_WIDGET_FACTORY_ID);
+    if (!evalWidget) {
+      const ext = uri.substr(uri.lastIndexOf('.') + 1);
+      if (XQ_EXT.indexOf(ext) >= 0) {
+        this.commands.executeCommand('PebbleEval:toggle');
+      }
+    }
+    const result = await open(this.openerService, uriObj, {
+      node: 123,
+    });
+    return result;
+  }
+
   public async openDocument(node: PebbleDocumentNode): Promise<any> {
     if (this.startLoading(node)) {
-      const result = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
+      const result = await this.openDocumentByURI(node.uri, node.connectionNode.connection);
       this.endLoading(node);
       node.loaded = true;
       return result;
@@ -1367,15 +1388,10 @@ export class PebbleCore {
     }
   }
 
-  public showMethodInfo(nodeId = '') {
+  public openMethodFunctionDocument(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
     if (PebbleNode.isRestMethod(node)) {
-      const dialog = new PebbleAlertDialog({
-        title: 'Method ' + node.name + ' for ' + (node.parent as PebbleRestURINode).name,
-        message: node.restMethod.function.name,
-        secondaryMessage: node.restMethod.function.src,
-      });
-      dialog.open();
+      this.openDocumentByURI(node.restMethod.function.src, node.connectionNode.connection);
     }
   }
 

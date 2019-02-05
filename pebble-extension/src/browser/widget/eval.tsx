@@ -6,13 +6,7 @@ import { EditorManager, EditorWidget, TextEditor } from '@theia/editor/lib/brows
 import { PebbleDocumentNode, PebbleConnectionNode } from '../../classes/node';
 import { Disposable, MaybePromise } from '@theia/core';
 import { PebbleApi, RANGE_LENGTH } from '../../common/api';
-
-const SERIALIZATION_TYPES = [
-  { value: 'adaptive', text: 'Adaptive' },
-  { value: 'xml', text: 'XML' },
-  { value: 'json', text: 'JSON' },
-  { value: 'text', text: 'Text' },
-];
+import { SERIALIZATION_TYPES } from '../../classes/eval';
 
 export type PebbleEvalWidgetFactory = () => PebbleEvalWidget;
 export const PebbleEvalWidgetFactory = Symbol('PebbleEditorWidgetFactory');

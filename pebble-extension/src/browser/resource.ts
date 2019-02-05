@@ -5,13 +5,23 @@ import { TextDocumentContentChangeEvent, TextDocument } from "vscode-languageser
 import { PebbleApi } from "../common/api";
 import { PebbleDocument } from "../classes/item";
 import { PebbleCore, PEBBLE_RESOURCE_SCHEME } from "./core";
-import { PebbleDocumentNode, PebbleNode } from "../classes/node";
+import { PebbleDocumentNode, PebbleNode, PebbleConnectionNode } from "../classes/node";
+import { createError, PebbleError, ErrorObject } from '../classes/error';
 
 @injectable()
 export class PebbleResource implements Resource {
 
   constructor(readonly uri: URI, protected core?: PebbleCore) {}
 
+  getConnectionNode(id: string): PebbleConnectionNode {
+    if (this.core) {
+      const node = this.core.getNode(id);
+      if (PebbleNode.isConnection(node)) {
+        return node;
+      }
+    }
+    throw createError(PebbleError.nodeNotFound);
+  }
   getNode(): PebbleNode {
     if (this.core) {
       const node = this.core.getNode(this.uri.path.toString());
@@ -19,7 +29,7 @@ export class PebbleResource implements Resource {
         return node;
       }
     }
-    throw 'Node not found';
+    throw createError(PebbleError.nodeNotFound);
   }
   getDocument(): PebbleDocumentNode {
     return this.getNode() as PebbleDocumentNode;
@@ -40,13 +50,28 @@ export class PebbleResource implements Resource {
   }
 
   async readContents(options?: { encoding?: string }): Promise<string> {
-    const document = this.getDocument();
-    if (!document.isNew && document.connectionNode) {
-      const result = await PebbleApi.load(document.connectionNode.connection, document.uri) as PebbleDocument;
-      document.document = result;
-      return result.content;
+    try {
+      const document = this.getDocument();
+      if (!document.isNew && document.connectionNode) {
+        const result = await PebbleApi.load(document.connectionNode.connection, document.uri) as PebbleDocument;
+        document.document = result;
+        return result.content;
+      }
+      return document.document ? document.document.content : '';
+    } catch (e) {
+      if (ErrorObject.is(e) && e.code === PebbleError.nodeNotFound) {
+        const match = this.uri.path.toString().match(/([^@]+@.*)(\/db\/.*)/);
+        if (match) {
+          const connectionNode = this.getConnectionNode(match[1]);
+          const uri = match[2];
+          const result = await PebbleApi.load(connectionNode.connection, uri) as PebbleDocument;
+          return result.content;
+        }
+        throw createError(0);
+      } else {
+        throw createError(e);
+      }
     }
-    return document.document ? document.document.content : '';
   }
   async saveContentChanges(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void> {
     const content = await this.readContents(options);
@@ -59,8 +84,22 @@ export class PebbleResource implements Resource {
     if (!this.core) {
       return;
     }
-    const document = this.getDocument();
-    this.core.save(document, content);
+    try {
+      const document = this.getDocument();
+      this.core.save(document, content);
+    } catch (e) {
+      if (ErrorObject.is(e) && e.code === PebbleError.nodeNotFound) {
+        const match = this.uri.path.toString().match(/([^@]+@.*)(\/db\/.*)/);
+        if (match) {
+          const connectionNode = this.getConnectionNode(match[1]);
+          const uri = match[2];
+          await this.core.saveByUri(uri, connectionNode.connection, content);
+        }
+        throw createError(0);
+      } else {
+        throw createError(e);
+      }
+    }
   }
 
   dispose(): void { }
