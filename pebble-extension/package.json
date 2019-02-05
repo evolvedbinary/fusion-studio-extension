@@ -12,13 +12,13 @@
     "src"
   ],
   "dependencies": {
-    "@theia/core": "^0.3.8",
+    "@theia/core": "^0.3.19",
     "awesomplete": "^1.1.4",
-    "filesize": "^3.6.1",
+    "filesize": "^4.0.0",
     "mime-types": "^2.1.21",
-    "moment": "^2.23.0",
+    "moment": "^2.24.0",
     "ripemd160": "^2.0.2",
-    "typescript": "^3.1.5"
+    "typescript": "^3.3.1"
   },
   "devDependencies": {
     "@types/awesomplete": "^1.1.8",

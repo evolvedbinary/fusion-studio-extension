@@ -4,7 +4,7 @@ import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
 import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
-import { PebbleConnection, PebbleConnections, PebbleConnectionsChangeEvent } from "../classes/connection";
+import { PebbleConnection, ServerConnections, ServerConnectionsChangeEvent } from "../classes/connection";
 import { CommandRegistry, Event, Emitter } from "@theia/core";
 import { actionID } from "../classes/action";
 import { PebbleApi } from "../common/api";
@@ -42,8 +42,8 @@ export class PebbleCore {
   protected clipboard: Partial<PebbleDragOperation> = {};
   protected lastNameID: number = 1;
   public result: string = '';
-  public connectionsChange = new Emitter<PebbleConnectionsChangeEvent>();
-  public connections: PebbleConnections = {};
+  public connectionsChange = new Emitter<ServerConnectionsChangeEvent>();
+  public connections: ServerConnections = {};
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -67,7 +67,7 @@ export class PebbleCore {
 
   // connections list
 
-  get onConnectionsChange(): Event<PebbleConnectionsChangeEvent> {
+  get onConnectionsChange(): Event<ServerConnectionsChangeEvent> {
     return this.connectionsChange.event;
   }
 
@@ -113,7 +113,7 @@ export class PebbleCore {
     if (this._model) {
       this._model.root = {
         id: 'pebble-connections-view-root',
-        name: 'Pebble Connections Root',
+        name: 'Servers Root',
         visible: false,
         children: [],
         parent: undefined
@@ -1117,8 +1117,8 @@ export class PebbleCore {
       return;
     }
     const dialog = new PebbleConnectionDialog({
-      title: 'New connection',
-      name: 'Localhost',
+      title: 'New Connection',
+      name: 'localhost',
       server: 'http://localhost:8080',
       username: 'admin',
       password: '',
@@ -1137,10 +1137,10 @@ export class PebbleCore {
       const node = this.node as PebbleConnectionNode;
       const msg = document.createElement('p');
       msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connectionNode.name + '</strong>?<br/>' +
-      'Server: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
+      'Server URI: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
       'Username: <strong>' + node.connectionNode.connection.username + '</strong>';
       const dialog = new ConfirmDialog({
-        title: 'Delete connection',
+        title: 'Remove Connection',
         msg,
         cancel: 'Keep',
         ok: 'Delete'
@@ -1384,8 +1384,8 @@ export class PebbleCore {
     if (node) {
       if (PebbleNode.isConnection(node)) {
         const dialog = new PebbleConnectionDialog({
-          title: 'Edit connection',
-          acceptButton: 'Update',
+          title: 'Edit Connection',
+          acceptButton: 'Save',
           ...node.connectionNode.connection,
         });
         dialog.open().then(result => {

@@ -31,8 +31,8 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
   ) {
     super(props);
 
-    this.nameField = createField('Name:', 'name-field');
-    this.serverField = createField('Server:', 'server-field');
+    this.nameField = createField('Connection Name:', 'name-field');
+    this.serverField = createField('Server URI:', 'server-field');
     this.usernameField = createField('Username:', 'username-field');
     this.passwordField = createField('Password:', 'password-field', 'password');
     this.nameField.input.value = props.name || '';
@@ -47,7 +47,7 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
     this.containerDiv.className = 'dialog-container vertical-form';
     this.contentNode.appendChild(this.containerDiv);
 
-    this.appendAcceptButton(props.acceptButton || 'Connect');
+    this.appendAcceptButton(props.acceptButton || 'Save');
     this.appendCloseButton(props.cancelButton || 'Cancel');
   }
 
