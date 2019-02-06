@@ -1,5 +1,5 @@
 import * as Hash from 'ripemd160';
-export type PebbleUserAttributes = {
+export type FSUserAttributes = {
   alias?: string;
   firstName?: string;
   lastName?: string;
@@ -11,7 +11,7 @@ export type PebbleUserAttributes = {
   description?: string;
   [k: string]: string | undefined;
 }
-export const PEBBLE_USER_ATTRIBUTE_LABELS: PebbleUserAttributes = {
+export const FS_USER_ATTRIBUTE_LABELS: FSUserAttributes = {
   alias:  'alias',
   firstName:  'first name',
   lastName:  'last name',
@@ -22,7 +22,7 @@ export const PEBBLE_USER_ATTRIBUTE_LABELS: PebbleUserAttributes = {
   timezone:  'timezone',
   description:  'description',
 };
-export const PEBBLE_USER_ATTRIBUTES: PebbleUserAttributes = {
+export const FS_USER_ATTRIBUTES: FSUserAttributes = {
   alias:  'http://axschema.org/namePerson/friendly',
   firstName:  'http://axschema.org/namePerson/first',
   lastName:  'http://axschema.org/namePerson/last',
@@ -34,15 +34,15 @@ export const PEBBLE_USER_ATTRIBUTES: PebbleUserAttributes = {
   description:  'http://exist-db.org/security/description',
 };
 
-export interface PebbleUser {
+export interface FSUser {
   userName: string;
   enabled: boolean;
   expired: boolean;
   primaryGroup: string;
   groups: string[];
-  metadata: PebbleUserAttributes;
+  metadata: FSUserAttributes;
 };
-export interface PebbleUserData extends PebbleUser {
+export interface FSUserData extends FSUser {
   password: string | null;
 };
 
@@ -50,7 +50,7 @@ export function encodePassword(password: string): string {
   return password;
 }
 
-export function sameUser(user1: PebbleUser, user2: PebbleUser): boolean {
+export function sameUser(user1: FSUser, user2: FSUser): boolean {
   const same =
     (user1.enabled === user2.enabled) &&
     (user1.expired === user2.expired) &&
@@ -73,23 +73,23 @@ export function sameUser(user1: PebbleUser, user2: PebbleUser): boolean {
   return false
 }
 
-export function writeUserData(user: PebbleUserData): string {
+export function writeUserData(user: FSUserData): string {
   const password = user.password === null ? null : new Hash().update(user.password).digest('base64');
   return JSON.stringify({
     ...user,
     password,
-    metadata: Object.keys(user.metadata).map(key => ({ key: PEBBLE_USER_ATTRIBUTES[key], value: user.metadata[key] })),
+    metadata: Object.keys(user.metadata).map(key => ({ key: FS_USER_ATTRIBUTES[key], value: user.metadata[key] })),
   });
 }
 
-export function readUser(userData: any): PebbleUser {
+export function readUser(userData: any): FSUser {
   if (typeof userData === 'string') {
     userData = JSON.parse(userData);
   }
-  const metadata: PebbleUserAttributes = {};
+  const metadata: FSUserAttributes = {};
   userData.metadata.forEach((attribute: any) => {
-    Object.keys(PEBBLE_USER_ATTRIBUTES).find(v => {
-      if (PEBBLE_USER_ATTRIBUTES[v] == attribute.key) {
+    Object.keys(FS_USER_ATTRIBUTES).find(v => {
+      if (FS_USER_ATTRIBUTES[v] == attribute.key) {
         metadata[v] = attribute.value || '';
         return true;
       }

@@ -2,37 +2,37 @@ import { Resource, ResourceResolver } from "@theia/core";
 import URI from "@theia/core/lib/common/uri";
 import { injectable, inject } from "inversify";
 import { TextDocumentContentChangeEvent, TextDocument } from "vscode-languageserver-types";
-import { PebbleApi } from "../common/api";
-import { PebbleDocument } from "../classes/item";
-import { PebbleCore, PEBBLE_RESOURCE_SCHEME } from "./core";
-import { PebbleDocumentNode, PebbleNode, PebbleConnectionNode } from "../classes/node";
-import { createError, PebbleError, ErrorObject } from '../classes/error';
+import { FSApi } from "../common/api";
+import { FSDocument } from "../classes/item";
+import { FSCore, FS_RESOURCE_SCHEME } from "./core";
+import { FSDocumentNode, FSNode, FSConnectionNode } from "../classes/node";
+import { createError, FSError, FSErrorObject } from '../classes/error';
 
 @injectable()
-export class PebbleResource implements Resource {
+export class FSResource implements Resource {
 
-  constructor(readonly uri: URI, protected core?: PebbleCore) {}
+  constructor(readonly uri: URI, protected core?: FSCore) {}
 
-  getConnectionNode(id: string): PebbleConnectionNode {
+  getConnectionNode(id: string): FSConnectionNode {
     if (this.core) {
       const node = this.core.getNode(id);
-      if (PebbleNode.isConnection(node)) {
+      if (FSNode.isConnection(node)) {
         return node;
       }
     }
-    throw createError(PebbleError.nodeNotFound);
+    throw createError(FSError.nodeNotFound);
   }
-  getNode(): PebbleNode {
+  getNode(): FSNode {
     if (this.core) {
       const node = this.core.getNode(this.uri.path.toString());
       if (node) {
         return node;
       }
     }
-    throw createError(PebbleError.nodeNotFound);
+    throw createError(FSError.nodeNotFound);
   }
-  getDocument(): PebbleDocumentNode {
-    return this.getNode() as PebbleDocumentNode;
+  getDocument(): FSDocumentNode {
+    return this.getNode() as FSDocumentNode;
   }
 
   protected applyChanges(content: string, contentChanges: TextDocumentContentChangeEvent[]): string {
@@ -53,18 +53,18 @@ export class PebbleResource implements Resource {
     try {
       const document = this.getDocument();
       if (!document.isNew && document.connectionNode) {
-        const result = await PebbleApi.load(document.connectionNode.connection, document.uri) as PebbleDocument;
+        const result = await FSApi.load(document.connectionNode.connection, document.uri) as FSDocument;
         document.document = result;
         return result.content;
       }
       return document.document ? document.document.content : '';
     } catch (e) {
-      if (ErrorObject.is(e) && e.code === PebbleError.nodeNotFound) {
+      if (FSErrorObject.is(e) && e.code === FSError.nodeNotFound) {
         const match = this.uri.path.toString().match(/([^@]+@.*)(\/db\/.*)/);
         if (match) {
           const connectionNode = this.getConnectionNode(match[1]);
           const uri = match[2];
-          const result = await PebbleApi.load(connectionNode.connection, uri) as PebbleDocument;
+          const result = await FSApi.load(connectionNode.connection, uri) as FSDocument;
           return result.content;
         }
         throw createError(0);
@@ -88,7 +88,7 @@ export class PebbleResource implements Resource {
       const document = this.getDocument();
       this.core.save(document, content);
     } catch (e) {
-      if (ErrorObject.is(e) && e.code === PebbleError.nodeNotFound) {
+      if (FSErrorObject.is(e) && e.code === FSError.nodeNotFound) {
         const match = this.uri.path.toString().match(/([^@]+@.*)(\/db\/.*)/);
         if (match) {
           const connectionNode = this.getConnectionNode(match[1]);
@@ -106,21 +106,21 @@ export class PebbleResource implements Resource {
 }
 
 @injectable()
-export class PebbleResourceResolver implements ResourceResolver {
+export class FSResourceResolver implements ResourceResolver {
 
-  @inject(PebbleCore) protected core?: PebbleCore;
+  @inject(FSCore) protected core?: FSCore;
 
   constructor(
   ) { }
 
   resolve(uri: URI): Resource | Promise<Resource> {
-    if (uri.scheme !== PEBBLE_RESOURCE_SCHEME) {
-    throw new Error(`Expected a URI with ${PEBBLE_RESOURCE_SCHEME} scheme. Was: ${uri}.`);
+    if (uri.scheme !== FS_RESOURCE_SCHEME) {
+    throw new Error(`Expected a URI with ${FS_RESOURCE_SCHEME} scheme. Was: ${uri}.`);
     }
     return this.getResource(uri);
   }
 
-  async getResource(uri: URI): Promise<PebbleResource> {
-    return new PebbleResource(uri, this.core);
+  async getResource(uri: URI): Promise<FSResource> {
+    return new FSResource(uri, this.core);
   }
 }

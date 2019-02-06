@@ -55,7 +55,7 @@ export interface LuceneIndex {
   text: LuceneText[];
   ignore: LuceneIgnore[];
 }
-export interface PebbleIndex {
+export interface FSIndex {
   uri: string;
   lucene: LuceneIndex;
   ngram: LegacyRangeIndex[];
@@ -63,8 +63,8 @@ export interface PebbleIndex {
   legacyRange: LegacyRangeIndex[];
 }
 
-export function readIndex(data: any): PebbleIndex {
-  const result: PebbleIndex = {
+export function readIndex(data: any): FSIndex {
+  const result: FSIndex = {
     uri: data.uri,
     lucene: {
       analyzers: [],

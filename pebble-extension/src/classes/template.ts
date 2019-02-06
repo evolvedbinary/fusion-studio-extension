@@ -1,18 +1,18 @@
-export interface PebbleTemplateFieldOption {
+export interface FSTemplateFieldOption {
   label: string;
   value: any;
 }
-export interface PebbleTemplateFieldOptions {
+export interface FSTemplateFieldOptions {
   label: string;
-  options: PebbleTemplateFieldOption[];
+  options: FSTemplateFieldOption[];
 }
-export type PebbleTemplateFields<T> = {
-  [P in keyof T]: string | PebbleTemplateFieldOptions;
+export type FSTemplateFields<T> = {
+  [P in keyof T]: string | FSTemplateFieldOptions;
 }
-export interface PebbleTemplate<T = any> {
+export interface FSTemplate<T = any> {
   name: string;
   defaults?: Partial<T>;
-  fields?: PebbleTemplateFields<T>;
+  fields?: FSTemplateFields<T>;
   execute: (params: T) => string;
   ext: (params: T) => string;
 }

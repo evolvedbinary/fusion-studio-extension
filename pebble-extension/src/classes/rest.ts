@@ -1,14 +1,14 @@
-export interface PebbleRestFunction {
+export interface FSRestFunction {
   name: string;
   src: string;
 }
 
-export interface PebbleRestMethod {
+export interface FSRestMethod {
   name: string;
-  function: PebbleRestFunction;
+  function: FSRestFunction;
 }
 
-export interface PebbleRestURI {
+export interface FSRestURI {
   uri: string;
-  methods: PebbleRestMethod[];
+  methods: FSRestMethod[];
 }

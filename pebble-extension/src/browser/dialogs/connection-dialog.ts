@@ -1,10 +1,10 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
-import { PebbleConnection } from "../../classes/connection";
+import { FSServerConnection } from "../../classes/connection";
 import { IDialogField, createField } from "../../classes/dialog-field";
 
 @injectable()
-export class PebbleConnectionDialogProps extends DialogProps {
+export class FSConnectionDialogProps extends DialogProps {
   readonly acceptButton?: string;
   readonly cancelButton?: string;
   readonly name?: string;
@@ -13,12 +13,12 @@ export class PebbleConnectionDialogProps extends DialogProps {
   readonly password?: string;
 }
 
-export interface PebbleConnectionDialogResult {
-  connection: PebbleConnection;
+export interface FSConnectionDialogResult {
+  connection: FSServerConnection;
   autoConnect?: boolean;
 }
 
-export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialogResult> {
+export class FSConnectionDialog extends AbstractDialog<FSConnectionDialogResult> {
 
   protected readonly usernameField: IDialogField;
   protected readonly passwordField: IDialogField;
@@ -27,7 +27,7 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
 
   constructor(
-    @inject(PebbleConnectionDialogProps) protected readonly props: PebbleConnectionDialogProps
+    @inject(FSConnectionDialogProps) protected readonly props: FSConnectionDialogProps
   ) {
     super(props);
 
@@ -51,7 +51,7 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
     this.appendCloseButton(props.cancelButton || 'Cancel');
   }
 
-  get value(): PebbleConnectionDialogResult {
+  get value(): FSConnectionDialogResult {
     return {
         connection: {
           name: this.nameField.input.value || '',
@@ -65,7 +65,7 @@ export class PebbleConnectionDialog extends AbstractDialog<PebbleConnectionDialo
       };
   }
 
-  protected isValid(value: PebbleConnectionDialogResult, mode: DialogMode): DialogError {
+  protected isValid(value: FSConnectionDialogResult, mode: DialogMode): DialogError {
     return !!(
       value.connection.name &&
       value.connection.server

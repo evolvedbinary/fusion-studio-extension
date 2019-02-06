@@ -1,10 +1,10 @@
-import { PebbleTemplate } from "../../classes/template";
+import { FSTemplate } from "../../classes/template";
 
-export interface PebbleTemplateRestXQParams {
+export interface FSTemplateRestXQParams {
   prefix: string;
   namespace: string;
 }
-export const PebbleTemplateRestXQ: PebbleTemplate = {
+export const FSTemplateRestXQ: FSTemplate = {
   name: 'XQuery RESTXQ Module',
   fields: {
     namespace: 'Namespace',
@@ -15,7 +15,7 @@ export const PebbleTemplateRestXQ: PebbleTemplate = {
     prefix: 'myprefix',
   },
   ext: () => 'xqm',
-  execute: ({ prefix, namespace }: PebbleTemplateRestXQParams) => `xquery version "3.1";
+  execute: ({ prefix, namespace }: FSTemplateRestXQParams) => `xquery version "3.1";
 
 module namespace ${prefix} = "${namespace}";
 

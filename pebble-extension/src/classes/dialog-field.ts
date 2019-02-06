@@ -1,4 +1,4 @@
-import { PebbleTemplateFieldOption } from './template';
+import { FSTemplateFieldOption } from './template';
 
 export interface IDialogField {
   container: HTMLDivElement;
@@ -9,7 +9,7 @@ export interface IDialogFields {
   [key: string]: IDialogField;
 }
 
-export function createField(label: string, className: string, type: string | PebbleTemplateFieldOption[] = 'text'): IDialogField {
+export function createField(label: string, className: string, type: string | FSTemplateFieldOption[] = 'text'): IDialogField {
   let input: HTMLInputElement | HTMLSelectElement;
   if (typeof type === 'string') {
     input = document.createElement('input');

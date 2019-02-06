@@ -1,25 +1,25 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
-import { createError, PebbleError } from "../../classes/error";
-import { PebbleUser, PebbleUserData, PebbleUserAttributes, sameUser, PEBBLE_USER_ATTRIBUTE_LABELS } from "../../classes/user";
-import { PebbleConnection } from "../../classes/connection";
+import { createError, FSError } from "../../classes/error";
+import { FSUser, FSUserData, FSUserAttributes, sameUser, FS_USER_ATTRIBUTE_LABELS } from "../../classes/user";
+import { FSServerConnection } from "../../classes/connection";
 import { IDialogField, createField } from "../../classes/dialog-field";
-import { PebbleTabs } from "../../classes/tabs";
+import { FSTabs } from "../../classes/tabs";
 import { createKeys, IKeysElement, addKey, addKeys, IKeys } from "../../classes/keys";
 import { Checkbox } from "../../classes/checkbox";
 import { autocomplete, autocompleteChanges } from '../../classes/autocomplete';
 
 @injectable()
-export class PebbleUserDialogProps extends DialogProps {
-  readonly connection?: PebbleConnection;
+export class FSUserDialogProps extends DialogProps {
+  readonly connection?: FSServerConnection;
   readonly acceptButton?: string;
   readonly cancelButton?: string;
-  readonly user?: PebbleUser;
+  readonly user?: FSUser;
 }
 
-export type PebbleUserDialogResult = PebbleUserData;
+export type FSUserDialogResult = FSUserData;
 
-export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
+export class FSUserDialog extends AbstractDialog<FSUserDialogResult> {
 
   protected metadataCounter: number = 0;
   protected readonly statusKeys: IKeysElement = createKeys({});
@@ -35,10 +35,10 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
   protected readonly password: IDialogField = createField('Password', '', 'password');
   protected readonly passwordConfirm: IDialogField = createField('Confirm password', '', 'password');
   protected readonly group: IDialogField;
-  protected readonly tabs: PebbleTabs = new PebbleTabs(['Credentials', 'Groups', 'Metadata']);
+  protected readonly tabs: FSTabs = new FSTabs(['Credentials', 'Groups', 'Metadata']);
 
   constructor(
-    @inject(PebbleUserDialogProps) protected readonly props: PebbleUserDialogProps,
+    @inject(FSUserDialogProps) protected readonly props: FSUserDialogProps,
   ) {
     super(props);
     if (props.connection) {
@@ -83,9 +83,9 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.tabs.tabs[1].appendChild(this.groupsKeys.container);
       
       const keys: IKeys = {};
-      for (let index in PEBBLE_USER_ATTRIBUTE_LABELS) {
+      for (let index in FS_USER_ATTRIBUTE_LABELS) {
         const el = document.createElement('input');
-        const i = PEBBLE_USER_ATTRIBUTE_LABELS[index] || '';
+        const i = FS_USER_ATTRIBUTE_LABELS[index] || '';
         keys[i] = {
           type: 'string',
           value: '',
@@ -113,26 +113,26 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
       this.appendAcceptButton(props.acceptButton || 'Add');
       this.appendCloseButton(props.cancelButton || 'Cancel');
     } else {
-      throw createError(PebbleError.unknown);
+      throw createError(FSError.unknown);
     }
   }
 
-  readMetadata(): PebbleUserAttributes {
-    const result: PebbleUserAttributes = {};
-    for (let i in PEBBLE_USER_ATTRIBUTE_LABELS) {
+  readMetadata(): FSUserAttributes {
+    const result: FSUserAttributes = {};
+    for (let i in FS_USER_ATTRIBUTE_LABELS) {
       if (this.attributes[i].value) {
         result[i] = this.attributes[i].value;
       }
     }
     return result;
   }
-  writeMetadata(metadata: PebbleUserAttributes) {
-    for (let i in PEBBLE_USER_ATTRIBUTE_LABELS) {
+  writeMetadata(metadata: FSUserAttributes) {
+    for (let i in FS_USER_ATTRIBUTE_LABELS) {
       this.attributes[i].value = metadata[i] || '';
     }
   }
 
-  get value(): PebbleUserDialogResult {
+  get value(): FSUserDialogResult {
     let password: string | null = this.password.input.value === this.passwordConfirm.input.value ? this.password.input.value : '';
     if (password === '') {
       password = null;
@@ -158,7 +158,7 @@ export class PebbleUserDialog extends AbstractDialog<PebbleUserDialogResult> {
     };
   }
 
-  protected isValid(value: PebbleUserDialogResult, mode: DialogMode): DialogError {
+  protected isValid(value: FSUserDialogResult, mode: DialogMode): DialogError {
     if (this.password.input.value !== this.passwordConfirm.input.value) {
       return false;
     }

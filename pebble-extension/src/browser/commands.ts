@@ -1,9 +1,9 @@
-import { PebbleAction, PebbleSubMenu } from "../classes/action";
+import { FSAction, FSSubMenu } from "../classes/action";
 import { CommonMenus } from "@theia/core/lib/browser";
 import { TEMPLATES } from "../common/templates";
-import { PebbleTemplate } from "../classes/template";
+import { FSTemplate } from "../classes/template";
 
-export const CONTEXT_MENU = ['pebble-context-menu'];
+export const CONTEXT_MENU = ['fusion-context-menu'];
 export const CONTEXT_MENU_CONNECTION = [...CONTEXT_MENU, 'a_connection'];
 export const CONTEXT_MENU_NEW = [...CONTEXT_MENU, 'b_new'];
 export const CONTEXT_MENU_REFRESH = [...CONTEXT_MENU, 'c_refresh'];
@@ -11,18 +11,18 @@ export const CONTEXT_MENU_NEW_SUBMENU = [...CONTEXT_MENU_NEW, 'a_from_template']
 export const CONTEXT_MENU_EDIT = [...CONTEXT_MENU, 'd_edit'];
 export const CONTEXT_MENU_FILE = [...CONTEXT_MENU, 'e_file'];
 export const CONTEXT_MENU_SECURITY = [...CONTEXT_MENU, 'f_security'];
-export const MENU = CommonMenus.FILE;
-export const actConnect: PebbleAction = {
+export const MENU = CommonMenus.FILE_NEW;
+export const actConnect: FSAction = {
   id: 'connect',
   order: 'a',
   label: 'Connect to a server',
   menu: MENU,
-  menuLabel: 'Connect...',
-  keys: 'ctrlcmd+alt+c',
+  menuLabel: 'New Server...',
+  keys: 'ctrlcmd+shift+n',
   icon: 'fa fa-plug',
   execute: (core, prepare) => () => prepare && prepare().then(() => core.newConnection()),
 };
-export const actDisconnect: PebbleAction = {
+export const actDisconnect: FSAction = {
   id: 'disconnect',
   order: 'b',
   label: 'Remove connection',
@@ -31,7 +31,7 @@ export const actDisconnect: PebbleAction = {
   execute: core => () => core.deleteConnection(),
   visible: core => () => core.isConnection,
 };
-export const actNewCollection: PebbleAction = {
+export const actNewCollection: FSAction = {
   id: 'new-collection',
   order: 'd',
   label: 'New collection',
@@ -41,7 +41,7 @@ export const actNewCollection: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isCollection,
 };
-export const actNewDocument: PebbleAction = {
+export const actNewDocument: FSAction = {
   id: 'new-document',
   order: 'a',
   label: 'Empty document',
@@ -51,7 +51,7 @@ export const actNewDocument: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isCollection,
 };
-export const actNewDocumentFromResult: PebbleAction = {
+export const actNewDocumentFromResult: FSAction = {
   id: 'new-document-from-result',
   order: 'b',
   label: 'From last evaluation',
@@ -61,7 +61,7 @@ export const actNewDocumentFromResult: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isCollection && !!core.result,
 };
-export const actUploadDocument: PebbleAction = {
+export const actUploadDocument: FSAction = {
   id: 'upload-document',
   order: 'c2',
   label: 'Upload document(s)',
@@ -71,7 +71,7 @@ export const actUploadDocument: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isCollection,
 };
-const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: number) => ({
+const templates: FSAction[] = TEMPLATES.map((template: FSTemplate, i: number) => ({
   id: 'new-document-template:' + template.name,
   label: template.name,
   order: 'c' + i.toString(),
@@ -80,8 +80,8 @@ const templates: PebbleAction[] = TEMPLATES.map((template: PebbleTemplate, i: nu
   execute: core => () => core.newItemFromTemplate(template),
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isCollection,
-} as PebbleAction));
-export const actRename: PebbleAction = {
+} as FSAction));
+export const actRename: FSAction = {
   id: 'rename',
   order: 'd',
   label: 'Rename',
@@ -91,7 +91,7 @@ export const actRename: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isItem,
 };
-export const actCut: PebbleAction = {
+export const actCut: FSAction = {
   id: 'cut',
   order: 'a',
   label: 'Cut',
@@ -101,7 +101,7 @@ export const actCut: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isItem,
 };
-export const actCopy: PebbleAction = {
+export const actCopy: FSAction = {
   id: 'copy',
   order: 'd',
   label: 'Copy',
@@ -111,7 +111,7 @@ export const actCopy: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isItem,
 };
-export const actPaste: PebbleAction = {
+export const actPaste: FSAction = {
   id: 'paste',
   order: 'd',
   label: 'Paste',
@@ -121,7 +121,7 @@ export const actPaste: PebbleAction = {
   enabled: core => () => !core.isLoading && core.canPaste(),
   visible: core => () => core.isCollection,
 };
-export const actRefresh: PebbleAction = {
+export const actRefresh: FSAction = {
   id: 'refresh',
   order: 'a',
   label: 'Refresh',
@@ -131,7 +131,7 @@ export const actRefresh: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isCollection,
 };
-export const actDelete: PebbleAction = {
+export const actDelete: FSAction = {
   id: 'delete',
   order: 'b',
   label: 'Delete',
@@ -141,7 +141,7 @@ export const actDelete: PebbleAction = {
   enabled: core => () => !core.isLoading,
   visible: core => () => core.isItem,
 };
-export const actProperties: PebbleAction = {
+export const actProperties: FSAction = {
   id: 'properties',
   order: 'c',
   label: 'Properties...',
@@ -151,7 +151,7 @@ export const actProperties: PebbleAction = {
   execute: core => core.showPropertiesDialog.bind(core),
   visible: core => () => (core.isItem && !core.isNew) || core.isConnection,
 };
-export const actAddUser: PebbleAction = {
+export const actAddUser: FSAction = {
   id: 'add-user',
   order: 'a',
   label: 'Add user',
@@ -160,7 +160,7 @@ export const actAddUser: PebbleAction = {
   execute: core => () => core.addUser(),
   visible: core => () => core.isUsers || core.isSecurity,
 };
-export const actEditUser: PebbleAction = {
+export const actEditUser: FSAction = {
   id: 'edit-user',
   order: 'b',
   label: 'Edit',
@@ -169,7 +169,7 @@ export const actEditUser: PebbleAction = {
   execute: core => () => core.editUser(),
   visible: core => () => core.isUser,
 };
-export const actDeleteUser: PebbleAction = {
+export const actDeleteUser: FSAction = {
   id: 'delete-user',
   order: 'c',
   label: 'Delete',
@@ -179,7 +179,7 @@ export const actDeleteUser: PebbleAction = {
   enabled: core => () => core.canDeleteUser(),
   visible: core => () => core.isUser,
 };
-export const actAddGroup: PebbleAction = {
+export const actAddGroup: FSAction = {
   id: 'add-group',
   order: 'd',
   label: 'Add group',
@@ -188,7 +188,7 @@ export const actAddGroup: PebbleAction = {
   execute: core => () => core.addGroup(),
   visible: core => () => core.isGroups || core.isSecurity,
 };
-export const actEditGroup: PebbleAction = {
+export const actEditGroup: FSAction = {
   id: 'edit-group',
   order: 'e',
   label: 'Edit',
@@ -197,7 +197,7 @@ export const actEditGroup: PebbleAction = {
   execute: core => () => core.editGroup(),
   visible: core => () => core.isGroup,
 };
-export const actDeleteGroup: PebbleAction = {
+export const actDeleteGroup: FSAction = {
   id: 'delete-group',
   order: 'f',
   label: 'Delete',
@@ -207,7 +207,7 @@ export const actDeleteGroup: PebbleAction = {
   enabled: core => () => core.canDeleteGroup(),
   visible: core => () => core.isGroup,
 };
-export const PEBBLE_COMMANDS: PebbleAction[] = [
+export const FS_COMMANDS: FSAction[] = [
   actConnect,
   actDisconnect,
   actNewCollection,
@@ -228,7 +228,7 @@ export const PEBBLE_COMMANDS: PebbleAction[] = [
   actEditGroup,
   actDeleteGroup,
   ...templates];
-export const PEBBLE_SUBMENUES: PebbleSubMenu[] = [{
+export const FS_SUBMENUES: FSSubMenu[] = [{
   label: 'New document...',
   menu: CONTEXT_MENU_NEW_SUBMENU,
 }];

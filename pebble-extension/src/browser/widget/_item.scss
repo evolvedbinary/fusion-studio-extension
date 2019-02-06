@@ -1,4 +1,4 @@
-.pebble-item {
+.fusion-item {
   white-space: nowrap;
 
   display: flex;
@@ -9,7 +9,7 @@
     margin-right: 6px;
     min-width: 1.28571429em;
   }
-  &.pebble-item-new {
+  &.fusion-item-new {
     position: relative;
     &:before {
       content: "";
@@ -30,7 +30,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  &.pebble-item-connection {
+  &.fusion-item-connection {
     display: flex;
     align-items: center;
     max-width: 100%;

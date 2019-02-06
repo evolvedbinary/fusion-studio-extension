@@ -1,27 +1,27 @@
 import * as React from 'react';
-import { PebbleNode } from '../../classes/node';
-import { PebbleCore } from '../core';
+import { FSNode } from '../../classes/node';
+import { FSCore } from '../core';
 
-interface PebbleItemProps {
-  node: PebbleNode;
-  core: PebbleCore;
+interface FSItemProps {
+  node: FSNode;
+  core: FSCore;
   tooltip?: string;
 }
 
-export class PebbleItem extends React.Component<PebbleItemProps, any> {
+export class FSItem extends React.Component<FSItemProps, any> {
   public render() {
     const { node, core } = this.props;
-    if (PebbleNode.isConnection(node)) {
+    if (FSNode.isConnection(node)) {
       return (
-        <div className='pebble-item pebble-item-connection' title={(node.connection.username || '(guest)') + '@' + node.connection.server}>
+        <div className='fusion-item fusion-item-connection' title={(node.connection.username || '(guest)') + '@' + node.connection.server}>
           <i className={core.getIcon(node)}></i>
           <span className='name'>{node.connection.name}</span>
         </div>
       );
     }
-    if (PebbleNode.is(node)) {
+    if (FSNode.is(node)) {
       return (
-        <div className={'pebble-item pebble-item-' + (PebbleNode.isCollection(node) ? 'collection' : 'document') + (PebbleNode.isDocument(node) && node.isNew ? ' pebble-item-new' : '')} title={this.props.tooltip || ''}>
+        <div className={'fusion-item fusion-item-' + (FSNode.isCollection(node) ? 'collection' : 'document') + (FSNode.isDocument(node) && node.isNew ? ' fusion-item-new' : '')} title={this.props.tooltip || ''}>
           <i className={core.getIcon(node)}></i>
           <span className='name'>{node.name}</span>
         </div>

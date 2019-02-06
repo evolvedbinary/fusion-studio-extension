@@ -1,4 +1,4 @@
-export interface PebbleConnection {
+export interface FSServerConnection {
   name: string;
   server: string;
   username: string;
@@ -7,11 +7,11 @@ export interface PebbleConnection {
   groups: string[];
 }
 
-export interface ServerConnections {
-  [key: string]: PebbleConnection;
+export interface FSServerConnections {
+  [key: string]: FSServerConnection;
 }
 
-export interface ServerConnectionsChangeEvent {
+export interface FSServerConnectionsChangeEvent {
   id: string;
   action: 'delete' | 'add';
 }
