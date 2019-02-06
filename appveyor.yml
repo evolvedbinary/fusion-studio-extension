@@ -1,0 +1,20 @@
+version: '{branch}-{build}'
+
+environment:
+  YARN_GPG: no
+
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+
+cache:
+  - node_modules                        # local npm modules
+  - '%APPDATA%\npm-cache'               # npm cache
+
+install:
+  - cmd: yarn
+  - sh: yarn
+
+build_script:
+  - cmd: yarn run rebuild:browser && yarn run rebuild:electron
+  - sh: yarn run rebuild:browser && yarn run rebuild:electron 

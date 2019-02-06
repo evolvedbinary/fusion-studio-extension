@@ -23,6 +23,16 @@ import { PebbleTreeModel } from "../classes/tree";
 import { PebbleUserDialog } from "./dialogs/user-dialog";
 import { PebbleGroupDialog } from "./dialogs/group-dialog";
 
+function sortText(A: string, B: string, caseSensetive = false): number {
+  let a = A;
+  let b = B;
+  if (!caseSensetive) {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+  }
+  return a < b ? -1 : a > b ? 1 : caseSensetive ? 0 : sortText(A, B, true);
+}
+
 export const PEBBLE_RESOURCE_SCHEME = 'pebble';
 const TRAILING_SYMBOL = '/';
 const STATUSBAR_ELEMENT = 'pebble-statusbar';
@@ -76,17 +86,17 @@ export class PebbleCore {
   protected sortItems(a: PebbleNode, b: PebbleNode): number {
     if (PebbleNode.isItem(a) && PebbleNode.isItem(b)) {
       if (a.isCollection === b.isCollection) {
-        return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+        return sortText(a.name, b.name);
       } else {
         return a.isCollection ? -1 : 1;
       }
     } else {
-      return PebbleNode.isItem(a) ? 1 : PebbleNode.isItem(b) ? -1 : a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+      return PebbleNode.isItem(a) ? 1 : PebbleNode.isItem(b) ? -1 : sortText(a.name, b.name);
     }
   }
 
   protected sortRest(a: PebbleNode, b: PebbleNode): number {
-    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+    return sortText(a.name, b.name);
   }
 
   protected async sort(node: CompositeTreeNode, sortfunc: (a: PebbleNode, b: PebbleNode) => number) {
