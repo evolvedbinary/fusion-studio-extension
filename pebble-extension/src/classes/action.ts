@@ -25,33 +25,33 @@ export interface PebbleAction {
   keys?: string,
   icon?: string,
   order?: string,
-  execute: (core: PebbleCore) => (...args: any[]) => any;
-  enabled?(core: PebbleCore): (...args: any[]) => boolean;
-  visible?(core: PebbleCore): (...args: any[]) => boolean;
-  toggled?(core: PebbleCore): (...args: any[]) => boolean;
+  execute: (core: PebbleCore, prepare?: () => Promise<any>) => (...args: any[]) => any;
+  enabled?: (core: PebbleCore, prepare?: () => Promise<any>) => (...args: any[]) => boolean;
+  visible?: (core: PebbleCore, prepare?: () => Promise<any>) => (...args: any[]) => boolean;
+  toggled?: (core: PebbleCore, prepare?: () => Promise<any>) => (...args: any[]) => boolean;
 }
 
 export function actionID(id: string): string {
   return id.indexOf('.') > -1 ? id : ACTIONS_SCOPE + '.' + id;
 }
 
-export function registerCommands(core: PebbleCore, commands: CommandRegistry, ...actions: PebbleAction[]) {
+export function registerCommands(core: PebbleCore, prepare: () => Promise<any>, commands: CommandRegistry, ...actions: PebbleAction[]) {
   actions.forEach(action => {
     const command = {
       id: actionID(action.id),
       label: action.label,
     }
     const handler: CommandHandler = {
-      execute: action.execute(core),
+      execute: action.execute(core, prepare),
     }
     if (action.enabled) {
-      handler.isEnabled = action.enabled(core);
+      handler.isEnabled = action.enabled(core, prepare);
     }
     if (action.visible) {
-      handler.isVisible = action.visible(core);
+      handler.isVisible = action.visible(core, prepare);
     }
     if (action.toggled) {
-      handler.isToggled = action.toggled(core);
+      handler.isToggled = action.toggled(core, prepare);
     }
     commands.registerCommand(command, handler);
   });

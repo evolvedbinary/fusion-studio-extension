@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { AbstractViewContribution, KeybindingRegistry } from "@theia/core/lib/browser";
+import { AbstractViewContribution, KeybindingRegistry, WidgetManager } from "@theia/core/lib/browser";
 import { PebbleViewWidget } from "./widget/main";
 import { MenuModelRegistry, CommandRegistry } from "@theia/core";
 import { PebbleCore } from "./core";
@@ -12,6 +12,8 @@ export class PebbleContribution extends AbstractViewContribution<PebbleViewWidge
 
   constructor(
     @inject(PebbleCore) protected readonly core: PebbleCore,
+    @inject(CommandRegistry) protected readonly commands: CommandRegistry,
+    @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {
     super({
       widgetId: PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID,
@@ -42,9 +44,16 @@ export class PebbleContribution extends AbstractViewContribution<PebbleViewWidge
     registerSubMenus(menus, ...PEBBLE_SUBMENUES);
   }
 
+  async prepare() {
+    const serversWidget = await this.widgetManager.getWidget(PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID);
+    if (!serversWidget) {
+      await this.commands.executeCommand('PebbleView:toggle');
+    }
+  }
+
   registerCommands(registry: CommandRegistry): void {
     super.registerCommands(registry);
-    registerCommands(this.core, registry, ...PEBBLE_COMMANDS);
+    registerCommands(this.core, this.prepare.bind(this), registry, ...PEBBLE_COMMANDS);
   }
   
   registerKeybindings(keybindings: KeybindingRegistry): void {

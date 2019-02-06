@@ -20,7 +20,7 @@ export const actConnect: PebbleAction = {
   menuLabel: 'Connect...',
   keys: 'ctrlcmd+alt+c',
   icon: 'fa fa-plug',
-  execute: core => () => core.newConnection(),
+  execute: (core, prepare) => () => prepare && prepare().then(() => core.newConnection()),
 };
 export const actDisconnect: PebbleAction = {
   id: 'disconnect',
