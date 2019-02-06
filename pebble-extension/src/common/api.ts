@@ -7,7 +7,7 @@ import { FSGroupData, writeGroupData, readGroup, FSGroup } from "../classes/grou
 import { readIndex, FSIndex } from "../classes/indexes";
 import { FSRestURI } from "../classes/rest";
 
-export const FS_API_URI = '/exist/restxq/pebble';
+export const FS_API_URI = '/exist/restxq/fusiondb';
 export const RANGE_START = 1;
 export const RANGE_LENGTH = 4;
 export interface FSPostOptions {
