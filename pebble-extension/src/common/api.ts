@@ -175,7 +175,7 @@ export namespace FSApi {
   export async function move(connection: FSServerConnection, source: string, destination: string, collection: boolean, copy: boolean): Promise<boolean> {
     try {
       const headers = {
-        ['x-pebble-' + (copy ? 'copy' : 'move') + '-source']: source,
+        ['x-fusiondb-' + (copy ? 'copy' : 'move') + '-source']: source,
       };
       const endpoint = collection ? 'collection' : 'document';
       const result = await _put(connection, FS_API_URI + '/' + endpoint + '?uri=' + destination, { headers });
@@ -193,15 +193,15 @@ export namespace FSApi {
   export async function chmod(connection: FSServerConnection, uri: string, owner: string, group: string, isCollection?: boolean): Promise<boolean> {
     return (await _put(connection, FS_API_URI + '/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri, {
       headers: {
-        'x-pebble-owner': owner,
-        'x-pebble-group': group,
+        'x-fusiondb-owner': owner,
+        'x-fusiondb-group': group,
       },
     })).status === 200;
   }
 
   export async function convert(connection: FSServerConnection, document: FSDocument): Promise<boolean> {
     return (await _put(connection, FS_API_URI + '/document?uri=' + document.name, {
-      headers: { 'x-pebble-convert': !document.binaryDoc },
+      headers: { 'x-fusiondb-convert': !document.binaryDoc },
     })).status === 200;
   }
 
