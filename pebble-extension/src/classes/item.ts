@@ -19,7 +19,7 @@ export type FSSpecialPermission = {
 export type FSPermission = {
   [K in FSPermissionType]: boolean;
 }
-export type FSPebblePermissions = {
+export type FSPermissions = {
   [K in FSPermissionScope]: FSPermission;
 }
 export interface FSItem {
