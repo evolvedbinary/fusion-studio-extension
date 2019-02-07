@@ -5,17 +5,17 @@
 import { ResourceResolver } from "@theia/core/lib/common";
 
 import { ContainerModule } from "inversify";
-import { PebbleResourceResolver } from '../browser/resource';
-import { PebbleViewWidgetFactory } from './widget/main';
-import { PebbleEvalWidgetFactory } from "./widget/eval";
+import { FSResourceResolver } from '../browser/resource';
+import { FSViewWidgetFactory } from './widget/main';
+import { FSEvalWidgetFactory } from "./widget/eval";
 import { WidgetFactory, bindViewContribution, WebSocketConnectionProvider } from '@theia/core/lib/browser';
-import { PebbleViewService, createPebbleViewWidget } from './view-service';
-import { createPebbleEvalWidget, PebbleEvalService } from "./eval-service";
-import { PebbleContribution } from "./contribution";
-import { PebbleEvalContribution } from "./eval-contribution";
-import { PebbleCore } from "./core";
+import { FSViewService, createFSViewWidget } from './view-service';
+import { createFSEvalWidget, FSEvalService } from "./eval-service";
+import { FSContribution } from "./contribution";
+import { FSEvalContribution } from "./eval-contribution";
+import { FSCore } from "./core";
 import { DragController } from "./widget/drag";
-import { PebbleFiles, pebbleFilesePath } from "../classes/files";
+import { FSFiles, FSFilesePath } from "../classes/files";
 import { LanguageGrammarDefinitionContribution } from "@theia/monaco/lib/browser/textmate";
 import { XQueryGrammaribution } from "./language-contribution";
 
@@ -23,31 +23,31 @@ import '../../src/browser/style/index.css';
 
 export default new ContainerModule(bind => {
 
-  bind(PebbleFiles).toDynamicValue(ctx => {
+  bind(FSFiles).toDynamicValue(ctx => {
     const provider = ctx.container.get(WebSocketConnectionProvider);
-    return provider.createProxy<PebbleFiles>(pebbleFilesePath);
+    return provider.createProxy<FSFiles>(FSFilesePath);
   }).inSingletonScope();
 
-  bind(PebbleViewWidgetFactory).toFactory(ctx =>
-    () => createPebbleViewWidget(ctx.container)
+  bind(FSViewWidgetFactory).toFactory(ctx =>
+    () => createFSViewWidget(ctx.container)
   );
-  bind(PebbleEvalWidgetFactory).toFactory(ctx =>
-    () => createPebbleEvalWidget(ctx.container)
+  bind(FSEvalWidgetFactory).toFactory(ctx =>
+    () => createFSEvalWidget(ctx.container)
   );
 
-  bind(PebbleViewService).toSelf().inSingletonScope();
-  bind(WidgetFactory).toDynamicValue(context => context.container.get(PebbleViewService));
-  bind(PebbleEvalService).toSelf().inSingletonScope();
-  bind(WidgetFactory).toDynamicValue(context => context.container.get(PebbleEvalService));
+  bind(FSViewService).toSelf().inSingletonScope();
+  bind(WidgetFactory).toDynamicValue(context => context.container.get(FSViewService));
+  bind(FSEvalService).toSelf().inSingletonScope();
+  bind(WidgetFactory).toDynamicValue(context => context.container.get(FSEvalService));
 
-  bindViewContribution(bind, PebbleContribution);
-  bindViewContribution(bind, PebbleEvalContribution);
+  bindViewContribution(bind, FSContribution);
+  bindViewContribution(bind, FSEvalContribution);
 
-  bind(PebbleCore).toSelf().inSingletonScope();
+  bind(FSCore).toSelf().inSingletonScope();
   bind(DragController).toSelf().inSingletonScope();
   
-  bind(PebbleResourceResolver).toSelf().inSingletonScope();
-  bind(ResourceResolver).toService(PebbleResourceResolver);
+  bind(FSResourceResolver).toSelf().inSingletonScope();
+  bind(ResourceResolver).toService(FSResourceResolver);
   bind(LanguageGrammarDefinitionContribution).to(XQueryGrammaribution).inSingletonScope();
   
 });

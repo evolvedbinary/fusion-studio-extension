@@ -1,25 +1,27 @@
 import { injectable, inject } from "inversify";
-import { AbstractViewContribution, KeybindingRegistry } from "@theia/core/lib/browser";
-import { PebbleViewWidget } from "./widget/main";
+import { AbstractViewContribution, KeybindingRegistry, WidgetManager } from "@theia/core/lib/browser";
+import { FSViewWidget } from "./widget/main";
 import { MenuModelRegistry, CommandRegistry } from "@theia/core";
-import { PebbleCore } from "./core";
+import { FSCore } from "./core";
 import { registerCommands, registerMenus, registerKeybindings, registerSubMenus } from "../classes/action";
-import { PEBBLE_COMMANDS, PEBBLE_SUBMENUES } from "./commands";
+import { FS_COMMANDS, FS_SUBMENUES } from "./commands";
 
-export const PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID = 'pebble-view';
+export const FS_CONNECTIONS_WIDGET_FACTORY_ID = 'fusion-view';
 @injectable()
-export class PebbleContribution extends AbstractViewContribution<PebbleViewWidget> {
+export class FSContribution extends AbstractViewContribution<FSViewWidget> {
 
   constructor(
-    @inject(PebbleCore) protected readonly core: PebbleCore,
+    @inject(FSCore) protected readonly core: FSCore,
+    @inject(CommandRegistry) protected readonly commands: CommandRegistry,
+    @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {
     super({
-      widgetId: PEBBLE_CONNECTIONS_WIDGET_FACTORY_ID,
-      widgetName: 'Pebble Connections',
+      widgetId: FS_CONNECTIONS_WIDGET_FACTORY_ID,
+      widgetName: 'Servers',
       defaultWidgetOptions: {
         area: 'left'
       },
-      toggleCommandId: 'PebbleView:toggle',
+      toggleCommandId: 'FusionView:toggle',
       toggleKeybinding: 'ctrlcmd+shift+c'
     });
   }
@@ -38,17 +40,24 @@ export class PebbleContribution extends AbstractViewContribution<PebbleViewWidge
 
   registerMenus(menus: MenuModelRegistry): void {
     super.registerMenus(menus);
-    registerMenus(menus, ...PEBBLE_COMMANDS);
-    registerSubMenus(menus, ...PEBBLE_SUBMENUES);
+    registerMenus(menus, ...FS_COMMANDS);
+    registerSubMenus(menus, ...FS_SUBMENUES);
+  }
+
+  async prepare() {
+    const serversWidget = await this.widgetManager.getWidget(FS_CONNECTIONS_WIDGET_FACTORY_ID);
+    if (!serversWidget) {
+      await this.commands.executeCommand('FusionView:toggle');
+    }
   }
 
   registerCommands(registry: CommandRegistry): void {
     super.registerCommands(registry);
-    registerCommands(this.core, registry, ...PEBBLE_COMMANDS);
+    registerCommands(this.core, this.prepare.bind(this), registry, ...FS_COMMANDS);
   }
   
   registerKeybindings(keybindings: KeybindingRegistry): void {
     super.registerKeybindings(keybindings);
-    registerKeybindings(keybindings, ...PEBBLE_COMMANDS);
+    registerKeybindings(keybindings, ...FS_COMMANDS);
   }
 }

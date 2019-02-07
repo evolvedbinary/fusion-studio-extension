@@ -1,9 +1,9 @@
-import { PebbleTemplate } from "../../classes/template";
+import { FSTemplate } from "../../classes/template";
 
-export interface PebbleTemplateRNParams {
+export interface FSTemplateRNParams {
   type: 'xml' | 'compact';
 }
-export const PebbleTemplateRN: PebbleTemplate<PebbleTemplateRNParams> = {
+export const FSTemplateRN: FSTemplate<FSTemplateRNParams> = {
   name: 'Schematron',
   fields: {
     type: {
@@ -17,8 +17,8 @@ export const PebbleTemplateRN: PebbleTemplate<PebbleTemplateRNParams> = {
   defaults: {
     type: 'compact',
   },
-  ext: ({ type }: PebbleTemplateRNParams) => type === 'xml' ? 'rng' : 'rnc',
-  execute: ({ type }: PebbleTemplateRNParams) => type === 'xml' ? `<?xml version="1.0" encoding="UTF-8"?>
+  ext: ({ type }: FSTemplateRNParams) => type === 'xml' ? 'rng' : 'rnc',
+  execute: ({ type }: FSTemplateRNParams) => type === 'xml' ? `<?xml version="1.0" encoding="UTF-8"?>
 <grammar 
     xmlns="http://relaxng.org/ns/structure/1.0"
     xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"

@@ -1,19 +1,19 @@
 import * as React from 'react';
-import { PebbleCore } from '../core';
-import { PebbleAction } from '../../classes/action';
+import { FSCore } from '../core';
+import { FSAction } from '../../classes/action';
 import { actConnect } from '../commands';
 
-interface PebbleToolbarProps {
-  core: PebbleCore;
+interface FSToolbarProps {
+  core: FSCore;
 }
 
-export class PebbleToolbar extends React.Component<PebbleToolbarProps, any> {
+export class FSToolbar extends React.Component<FSToolbarProps, any> {
   protected button(id: string, text:string, icon: string, action: React.MouseEventHandler<any>, color?: string): React.ReactNode;
   protected button(id: string, text:string, icon: string, action: string, color?: string): React.ReactNode;
-  protected button(id: string, action: PebbleAction, color?: string): React.ReactNode;
-  protected button(id: string, text:string | PebbleAction, icon: string = '', action?: string | React.MouseEventHandler<any>, color = ''): React.ReactNode {
+  protected button(id: string, action: FSAction, color?: string): React.ReactNode;
+  protected button(id: string, text:string | FSAction, icon: string = '', action?: string | React.MouseEventHandler<any>, color = ''): React.ReactNode {
     let click: React.MouseEventHandler<any> | undefined;
-    if (PebbleAction.is(text)) {
+    if (FSAction.is(text)) {
       action = text.id;
       icon = text.icon || '';
       text = text.contextMenuLabel || text.menuLabel || text.label;
@@ -23,16 +23,16 @@ export class PebbleToolbar extends React.Component<PebbleToolbarProps, any> {
     } else {
       click = action && action.bind(this);
     }
-    return <button id={id} className={'pebble-action' + (color ? ' color-' + color : '')} title={text} onClick={click}>
+    return <button id={id} className={'fusion-action' + (color ? ' color-' + color : '')} title={text} onClick={click}>
       <span className={'fa-fw ' + icon}></span>
     </button>;
   }
   public render() {
     return (
-      <div id='pebble-toolbar'>
-        <span className="title"><i className="fa fa-plug fa-fw"></i>Pebble Connections</span>
-        {this.button('pebble-toolbar-button-add', actConnect)}
-        {/* {this.button('pebble-toolbar-button-delete', 'Delete connection', 'minus', this.deleteConnection, 'red')} */}
+      <div id='fusion-toolbar'>
+        <span className="title"><i className="fa fa-plug fa-fw"></i>Servers</span>
+        {this.button('fusion-toolbar-button-add', { ...actConnect, icon: 'fa fa-plus'})}
+        {/* {this.button('fusion-toolbar-button-delete', 'Remove connection', 'minus', this.deleteConnection, 'red')} */}
       </div>
     );
   }

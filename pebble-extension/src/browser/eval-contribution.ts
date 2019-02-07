@@ -1,22 +1,22 @@
 import { injectable, inject } from "inversify";
 import { AbstractViewContribution } from "@theia/core/lib/browser";
-import { PebbleEvalWidget } from "./widget/eval";
-import { PebbleCore } from "./core";
+import { FSEvalWidget } from "./widget/eval";
+import { FSCore } from "./core";
+import { FS_EVAL_WIDGET_FACTORY_ID } from '../classes/eval';
 
-export const PEBBLE_EVAL_WIDGET_FACTORY_ID = 'pebble-eval';
 @injectable()
-export class PebbleEvalContribution extends AbstractViewContribution<PebbleEvalWidget> {
+export class FSEvalContribution extends AbstractViewContribution<FSEvalWidget> {
 
   constructor(
-    @inject(PebbleCore) protected readonly core: PebbleCore,
+    @inject(FSCore) protected readonly core: FSCore,
   ) {
     super({
-      widgetId: PEBBLE_EVAL_WIDGET_FACTORY_ID,
+      widgetId: FS_EVAL_WIDGET_FACTORY_ID,
       widgetName: 'Evaluation',
       defaultWidgetOptions: {
         area: 'bottom'
       },
-      toggleCommandId: 'PebbleEval:toggle',
+      toggleCommandId: 'FusionEval:toggle',
       toggleKeybinding: 'ctrlcmd+shift+x'
     });
   }

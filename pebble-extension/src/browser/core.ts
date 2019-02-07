@@ -1,27 +1,28 @@
 import { injectable, inject } from "inversify";
-import { PebbleNode, PebbleDocumentNode, PebbleCollectionNode, PebbleToolbarNode, PebbleConnectionNode, PebbleItemNode, PebbleSecurityNode, PebbleUsersNode, PebbleGroupsNode, PebbleUserNode, PebbleGroupNode, PebbleContainerNode, PebbleIndexesNode, PebbleIndexNode, PebbleRestNode, PebbleRestURINode, PebbleRestMethodNode } from "../classes/node";
-import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment } from "@theia/core/lib/browser";
+import { FSNode, FSDocumentNode, FSCollectionNode, FSToolbarNode, FSConnectionNode, FSItemNode, FSSecurityNode, FSUsersNode, FSGroupsNode, FSUserNode, FSGroupNode, FSContainerNode, FSIndexesNode, FSIndexNode, FSRestNode, FSRestURINode, FSRestMethodNode } from "../classes/node";
+import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment, WidgetManager } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
-import { PebbleDocument, PebbleCollection, PebbleItem } from "../classes/item";
-import { PebbleConnection, PebbleConnections, PebbleConnectionsChangeEvent } from "../classes/connection";
+import { FSDocument, FSCollection, FSItem } from "../classes/item";
+import { FSServerConnection, FSServerConnections, FSServerConnectionsChangeEvent } from "../classes/connection";
 import { CommandRegistry, Event, Emitter } from "@theia/core";
 import { actionID } from "../classes/action";
-import { PebbleApi } from "../common/api";
+import { FSApi } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
-import { PebbleDragOperation } from "./widget/drag";
-import { PebbleTemplate } from "../classes/template";
-import { PebbleConnectionDialog, NewFromTemplateDialog, PebblePropertiesDialog, PebbleAlertDialog } from "./dialogs";
-import { PebbleFiles, PebbleFileList } from "../classes/files";
+import { FSDragOperation } from "./widget/drag";
+import { FSTemplate } from "../classes/template";
+import { FSConnectionDialog, FSNewFromTemplateDialog, FSPropertiesDialog } from "./dialogs";
+import { FSFiles, FSFileList } from "../classes/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
-import { createError, PebbleError } from "../classes/error";
+import { createError, FSError } from "../classes/error";
 import { asyncForEach } from "../common/asyncForEach";
-import { PebbleStatusEntry } from "../classes/status";
+import { FSStatusEntry } from "../classes/status";
 import { actProperties } from "./commands";
-import { PebbleTreeModel } from "../classes/tree";
-import { PebbleUserDialog } from "./dialogs/user-dialog";
-import { PebbleGroupDialog } from "./dialogs/group-dialog";
+import { FSTreeModel } from "../classes/tree";
+import { FSUserDialog } from "./dialogs/user-dialog";
+import { FSGroupDialog } from "./dialogs/group-dialog";
+import { FS_EVAL_WIDGET_FACTORY_ID, XQ_EXT } from '../classes/eval';
 
 function sortText(A: string, B: string, caseSensetive = false): number {
   let a = A;
@@ -33,77 +34,78 @@ function sortText(A: string, B: string, caseSensetive = false): number {
   return a < b ? -1 : a > b ? 1 : caseSensetive ? 0 : sortText(A, B, true);
 }
 
-export const PEBBLE_RESOURCE_SCHEME = 'pebble';
+export const FS_RESOURCE_SCHEME = 'fusion';
 const TRAILING_SYMBOL = '/';
-const STATUSBAR_ELEMENT = 'pebble-statusbar';
+const STATUSBAR_ELEMENT = 'fusion-statusbar';
 @injectable()
-export class PebbleCore {
-  protected statusEntry: PebbleStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
-  protected clipboard: Partial<PebbleDragOperation> = {};
+export class FSCore {
+  protected statusEntry: FSStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
+  protected clipboard: Partial<FSDragOperation> = {};
   protected lastNameID: number = 1;
   public result: string = '';
-  public connectionsChange = new Emitter<PebbleConnectionsChangeEvent>();
-  public connections: PebbleConnections = {};
+  public connectionsChange = new Emitter<FSServerConnectionsChangeEvent>();
+  public connections: FSServerConnections = {};
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
     @inject(FileDialogService) protected readonly fileDialog: FileDialogService,
-    @inject(PebbleFiles) protected readonly files: PebbleFiles,
+    @inject(FSFiles) protected readonly files: FSFiles,
     @inject(OpenerService) private readonly openerService: OpenerService,
     @inject(StatusBar) protected readonly statusBar: StatusBar,
+    @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {}
 
   // tree model
-  private _model?: PebbleTreeModel;
-  public set model(model: PebbleTreeModel | undefined) {
+  private _model?: FSTreeModel;
+  public set model(model: FSTreeModel | undefined) {
     if (this._model != model) {
       this._model = model;
       this.createRoot();
     }
   }
-  public get model(): PebbleTreeModel | undefined {
+  public get model(): FSTreeModel | undefined {
     return this._model;
   }
 
   // connections list
 
-  get onConnectionsChange(): Event<PebbleConnectionsChangeEvent> {
+  get onConnectionsChange(): Event<FSServerConnectionsChangeEvent> {
     return this.connectionsChange.event;
   }
 
-  protected connectionAdded(connectionNode: PebbleConnectionNode) {
+  protected connectionAdded(connectionNode: FSConnectionNode) {
     this.connectionsChange.fire({ id: connectionNode.id, action: 'add' })
     this.connections[connectionNode.id] = connectionNode.connection;
   }
 
-  protected connectionDeleted(connectionNode: PebbleConnectionNode) {
+  protected connectionDeleted(connectionNode: FSConnectionNode) {
     this.connectionsChange.fire({ id: connectionNode.id, action: 'delete' })
     delete(this.connections[connectionNode.id]);
   }
 
   // nodes:
 
-  protected sortItems(a: PebbleNode, b: PebbleNode): number {
-    if (PebbleNode.isItem(a) && PebbleNode.isItem(b)) {
+  protected sortItems(a: FSNode, b: FSNode): number {
+    if (FSNode.isItem(a) && FSNode.isItem(b)) {
       if (a.isCollection === b.isCollection) {
         return sortText(a.name, b.name);
       } else {
         return a.isCollection ? -1 : 1;
       }
     } else {
-      return PebbleNode.isItem(a) ? 1 : PebbleNode.isItem(b) ? -1 : sortText(a.name, b.name);
+      return FSNode.isItem(a) ? 1 : FSNode.isItem(b) ? -1 : sortText(a.name, b.name);
     }
   }
 
-  protected sortRest(a: PebbleNode, b: PebbleNode): number {
+  protected sortRest(a: FSNode, b: FSNode): number {
     return sortText(a.name, b.name);
   }
 
-  protected async sort(node: CompositeTreeNode, sortfunc: (a: PebbleNode, b: PebbleNode) => number) {
+  protected async sort(node: CompositeTreeNode, sortfunc: (a: FSNode, b: FSNode) => number) {
     if (this._model) {
       console.log('sorting...', node.id);
-      if (PebbleNode.isContainer(node)) {
-        node.children = (node.children as PebbleNode[]).sort(sortfunc);
+      if (FSNode.isContainer(node)) {
+        node.children = (node.children as FSNode[]).sort(sortfunc);
       }
       await this._model.refresh(node);
     }
@@ -112,8 +114,8 @@ export class PebbleCore {
   protected createRoot() {
     if (this._model) {
       this._model.root = {
-        id: 'pebble-connections-view-root',
-        name: 'Pebble Connections Root',
+        id: 'fusion-connections-view-root',
+        name: 'Servers Root',
         visible: false,
         children: [],
         parent: undefined
@@ -122,31 +124,31 @@ export class PebbleCore {
     }
   }
 
-  protected async addNode(child: PebbleNode, parent: CompositeTreeNode): Promise<PebbleNode> {
+  protected async addNode(child: FSNode, parent: CompositeTreeNode): Promise<FSNode> {
     CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
-    if (PebbleNode.isCollection(parent)) {
+    if (FSNode.isCollection(parent)) {
       await this.sort(parent, this.sortItems);
     } else {
       if (this._model) {
         await this._model.refresh();
       }
     }
-    return this.getNode(child.id) as PebbleNode;
+    return this.getNode(child.id) as FSNode;
   }
 
   protected addToolbar(parent: CompositeTreeNode): void {
     this.addNode({
       type: 'toolbar',
-      id: 'pebble-toolbar',
+      id: 'fusion-toolbar',
       uri: 'toolbar',
-      name: 'Pebble Toolbar',
+      name: 'Fusion Toolbar',
       parent: parent,
       selected: false,
       connectionNode: undefined as any,
-    } as PebbleToolbarNode, parent);
+    } as FSToolbarNode, parent);
   }
 
-  protected removeNode(child: PebbleNode) {
+  protected removeNode(child: FSNode) {
     this._model && this._model.removeNode(child);
     this.refresh();
   }
@@ -155,43 +157,43 @@ export class PebbleCore {
     return this._model ? this._model.selectedNodes.length : 0;
   }
 
-  public get node(): PebbleNode | undefined {
+  public get node(): FSNode | undefined {
     if (this._model && this._model.selectedNodes.length > 0) {
-      return this._model.selectedNodes[0] as any as PebbleNode;
+      return this._model.selectedNodes[0] as any as FSNode;
     }
   }
 
-  public get selection(): PebbleItemNode[] {
+  public get selection(): FSItemNode[] {
     return this._model ? this._model.selectedNodes as any : [];
   }
 
-  public select(node: PebbleItemNode | PebbleConnectionNode | PebbleRestMethodNode | PebbleUserNode | PebbleGroupNode) {
-    if (!PebbleNode.isToolbar(node)) {
+  public select(node: FSItemNode | FSConnectionNode | FSRestMethodNode | FSUserNode | FSGroupNode) {
+    if (!FSNode.isToolbar(node)) {
       this._model && this._model.selectNode(node);
     }
   }
 
   protected async empty(node: CompositeTreeNode) {
     while (node.children.length) {
-      this.removeNode(node.children[node.children.length - 1] as PebbleNode);
+      this.removeNode(node.children[node.children.length - 1] as FSNode);
     }
   }
   
-  public expanded(node: PebbleContainerNode) {
+  public expanded(node: FSContainerNode) {
     if (node.loaded) {
-      if (PebbleNode.isCollection(node)) {
+      if (FSNode.isCollection(node)) {
         this.asyncLoad(node);
-      } else if (PebbleNode.isUsers(node)) {
+      } else if (FSNode.isUsers(node)) {
         this.refreshUsers(node.connectionNode.security);
-      } else if (PebbleNode.isGroups(node)) {
+      } else if (FSNode.isGroups(node)) {
         this.refreshGroups(node.connectionNode.security);
-      } else if (PebbleNode.isIndexes(node)) {
+      } else if (FSNode.isIndexes(node)) {
         this.refreshIndexes(node.connectionNode);
       }
     } else {
-      if (PebbleNode.isConnection(node)) {
+      if (FSNode.isConnection(node)) {
         this.connect(node);
-      } else if (PebbleNode.isCollection(node)) {
+      } else if (FSNode.isCollection(node)) {
         this.load(node, node.uri);
       }
     }
@@ -201,34 +203,34 @@ export class PebbleCore {
     this._model && this._model.expandNode(node as any);
   }
 
-  public getNode(id: string): PebbleNode | undefined {
-    return this._model ? this._model.getNode(id) as PebbleNode : undefined;
+  public getNode(id: string): FSNode | undefined {
+    return this._model ? this._model.getNode(id) as FSNode : undefined;
   }
 
-  // Pebble nodes detection
+  // Fusion nodes detection
 
   public get isSelected(): boolean {
     return !!this._model && this._model.selectedNodes.length > 0;
   }
 
   public get isNew(): boolean {
-    return PebbleNode.isDocument(this.node) && this.node.isNew;
+    return FSNode.isDocument(this.node) && this.node.isNew;
   }
 
   public get isItem(): boolean {
-    return this.isSelected && PebbleNode.isItem(this.node);
+    return this.isSelected && FSNode.isItem(this.node);
   }
 
   public get isConnection(): boolean {
-    return this.isSelected && PebbleNode.isConnection(this.node);
+    return this.isSelected && FSNode.isConnection(this.node);
   }
 
   public get isCollection(): boolean {
-    return this.isSelected && PebbleNode.isCollection(this.node);
+    return this.isSelected && FSNode.isCollection(this.node);
   }
 
   public get isDocument(): boolean {
-    return this.isSelected && PebbleNode.isDocument(this.node);
+    return this.isSelected && FSNode.isDocument(this.node);
   }
 
   public get isLoading(): boolean {
@@ -236,30 +238,30 @@ export class PebbleCore {
   }
 
   public get isSecurity(): boolean {
-    return this.isSelected && PebbleNode.isSecurity(this.node);
+    return this.isSelected && FSNode.isSecurity(this.node);
   }
   public get isUsers(): boolean {
-    return this.isSelected && PebbleNode.isUsers(this.node);
+    return this.isSelected && FSNode.isUsers(this.node);
   }
 
   public get isUser(): boolean {
-    return this.isSelected && PebbleNode.isUser(this.node);
+    return this.isSelected && FSNode.isUser(this.node);
   }
 
   public get isGroups(): boolean {
-    return this.isSelected && PebbleNode.isGroups(this.node);
+    return this.isSelected && FSNode.isGroups(this.node);
   }
 
   public get isGroup(): boolean {
-    return this.isSelected && PebbleNode.isGroup(this.node);
+    return this.isSelected && FSNode.isGroup(this.node);
   }
 
-  // Pebble nodes
+  // Fusion nodes
 
-  protected async connect(connectionNode: PebbleConnectionNode) {
+  protected async connect(connectionNode: FSConnectionNode) {
     if (this.startLoading(connectionNode)) {
       try {
-        const root = await PebbleApi.connect(connectionNode.connection);
+        const root = await FSApi.connect(connectionNode.connection);
         connectionNode.loaded = true;
         // connectionNode.db = await this.addCollection(connectionNode, root);
         // connectionNode.db.loaded = true;
@@ -280,12 +282,12 @@ export class PebbleCore {
   }
 
   protected startLoading(node: TreeNode): boolean {
-    if (PebbleNode.is(node)) {
+    if (FSNode.is(node)) {
       if (node.loading) {
         return false;
       } else {
         let parentNode = node.parent;
-        while (PebbleNode.isItem(parentNode)) {
+        while (FSNode.isItem(parentNode)) {
           if (parentNode.loading) {
             return false;
           }
@@ -300,22 +302,22 @@ export class PebbleCore {
   }
 
   protected endLoading(node: TreeNode): void {
-    if (PebbleNode.is(node)) {
+    if (FSNode.is(node)) {
       node.loading = false;
       this.refresh();
     }
   }
   
-  protected async asyncLoad(node: PebbleCollectionNode) {
+  protected async asyncLoad(node: FSCollectionNode) {
     try {
-      const result = await PebbleApi.load(node.connectionNode.connection, node.uri);
-      if (PebbleItem.isCollection(result)) {
+      const result = await FSApi.load(node.connectionNode.connection, node.uri);
+      if (FSItem.isCollection(result)) {
         const collection = result;
         // refresh collections
-        let collectionsOld = node.children.filter(child => PebbleNode.isCollection(child)) as PebbleCollectionNode[];
+        let collectionsOld = node.children.filter(child => FSNode.isCollection(child)) as FSCollectionNode[];
         const collectionsNew = collection.collections.filter(subCollection => {
           const collectionNode = this.getNode(this.itemID(node.connectionNode.connection, subCollection));
-          if (PebbleNode.isCollection(collectionNode) && collectionNode.parent === node) {
+          if (FSNode.isCollection(collectionNode) && collectionNode.parent === node) {
             collectionsOld = collectionsOld.filter(old => old !== collectionNode);
             collectionNode.collection = subCollection;
             return false;
@@ -325,10 +327,10 @@ export class PebbleCore {
         collectionsOld.forEach(node => this.removeNode(node));
         collectionsNew.forEach(collection => this.addCollection(node, collection));
         // refresh documents
-        let documentsOld = node.children.filter(child => PebbleNode.isDocument(child)) as PebbleDocumentNode[];
+        let documentsOld = node.children.filter(child => FSNode.isDocument(child)) as FSDocumentNode[];
         const documentsNew = collection.documents.filter(subDocument => {
           const documentNode = this.getNode(this.itemID(node.connectionNode.connection, subDocument));
-          if (PebbleNode.isDocument(documentNode) && documentNode.parent === node) {
+          if (FSNode.isDocument(documentNode) && documentNode.parent === node) {
             documentsOld = documentsOld.filter(old => old !== documentNode);
             documentNode.document = subDocument;
             return false;
@@ -338,22 +340,22 @@ export class PebbleCore {
         documentsOld.forEach(node => this.removeNode(node));
         documentsNew.forEach(document => this.addDocument(node, document));
         // done refreshing
-        (node as PebbleCollectionNode).collection = collection;
+        (node as FSCollectionNode).collection = collection;
       }
     } catch (error) {
-      (node as PebbleCollectionNode).loaded = false;
-      (node as PebbleCollectionNode).expanded = false;
+      (node as FSCollectionNode).loaded = false;
+      (node as FSCollectionNode).expanded = false;
       console.error('caught:', error);
     }
   }
   
-  protected async load(node: PebbleCollectionNode, uri: string) {
+  protected async load(node: FSCollectionNode, uri: string) {
     if (this.startLoading(node)) {
       try {
-        const result = await PebbleApi.load(node.connectionNode.connection, uri);
-        if (PebbleItem.isCollection(result)) {
+        const result = await FSApi.load(node.connectionNode.connection, uri);
+        if (FSItem.isCollection(result)) {
           node.loaded = true;
-          const collection = result as PebbleCollection;
+          const collection = result as FSCollection;
           await this.addCollectionIndex(node);
           await Promise.all(collection.collections.map(subCollection => this.addCollection(node, subCollection)));
           await Promise.all(collection.documents.map(document => this.addDocument(node, document)));
@@ -367,9 +369,13 @@ export class PebbleCore {
     }
   }
 
-  public async save(document: PebbleDocumentNode, content: string) {
+  public async saveByUri(uri: string, connection: FSServerConnection, content: string) {
+    return await FSApi.save(connection, uri, content);
+  }
+
+  public async save(document: FSDocumentNode, content: string) {
     try {
-      const doc = await PebbleApi.save(document.connectionNode.connection, document.uri, content);
+      const doc = await this.saveByUri(document.uri, document.connectionNode.connection, content);
       if (doc) {
         document.isNew = false;
         document.document = doc;
@@ -380,19 +386,19 @@ export class PebbleCore {
     }
   }
 
-  protected async saveDocument(connection: PebbleConnection, uri: string, content: string | Blob, contenType = ''): Promise<boolean> {
+  protected async saveDocument(connection: FSServerConnection, uri: string, content: string | Blob, contenType = ''): Promise<boolean> {
     try {
-      return await !!PebbleApi.save(connection, uri, content, contenType);
+      return await !!FSApi.save(connection, uri, content, contenType);
     } catch (error) {
       console.error('caught:', error);
       return false;
     }
   }
 
-  public async saveDocuments(node: PebbleCollectionNode, documents: PebbleFileList | FormData): Promise<PebbleDocument[]> {
+  public async saveDocuments(node: FSCollectionNode, documents: FSFileList | FormData): Promise<FSDocument[]> {
     try {
       this.startLoading(node);
-      const docs = await PebbleApi.saveDocuments(node.connectionNode.connection, node.collection, documents);
+      const docs = await FSApi.saveDocuments(node.connectionNode.connection, node.collection, documents);
       this.endLoading(node);
       this.load(node, node.uri);
       return docs;
@@ -403,14 +409,14 @@ export class PebbleCore {
     }
   }
 
-  protected async addConnection(connection: PebbleConnection, parent: CompositeTreeNode, expanded?: boolean): Promise<PebbleConnectionNode> {
+  protected async addConnection(connection: FSServerConnection, parent: CompositeTreeNode, expanded?: boolean): Promise<FSConnectionNode> {
     const connectionNode = await this.addNode({
       type: 'connection',
       children: [],
       expanded,
       id: this.connectionID(connection),
       name: connection.name,
-      connectionNode: (parent as PebbleContainerNode).connectionNode,
+      connectionNode: (parent as FSContainerNode).connectionNode,
       connection,
       parent: parent as any,
       selected: false,
@@ -419,18 +425,18 @@ export class PebbleCore {
       security: undefined as any,
       indexes: undefined as any,
       rest: undefined as any,
-    } as PebbleConnectionNode, parent) as PebbleConnectionNode;
+    } as FSConnectionNode, parent) as FSConnectionNode;
     connectionNode.connectionNode = connectionNode;
     this.connectionAdded(connectionNode);
     return connectionNode;
   }
-  protected async addCollectionRecursive(connection: PebbleConnection, uri: string): Promise<PebbleCollectionNode> {
+  protected async addCollectionRecursive(connection: FSServerConnection, uri: string): Promise<FSCollectionNode> {
     const node = this.getNode(this.connectionID(connection) + uri);
     if (node) {
-      if (PebbleNode.isCollection(node)) {
+      if (FSNode.isCollection(node)) {
         return node;
       } else {
-        throw createError(PebbleError.unknown);
+        throw createError(FSError.unknown);
       }
     } else {
       const parent = await this.addCollectionRecursive(connection, this.parentCollection(uri));
@@ -446,24 +452,24 @@ export class PebbleCore {
     }
   }
 
-  protected async addDocumentRecursive(connection: PebbleConnection, document: PebbleDocument, isNew: boolean = false): Promise<PebbleDocumentNode> {
+  protected async addDocumentRecursive(connection: FSServerConnection, document: FSDocument, isNew: boolean = false): Promise<FSDocumentNode> {
     const parent = await this.addCollectionRecursive(connection, this.parentCollection(document.name));
     return this.addDocument(parent, document);
   }
 
-  protected addDocument(parent: PebbleCollectionNode, document: PebbleDocument, isNew: boolean = false): PebbleDocumentNode {
+  protected addDocument(parent: FSCollectionNode, document: FSDocument, isNew: boolean = false): FSDocumentNode {
     const name = this.getName(document.name);
-    if (PebbleNode.isCollection(parent)) {
+    if (FSNode.isCollection(parent)) {
       document.name = this.collectionDir(parent.uri, name);
     }
-    const node: PebbleDocumentNode = {
+    const node: FSDocumentNode = {
       type: 'item',
       connectionNode: parent.connectionNode,
       isCollection: false,
       id: this.itemID(parent.connectionNode.connection, document),
       name,
       parent: parent,
-      link: PEBBLE_RESOURCE_SCHEME + ':' + document.name,
+      link: FS_RESOURCE_SCHEME + ':' + document.name,
       isNew,
       selected: false,
       uri: document.name,
@@ -473,18 +479,18 @@ export class PebbleCore {
     return node;
   }
 
-  protected async addCollection(parent: PebbleCollectionNode | PebbleConnectionNode, collection: PebbleCollection): Promise<PebbleCollectionNode> {
+  protected async addCollection(parent: FSCollectionNode | FSConnectionNode, collection: FSCollection): Promise<FSCollectionNode> {
     const name = this.getName(collection.name);
-    if (PebbleNode.isCollection(parent)) {
+    if (FSNode.isCollection(parent)) {
       collection.name = this.collectionDir(parent.uri, name);
     }
-    const node: PebbleCollectionNode = {
+    const node: FSCollectionNode = {
       type: 'item',
       connectionNode: parent.connectionNode,
       isCollection: true,
       children: [],
       id: this.itemID(parent.connectionNode.connection, collection),
-      link: PEBBLE_RESOURCE_SCHEME + ':' + collection.name,
+      link: FS_RESOURCE_SCHEME + ':' + collection.name,
       name,
       parent: parent as CompositeTreeNode,
       selected: false,
@@ -492,11 +498,11 @@ export class PebbleCore {
       collection,
       uri: collection.name,
     };
-    return this.addNode(node, parent) as Promise<PebbleCollectionNode>;
+    return this.addNode(node, parent) as Promise<FSCollectionNode>;
   }
 
-  protected async addUserNode(parent: PebbleUsersNode, user: string): Promise<PebbleNode> {
-    const node: PebbleUserNode = {
+  protected async addUserNode(parent: FSUsersNode, user: string): Promise<FSNode> {
+    const node: FSUserNode = {
       type: 'user',
       connectionNode: parent.connectionNode,
       id: this.userID(parent.connectionNode.connection, user),
@@ -506,15 +512,15 @@ export class PebbleCore {
       uri: '/users/' + user,
       selected: false,
     };
-    return this.addNode(node, parent) as Promise<PebbleNode>;
+    return this.addNode(node, parent) as Promise<FSNode>;
   }
 
-  protected async refreshUsers(node: PebbleSecurityNode): Promise<void> {
-    const users = await PebbleApi.getUsers(node.users.connectionNode.connection);
-    let usersOld = node.users.children.filter(child => PebbleNode.isUser(child)) as PebbleUserNode[];
+  protected async refreshUsers(node: FSSecurityNode): Promise<void> {
+    const users = await FSApi.getUsers(node.users.connectionNode.connection);
+    let usersOld = node.users.children.filter(child => FSNode.isUser(child)) as FSUserNode[];
     const usersNew = users.filter(user => {
       const userNode = this.getNode(this.userID(node.users.connectionNode.connection, user));
-      if (PebbleNode.isUser(userNode) && userNode.parent === node.users) {
+      if (FSNode.isUser(userNode) && userNode.parent === node.users) {
         usersOld = usersOld.filter(old => old !== userNode);
         return false;
       }
@@ -524,7 +530,7 @@ export class PebbleCore {
     usersNew.forEach(user => this.addUserNode(node.connectionNode.security.users, user));
   }
 
-  protected async addUsersNode(parent: PebbleSecurityNode, users: string[]): Promise<PebbleUsersNode> {
+  protected async addUsersNode(parent: FSSecurityNode, users: string[]): Promise<FSUsersNode> {
     const usersNode = await this.addNode({
       type: 'users',
       connectionNode: parent.connectionNode,
@@ -536,14 +542,14 @@ export class PebbleCore {
       uri: '/users',
       expanded: false,
       selected: false,
-    } as PebbleUsersNode, parent) as PebbleUsersNode;
+    } as FSUsersNode, parent) as FSUsersNode;
     await Promise.all(users.map(user => this.addUserNode(usersNode, user)));
     usersNode.loaded = true;
-    return usersNode as PebbleUsersNode;
+    return usersNode as FSUsersNode;
   }
 
-  protected async addGroupNode(parent: PebbleGroupsNode, group: string): Promise<PebbleNode> {
-    const node: PebbleGroupNode = {
+  protected async addGroupNode(parent: FSGroupsNode, group: string): Promise<FSNode> {
+    const node: FSGroupNode = {
       type: 'group',
       connectionNode: parent.connectionNode,
       id: this.groupID(parent.connectionNode.connection, group),
@@ -553,15 +559,15 @@ export class PebbleCore {
       uri: '/groups/' + group,
       selected: false,
     };
-    return this.addNode(node, parent) as Promise<PebbleNode>;
+    return this.addNode(node, parent) as Promise<FSNode>;
   }
 
-  protected async refreshGroups(node: PebbleSecurityNode): Promise<void> {
-    const groups = await PebbleApi.getGroups(node.groups.connectionNode.connection);
-    let groupsOld = node.groups.children.filter(child => PebbleNode.isGroup(child)) as PebbleGroupNode[];
+  protected async refreshGroups(node: FSSecurityNode): Promise<void> {
+    const groups = await FSApi.getGroups(node.groups.connectionNode.connection);
+    let groupsOld = node.groups.children.filter(child => FSNode.isGroup(child)) as FSGroupNode[];
     const groupsNew = groups.filter(group => {
       const groupNode = this.getNode(this.groupID(node.groups.connectionNode.connection, group));
-      if (PebbleNode.isGroup(groupNode) && groupNode.parent === node.groups) {
+      if (FSNode.isGroup(groupNode) && groupNode.parent === node.groups) {
         groupsOld = groupsOld.filter(old => old !== groupNode);
         return false;
       }
@@ -571,7 +577,7 @@ export class PebbleCore {
     groupsNew.forEach(group => this.addGroupNode(node.connectionNode.security.groups, group));
   }
 
-  protected async addGroupsNode(parent: PebbleSecurityNode, groups: string[]): Promise<PebbleGroupsNode> {
+  protected async addGroupsNode(parent: FSSecurityNode, groups: string[]): Promise<FSGroupsNode> {
     const groupsNode = await this.addNode({
       type: 'groups',
       connectionNode: parent.connectionNode,
@@ -583,13 +589,13 @@ export class PebbleCore {
       uri: '/groups',
       expanded: false,
       selected: false,
-    } as PebbleGroupsNode, parent) as PebbleGroupsNode;
+    } as FSGroupsNode, parent) as FSGroupsNode;
     await Promise.all(groups.map(group => this.addGroupNode(groupsNode, group)));
     groupsNode.loaded = true;
-    return groupsNode as PebbleGroupsNode;
+    return groupsNode as FSGroupsNode;
   }
 
-  protected async addSecurity(connectionNode: PebbleConnectionNode): Promise<PebbleSecurityNode> {
+  protected async addSecurity(connectionNode: FSConnectionNode): Promise<FSSecurityNode> {
     const securityNode = await this.addNode({
       type: 'security',
       connectionNode,
@@ -601,15 +607,15 @@ export class PebbleCore {
       uri: '/security',
       expanded: false,
       selected: false,
-    } as any, connectionNode) as PebbleSecurityNode;
-    const users = await PebbleApi.getUsers(connectionNode.connection);
+    } as any, connectionNode) as FSSecurityNode;
+    const users = await FSApi.getUsers(connectionNode.connection);
     securityNode.users = await this.addUsersNode(securityNode, users);
-    const groups = await PebbleApi.getGroups(connectionNode.connection);
+    const groups = await FSApi.getGroups(connectionNode.connection);
     securityNode.groups = await this.addGroupsNode(securityNode, groups);
     return securityNode;
   }
 
-  protected createIndexNode(parent: PebbleContainerNode, uri: string): PebbleIndexNode {
+  protected createIndexNode(parent: FSContainerNode, uri: string): FSIndexNode {
     return {
       connectionNode: parent.connectionNode,
       id: this.indexID(parent.connectionNode.connection, uri),
@@ -621,23 +627,23 @@ export class PebbleCore {
     };
   }
 
-  protected async addCollectionIndex(collectionNode: PebbleCollectionNode): Promise<PebbleIndexNode | undefined> {
-    const index = await PebbleApi.getIndex(collectionNode.connectionNode.connection, collectionNode.uri);
+  protected async addCollectionIndex(collectionNode: FSCollectionNode): Promise<FSIndexNode | undefined> {
+    const index = await FSApi.getIndex(collectionNode.connectionNode.connection, collectionNode.uri);
     const indexNode = this.createIndexNode(collectionNode, collectionNode.uri);
     (indexNode as any).name = 'Indexes';
-    return index ? await this.addNode(indexNode, collectionNode) as PebbleIndexNode : undefined;
+    return index ? await this.addNode(indexNode, collectionNode) as FSIndexNode : undefined;
   }
 
-  protected async addIndex(indexesNode: PebbleIndexesNode, uri: string): Promise<PebbleIndexNode> {
-    return await this.addNode(this.createIndexNode(indexesNode, uri), indexesNode) as PebbleIndexNode;
+  protected async addIndex(indexesNode: FSIndexesNode, uri: string): Promise<FSIndexNode> {
+    return await this.addNode(this.createIndexNode(indexesNode, uri), indexesNode) as FSIndexNode;
   }
 
-  protected async refreshIndexes(connectionNode: PebbleConnectionNode): Promise<void> {
-    const indexes = await PebbleApi.getIndexes(connectionNode.connection);
-    let indexesOld = connectionNode.indexes.children.filter(child => PebbleNode.isIndex(child)) as PebbleIndexNode[];
+  protected async refreshIndexes(connectionNode: FSConnectionNode): Promise<void> {
+    const indexes = await FSApi.getIndexes(connectionNode.connection);
+    let indexesOld = connectionNode.indexes.children.filter(child => FSNode.isIndex(child)) as FSIndexNode[];
     const indexesNew = indexes.filter(index => {
       const indexNode = this.getNode(this.indexID(connectionNode.connection, index));
-      if (PebbleNode.isIndex(indexNode) && indexNode.parent === connectionNode.indexes) {
+      if (FSNode.isIndex(indexNode) && indexNode.parent === connectionNode.indexes) {
         indexesOld = indexesOld.filter(old => old !== indexNode);
         return false;
       }
@@ -647,8 +653,8 @@ export class PebbleCore {
     indexesNew.forEach(index => this.addIndex(connectionNode.indexes, index));
   }
 
-  protected async addIndexes(connectionNode: PebbleConnectionNode): Promise<PebbleIndexesNode> {
-    const indexes = await PebbleApi.getIndexes(connectionNode.connection);
+  protected async addIndexes(connectionNode: FSConnectionNode): Promise<FSIndexesNode> {
+    const indexes = await FSApi.getIndexes(connectionNode.connection);
     const indexesNode = await this.addNode({
       connectionNode,
       children: [],
@@ -659,13 +665,13 @@ export class PebbleCore {
       type: 'indexes',
       selected: false,
       expanded: false,
-    } as PebbleIndexesNode, connectionNode) as PebbleIndexesNode;
+    } as FSIndexesNode, connectionNode) as FSIndexesNode;
     await Promise.all(indexes.map(index => this.addIndex(indexesNode, index)));
     indexesNode.loaded = true;
     return indexesNode;
   }
 
-  protected async addRestNode(connectionNode: PebbleConnectionNode): Promise<PebbleRestNode> {
+  protected async addRestNode(connectionNode: FSConnectionNode): Promise<FSRestNode> {
     const rest = await this.addNode({
       type: 'rest',
       children: [],
@@ -676,8 +682,8 @@ export class PebbleCore {
       selected: false,
       expanded: false,
       connectionNode,
-    } as PebbleRestNode, connectionNode) as PebbleRestNode;
-    const uris = await PebbleApi.restxq(connectionNode.connection);
+    } as FSRestNode, connectionNode) as FSRestNode;
+    const uris = await FSApi.restxq(connectionNode.connection);
     await Promise.all(uris.filter(uri => uri.uri !== '/').map(async uri => {
       const uriNode = await this.addNode({
         type: 'rest-uri',
@@ -690,7 +696,7 @@ export class PebbleCore {
         selected: false,
         expanded: false,
         connectionNode,
-      } as PebbleRestURINode, rest) as PebbleRestURINode;
+      } as FSRestURINode, rest) as FSRestURINode;
       uri.methods.forEach(method => this.addNode({
         type: 'rest-method',
         id: this.restID(connectionNode.connection, uri.uri, method.name),
@@ -700,7 +706,7 @@ export class PebbleCore {
         parent: uriNode,
         selected: false,
         connectionNode,
-      } as PebbleRestMethodNode, uriNode))
+      } as FSRestMethodNode, uriNode))
     }));
     await this.sort(rest, this.sortRest);
     return rest;
@@ -716,11 +722,11 @@ export class PebbleCore {
       } else {
         const node = nodes[0];
         this.statusEntry.arguments = [node.id];
-        if (PebbleNode.isConnection(node)) {
+        if (FSNode.isConnection(node)) {
           this.statusEntry.text = `$(toggle-on) "${node.connectionNode.name}" by "${node.connectionNode.connection.username}" to ${node.connectionNode.connection.server}`;
-        } else if (PebbleNode.isCollection(node)) {
+        } else if (FSNode.isCollection(node)) {
           this.statusEntry.text = `$(folder) ${node.name} (${this.getGroupOwner(node.collection)})`;
-        } else if (PebbleNode.isDocument(node)) {
+        } else if (FSNode.isDocument(node)) {
           this.statusEntry.text = `$(file${node.document.binaryDoc ? '' : '-code'}-o) ${node.name} (${this.getGroupOwner(node.document)})`;
         }
       }
@@ -735,12 +741,12 @@ export class PebbleCore {
   }
 
   // clipboard
-  public canMoveTo(source: PebbleItemNode[], collectionUri: string): boolean {
+  public canMoveTo(source: FSItemNode[], collectionUri: string): boolean {
     return !source.map(node => node.uri)
       .find(source => collectionUri.indexOf(source) >= 0 || collectionUri === source.substr(0, source.lastIndexOf('/')));
   }
 
-  protected setClipboard(nodes: PebbleItemNode[], copy?: boolean) {
+  protected setClipboard(nodes: FSItemNode[], copy?: boolean) {
     this.clipboard.source = nodes;
     this.clipboard.copy = copy;
   }
@@ -755,48 +761,48 @@ export class PebbleCore {
 
   // functionalities
   
-  protected getConnectionIcon(node: PebbleConnectionNode): string {
+  protected getConnectionIcon(node: FSConnectionNode): string {
     return 'toggle-' + (node.loaded ? 'on' : 'off');
   }
   
-  protected getCollectionIcon(node: PebbleCollectionNode): string {
+  protected getCollectionIcon(node: FSCollectionNode): string {
     return 'folder' + (node.expanded ? '-open' : '') + (node.loaded ? '' : '-o');
   }
 
-  protected getDocumentIcon(node: PebbleDocumentNode): string {
+  protected getDocumentIcon(node: FSDocumentNode): string {
     return 'file' + (node.loaded ? '' : '-o');
   }
 
-  public getIcon(node: PebbleNode): string {
+  public getIcon(node: FSNode): string {
     const loading = 'spin fa-spinner';
-    if (PebbleNode.isConnection(node)) {
+    if (FSNode.isConnection(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : this.getConnectionIcon(node));
     }
-    if (PebbleNode.isCollection(node)) {
+    if (FSNode.isCollection(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : this.getCollectionIcon(node));
     }
-    if (PebbleNode.isDocument(node)) {
+    if (FSNode.isDocument(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : this.getDocumentIcon(node));
     }
-    if (PebbleNode.isGroup(node) || PebbleNode.isGroups(node)) {
+    if (FSNode.isGroup(node) || FSNode.isGroups(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : 'users');
     }
-    if (PebbleNode.isUser(node) || PebbleNode.isUsers(node)) {
+    if (FSNode.isUser(node) || FSNode.isUsers(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : 'user');
     }
-    if (PebbleNode.isSecurity(node)) {
+    if (FSNode.isSecurity(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : 'lock');
     }
-    if (PebbleNode.isIndexes(node) || PebbleNode.isIndex(node)) {
+    if (FSNode.isIndexes(node) || FSNode.isIndex(node)) {
       return 'fa fa-fw fa-' + (node.loading ? loading : 'list-ul');
     }
-    if (PebbleNode.isRest(node)) {
+    if (FSNode.isRest(node)) {
       return 'fa fa-fw fa-server';
     }
-    if (PebbleNode.isRestURI(node)) {
+    if (FSNode.isRestURI(node)) {
       return 'fa fa-fw fa-link';
     }
-    if (PebbleNode.isRestMethod(node)) {
+    if (FSNode.isRestMethod(node)) {
       let icon: string;
       switch(node.name) {
         case 'GET': icon = 'upload'; break;
@@ -810,7 +816,7 @@ export class PebbleCore {
     return '';
   }
 
-  protected getGroupOwner(item: PebbleItem): string {
+  protected getGroupOwner(item: FSItem): string {
     let result = '';
     if (item.group) {
       result = item.group;
@@ -825,11 +831,11 @@ export class PebbleCore {
     this.commands.executeCommand(actionID(action));
   }
 
-  public topNodes(nodes: PebbleItemNode[]): PebbleItemNode[] {
-    return nodes.filter(node => PebbleNode.isItem(node))
+  public topNodes(nodes: FSItemNode[]): FSItemNode[] {
+    return nodes.filter(node => FSNode.isItem(node))
       .filter(node => {
       let parent = node.parent
-      while (parent && PebbleNode.isCollection(parent)) {
+      while (parent && FSNode.isCollection(parent)) {
         if (this.selection.indexOf(parent as any) > -1) {
           return false;
         }
@@ -839,11 +845,11 @@ export class PebbleCore {
     });
   }
 
-  public topNodesSp(nodes: PebbleItemNode[]): PebbleItemNode[] {
-    return nodes.filter(node => PebbleNode.is(node))
+  public topNodesSp(nodes: FSItemNode[]): FSItemNode[] {
+    return nodes.filter(node => FSNode.is(node))
       .filter(node => {
       let parent = node.parent
-      while (parent && PebbleNode.isContainer(parent)) {
+      while (parent && FSNode.isContainer(parent)) {
         if (this.selection.indexOf(parent as any) > -1) {
           return false;
         }
@@ -853,8 +859,8 @@ export class PebbleCore {
     });
   }
 
-  protected fileExists(name: string, node?: PebbleCollectionNode): boolean {
-    node = (node && PebbleNode.isCollection(node)) ? node : ((this.node && PebbleNode.isCollection(this.node)) ? this.node : undefined);
+  protected fileExists(name: string, node?: FSCollectionNode): boolean {
+    node = (node && FSNode.isCollection(node)) ? node : ((this.node && FSNode.isCollection(this.node)) ? this.node : undefined);
     if (node) {
       return !!node.children.find(file => file.name === name);
     }
@@ -865,35 +871,35 @@ export class PebbleCore {
     return id.split('/').pop() || id;
   }
   
-  public generateID(connection: PebbleConnection, text: string, prefix?: string): string {
+  public generateID(connection: FSServerConnection, text: string, prefix?: string): string {
     return this.connectionID(connection) + (prefix ? prefix + '/' : '') + text;
   }
   
-  public connectionID(connection: PebbleConnection): string {
+  public connectionID(connection: FSServerConnection): string {
     return (connection.username ? connection.username : '(guest)') + '@' + connection.server;
   }
 
-  public itemID(connection: PebbleConnection, item: PebbleItem): string {
+  public itemID(connection: FSServerConnection, item: FSItem): string {
     return this.connectionID(connection) + item.name;
   }
   
-  public securityID(connection: PebbleConnection, prefix?: string, text?: string): string {
+  public securityID(connection: FSServerConnection, prefix?: string, text?: string): string {
     return this.connectionID(connection) + 'security' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
   }
 
-  public userID(connection: PebbleConnection, user: string = ''): string {
+  public userID(connection: FSServerConnection, user: string = ''): string {
     return this.securityID(connection, 'user', user);
   }
 
-  public groupID(connection: PebbleConnection, group: string = ''): string {
+  public groupID(connection: FSServerConnection, group: string = ''): string {
     return this.securityID(connection, 'group', group);
   }
 
-  protected indexID(connection: PebbleConnection, uri: string = ''): string {
+  protected indexID(connection: FSServerConnection, uri: string = ''): string {
     return this.connectionID(connection) + '/index' + uri;
   }
   
-  protected restID(connection: PebbleConnection, prefix?: string, text?: string): string {
+  protected restID(connection: FSServerConnection, prefix?: string, text?: string): string {
     return this.connectionID(connection) + 'rest' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
   }
 
@@ -903,13 +909,13 @@ export class PebbleCore {
     return parent.join(TRAILING_SYMBOL);
   }
   
-  protected async changeOwner(node: PebbleItemNode, owner: string, group: string): Promise<boolean> {
-    const isCollection = PebbleNode.isCollection(node);
-    return await PebbleApi.chmod(node.connectionNode.connection, node.uri, owner, group, isCollection);
+  protected async changeOwner(node: FSItemNode, owner: string, group: string): Promise<boolean> {
+    const isCollection = FSNode.isCollection(node);
+    return await FSApi.chmod(node.connectionNode.connection, node.uri, owner, group, isCollection);
   }
   
-  protected async rename(node: PebbleItemNode, name: string): Promise<boolean> {
-    if (PebbleNode.isCollection(node.parent)) {
+  protected async rename(node: FSItemNode, name: string): Promise<boolean> {
+    if (FSNode.isCollection(node.parent)) {
       const parent = node.parent;
       const nodes = await this.move({
         copy: false,
@@ -925,20 +931,35 @@ export class PebbleCore {
         return false;
       }
     } else {
-      throw createError(PebbleError.unknown);
+      throw createError(FSError.unknown);
     }
   }
 
-  public async openDocument(node: PebbleDocumentNode): Promise<any> {
+  public async openDocumentByURI(uri: string, connection: FSServerConnection): Promise<any> {
+    const uriObj = new URI(FS_RESOURCE_SCHEME + ':' + this.connectionID(connection) + uri);
+    const evalWidget = await this.widgetManager.getWidget(FS_EVAL_WIDGET_FACTORY_ID);
+    if (!evalWidget) {
+      const ext = uri.substr(uri.lastIndexOf('.') + 1);
+      if (XQ_EXT.indexOf(ext) >= 0) {
+        this.commands.executeCommand('FusionEval:toggle');
+      }
+    }
+    const result = await open(this.openerService, uriObj, {
+      node: 123,
+    });
+    return result;
+  }
+
+  public async openDocument(node: FSDocumentNode): Promise<any> {
     if (this.startLoading(node)) {
-      const result = await open(this.openerService, new URI(PEBBLE_RESOURCE_SCHEME + ':' + node.id));
+      const result = await this.openDocumentByURI(node.uri, node.connectionNode.connection);
       this.endLoading(node);
       node.loaded = true;
       return result;
     }
   }
 
-  protected async createDocument(collection: PebbleCollectionNode, name: string, content = '', group = '', owner = '') {
+  protected async createDocument(collection: FSCollectionNode, name: string, content = '', group = '', owner = '') {
     const doc = await this.openDocument(this.addDocument(collection, {
       content,
       name,
@@ -999,7 +1020,7 @@ export class PebbleCore {
     return testArray.map(i => i.join(TRAILING_SYMBOL));
   }
 
-  protected cleanItems(array: PebbleDocument[], topDir: string): PebbleItem[] {
+  protected cleanItems(array: FSDocument[], topDir: string): FSItem[] {
     let result = array.map(doc => {
       let pos = doc.name.indexOf(TRAILING_SYMBOL, topDir.length + 1);
       return {
@@ -1008,10 +1029,10 @@ export class PebbleCore {
       }
     });
     result = result.filter(item => {
-      if (PebbleItem.isCollection(item)) {
+      if (FSItem.isCollection(item)) {
         return true;
       }
-      const copy: PebbleCollection | undefined = result.find(found => found.name === (item as any).name && found != item) as any;
+      const copy: FSCollection | undefined = result.find(found => found.name === (item as any).name && found != item) as any;
       if (copy) {
         copy.collections = [];
         copy.documents = [];
@@ -1044,7 +1065,7 @@ export class PebbleCore {
     return result;
   }
 
-  protected cleanObject(object: PebbleFileList, topDir: string = ''): PebbleFileList {
+  protected cleanObject(object: FSFileList, topDir: string = ''): FSFileList {
     const keys = Object.keys(object);
     const array = this.clean(keys, topDir);
     keys.forEach((key, index) => {
@@ -1074,11 +1095,11 @@ export class PebbleCore {
     return this.lastName(ext);
   }
 
-  public async move(operation: PebbleDragOperation): Promise<PebbleItemNode[]> {
+  public async move(operation: FSDragOperation): Promise<FSItemNode[]> {
     if (operation.source.length) {
-      let result = (await asyncForEach(operation.source, async (source: PebbleItemNode, i) => {
-        const isCollection = PebbleNode.isCollection(source);
-        const result = await PebbleApi.move(
+      let result = (await asyncForEach(operation.source, async (source: FSItemNode, i) => {
+        const isCollection = FSNode.isCollection(source);
+        const result = await FSApi.move(
           source.connectionNode.connection,
           source.uri,
           operation.destination[i],
@@ -1086,24 +1107,24 @@ export class PebbleCore {
           operation.copy
         );
         if (result) {
-          let resultNode: PebbleItemNode;
+          let resultNode: FSItemNode;
           if (isCollection) {
             resultNode = await this.addCollection(operation.destinationContainer, {
-              ...(source as PebbleCollectionNode).collection,
+              ...(source as FSCollectionNode).collection,
               name: operation.destination[i],
             });
           } else {
             resultNode = this.addDocument(operation.destinationContainer, {
-              ...(source as PebbleDocumentNode).document,
+              ...(source as FSDocumentNode).document,
               name: operation.destination[i],
             });
           }
           if (!operation.copy) {
             this.removeNode(source);
           }
-          return resultNode as PebbleItemNode;
+          return resultNode as FSItemNode;
         }
-      })).filter(node => !!node) as PebbleItemNode[];
+      })).filter(node => !!node) as FSItemNode[];
       return result;
     } else {
       return [];
@@ -1116,9 +1137,9 @@ export class PebbleCore {
     if (!this._model) {
       return;
     }
-    const dialog = new PebbleConnectionDialog({
-      title: 'New connection',
-      name: 'Localhost',
+    const dialog = new FSConnectionDialog({
+      title: 'New Connection',
+      name: 'localhost',
       server: 'http://localhost:8080',
       username: 'admin',
       password: '',
@@ -1133,14 +1154,14 @@ export class PebbleCore {
     if (!this.isSelected || !this._model) {
       return;
     }
-    if (this.node && PebbleNode.isConnection(this.node)) {
-      const node = this.node as PebbleConnectionNode;
+    if (this.node && FSNode.isConnection(this.node)) {
+      const node = this.node as FSConnectionNode;
       const msg = document.createElement('p');
       msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connectionNode.name + '</strong>?<br/>' +
-      'Server: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
+      'Server URI: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
       'Username: <strong>' + node.connectionNode.connection.username + '</strong>';
       const dialog = new ConfirmDialog({
-        title: 'Delete connection',
+        title: 'Remove Connection',
         msg,
         cancel: 'Keep',
         ok: 'Delete'
@@ -1160,7 +1181,7 @@ export class PebbleCore {
     if (!this.node) {
       return false;
     }
-    const collection = this.node as PebbleCollectionNode;
+    const collection = this.node as FSCollectionNode;
     const validator = (input: string) => input !== '' && !this.fileExists(input);
     const dialog = new SingleTextInputDialog({
       initialValue: this.newName(validator),
@@ -1173,7 +1194,7 @@ export class PebbleCore {
       this.nextName(name);
       name = collection.uri + '/' + name;
       if (isCollection) {
-        const result = await PebbleApi.newCollection(collection.connectionNode.connection, name);
+        const result = await FSApi.newCollection(collection.connectionNode.connection, name);
         if (result) {
           this.addCollection(collection, result);
         }
@@ -1196,7 +1217,7 @@ export class PebbleCore {
     const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
     const top = this.getTopDir(selectedFiles);
     const files = await this.files.getFiles({ file: selectedFiles });
-    const collectionNode = this.node as PebbleCollectionNode;
+    const collectionNode = this.node as FSCollectionNode;
     const filenameList: any = await this.files.readMulti({ files });
     const formData = new FormData();
     this.cleanObject(filenameList, top);
@@ -1208,18 +1229,18 @@ export class PebbleCore {
     return true;
   }
 
-  public async newItemFromResult(collection?: PebbleCollectionNode): Promise<boolean> {
+  public async newItemFromResult(collection?: FSCollectionNode): Promise<boolean> {
     if (!this.result) {
       return false;
     }
-    if (!PebbleNode.isCollection(collection)) {
-      if (PebbleNode.isCollection(this.node)) {
+    if (!FSNode.isCollection(collection)) {
+      if (FSNode.isCollection(this.node)) {
         collection = this.node;
-      } else if (PebbleNode.isDocument(this.node)) {
-        collection = this.node.parent as PebbleCollectionNode;
+      } else if (FSNode.isDocument(this.node)) {
+        collection = this.node.parent as FSCollectionNode;
       }
     }
-    if (PebbleNode.isCollection(collection)) {
+    if (FSNode.isCollection(collection)) {
       const validator = (input: string) => input !== '' && !this.fileExists(input);
       const dialog = new SingleTextInputDialog({
         initialValue: this.newName(validator),
@@ -1236,13 +1257,13 @@ export class PebbleCore {
     return false;
   }
 
-  public async newItemFromTemplate(template: PebbleTemplate): Promise<boolean> {
+  public async newItemFromTemplate(template: FSTemplate): Promise<boolean> {
     if (!this.node) {
       return false;
     }
-    const collection = this.node as PebbleCollectionNode;
+    const collection = this.node as FSCollectionNode;
     const validator = (filename: string) => filename !== '' && !this.fileExists(filename);
-    const dialog = new NewFromTemplateDialog({
+    const dialog = new FSNewFromTemplateDialog({
       title: 'New ' + template.name,
       initialValue: this.newName(validator, template.ext({})),
       template,
@@ -1259,9 +1280,9 @@ export class PebbleCore {
   }
 
   public async renameItem(): Promise<void> {
-    if (PebbleNode.isItem(this.node)) {      
-      const isCollection = PebbleNode.isCollection(this.node);
-      const collection = this.node.parent as PebbleCollectionNode;
+    if (FSNode.isItem(this.node)) {      
+      const isCollection = FSNode.isCollection(this.node);
+      const collection = this.node.parent as FSCollectionNode;
       const validator = (input: string) => input === (this.node && this.node.name) || input !== '' && !this.fileExists(input, collection);
       const dialog = new SingleTextInputDialog({
         initialValue: this.node.name,
@@ -1285,7 +1306,7 @@ export class PebbleCore {
   }
 
   public paste() {
-    if (PebbleNode.isCollection(this.node) && this.clipboard.source) {
+    if (FSNode.isCollection(this.node) && this.clipboard.source) {
       const collection = this.node;
       const destination = this.clipboard.source.map(item => this.collectionDir(collection.uri, item.uri.split('/').pop() || ''));
       this.move({
@@ -1298,9 +1319,9 @@ export class PebbleCore {
     }
   }
 
-  public async refresh(node?: PebbleCollectionNode) {
+  public async refresh(node?: FSCollectionNode) {
     if (this._model) {
-      if (PebbleNode.isCollection(node)) {
+      if (FSNode.isCollection(node)) {
         this._model.collapseNode(node);
         node.loaded = false;
         this.empty(node);
@@ -1313,11 +1334,11 @@ export class PebbleCore {
   }
   
   public async deleteItem(): Promise<void> {
-    const deleteNode = async function (core: PebbleCore, node: PebbleItemNode) {
+    const deleteNode = async function (core: FSCore, node: FSItemNode) {
       try {
-        const done = await PebbleApi.remove(node.connectionNode.connection, node.uri, PebbleNode.isCollection(node));
+        const done = await FSApi.remove(node.connectionNode.connection, node.uri, FSNode.isCollection(node));
         if (done) {
-          if (PebbleNode.isDocument(node) && node.editor) {
+          if (FSNode.isDocument(node) && node.editor) {
             node.editor.closeWithoutSaving();
             // TODO: keep the file in the editor as a new one
             // node.editor.saveable.setDirty(true);
@@ -1335,10 +1356,10 @@ export class PebbleCore {
     const collections: any[] = [];
     const documents: any[] = [];
     let nodes = this.topNodes(this.selection);
-    nodes.forEach(node => (PebbleNode.isCollection(node) ? collections : documents).push(node));
+    nodes.forEach(node => (FSNode.isCollection(node) ? collections : documents).push(node));
     if (nodes.length > 0) {
-      const isCollection = PebbleNode.isCollection(this.node);
-      const node = this.node as PebbleDocumentNode;
+      const isCollection = FSNode.isCollection(this.node);
+      const node = this.node as FSDocumentNode;
       const msg = document.createElement('p');
       if (nodes.length === 1) {
         msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.name + '</strong>?';
@@ -1367,25 +1388,20 @@ export class PebbleCore {
     }
   }
 
-  public showMethodInfo(nodeId = '') {
+  public openMethodFunctionDocument(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
-    if (PebbleNode.isRestMethod(node)) {
-      const dialog = new PebbleAlertDialog({
-        title: 'Method ' + node.name + ' for ' + (node.parent as PebbleRestURINode).name,
-        message: node.restMethod.function.name,
-        secondaryMessage: node.restMethod.function.src,
-      });
-      dialog.open();
+    if (FSNode.isRestMethod(node)) {
+      this.openDocumentByURI(node.restMethod.function.src, node.connectionNode.connection);
     }
   }
 
   public showPropertiesDialog(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
     if (node) {
-      if (PebbleNode.isConnection(node)) {
-        const dialog = new PebbleConnectionDialog({
-          title: 'Edit connection',
-          acceptButton: 'Update',
+      if (FSNode.isConnection(node)) {
+        const dialog = new FSConnectionDialog({
+          title: 'Edit Connection',
+          acceptButton: 'Save',
           ...node.connectionNode.connection,
         });
         dialog.open().then(result => {
@@ -1402,16 +1418,16 @@ export class PebbleCore {
             this.connect(node);
           }
         });
-      } else if (PebbleNode.isItem(node)) {
-        const parent = node.parent as PebbleCollectionNode;
-        const dialog = new PebblePropertiesDialog({
+      } else if (FSNode.isItem(node)) {
+        const parent = node.parent as FSCollectionNode;
+        const dialog = new FSPropertiesDialog({
           title: 'Properties',
           node: this.node,
           validate: filename => filename !== '' && !this.fileExists(filename, parent)
         });
         dialog.open().then(async result => {
           if (result) {
-            const item = PebbleNode.isCollection(node) ? node.collection as PebbleCollection : (node as PebbleDocumentNode).document as PebbleDocument;
+            const item = FSNode.isCollection(node) ? node.collection as FSCollection : (node as FSDocumentNode).document as FSDocument;
             if (result.name !== node.name) {
               await this.rename(node, result.name);
             }
@@ -1425,11 +1441,11 @@ export class PebbleCore {
   }
 
   public canDeleteUser(): boolean {
-    return PebbleNode.isUser(this.node) && this.node.name != 'admin' && this.node.name != 'guest';
+    return FSNode.isUser(this.node) && this.node.name != 'admin' && this.node.name != 'guest';
   }
 
   public async deleteUser() {
-    if (PebbleNode.isUser(this.node) && this._model) {
+    if (FSNode.isUser(this.node) && this._model) {
       const dialog = new ConfirmDialog({
         title: 'Delete user',
         msg: 'Are you sure you want to delete the user "' + this.node.name + '"?',
@@ -1438,7 +1454,7 @@ export class PebbleCore {
       });
       const result = await dialog.open();
       if (result) {
-        if (await PebbleApi.removeUser(this.node.connectionNode.connection, this.node.name)) {
+        if (await FSApi.removeUser(this.node.connectionNode.connection, this.node.name)) {
           this.removeNode(this.node);
         }
       }
@@ -1446,10 +1462,10 @@ export class PebbleCore {
   }
 
   public async editUser() {
-    if (PebbleNode.isUser(this.node)) {
+    if (FSNode.isUser(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const user = await PebbleApi.getUser(connectionNode.connection, this.node.name);
-      const dialog = new PebbleUserDialog({
+      const user = await FSApi.getUser(connectionNode.connection, this.node.name);
+      const dialog = new FSUserDialog({
         title: 'Edit User: ' + this.node.name,
         acceptButton: 'Save changes',
         connection: connectionNode.connection,
@@ -1457,7 +1473,7 @@ export class PebbleCore {
       });
       let userData = await dialog.open();
       if (userData) {
-        if (await PebbleApi.addUser(connectionNode.connection, userData)) {
+        if (await FSApi.addUser(connectionNode.connection, userData)) {
           this.node.connectionNode.connection.users.push(user.userName);
           this.addUserNode(connectionNode.security.users, user.userName);
         }
@@ -1466,15 +1482,15 @@ export class PebbleCore {
   }
 
   public async addUser() {
-    if (PebbleNode.is(this.node)) {
+    if (FSNode.is(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const dialog = new PebbleUserDialog({
+      const dialog = new FSUserDialog({
         title: 'Add User',
         connection: connectionNode.connection
       });
       let user = await dialog.open();
       if (user) {
-        if (await PebbleApi.addUser(connectionNode.connection, user)) {
+        if (await FSApi.addUser(connectionNode.connection, user)) {
           this.node.connectionNode.connection.users.push(user.userName);
           this.addUserNode(connectionNode.security.users, user.userName);
         }
@@ -1483,11 +1499,11 @@ export class PebbleCore {
   }
 
   public canDeleteGroup(): boolean {
-    return PebbleNode.isGroup(this.node) && this.node.name != 'dba' && this.node.name != 'guest';
+    return FSNode.isGroup(this.node) && this.node.name != 'dba' && this.node.name != 'guest';
   }
 
   public async deleteGroup() {
-    if (PebbleNode.isGroup(this.node) && this._model) {
+    if (FSNode.isGroup(this.node) && this._model) {
       const dialog = new ConfirmDialog({
         title: 'Delete group',
         msg: 'Are you sure you want to delete the group "' + this.node.name + '"?',
@@ -1496,7 +1512,7 @@ export class PebbleCore {
       });
       const result = await dialog.open();
       if (result) {
-        if (await PebbleApi.removeGroup(this.node.connectionNode.connection, this.node.name)) {
+        if (await FSApi.removeGroup(this.node.connectionNode.connection, this.node.name)) {
           this.removeNode(this.node);
         }
       }
@@ -1504,10 +1520,10 @@ export class PebbleCore {
   }
 
   public async editGroup() {
-    if (PebbleNode.isGroup(this.node)) {
+    if (FSNode.isGroup(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const group = await PebbleApi.getGroup(connectionNode.connection, this.node.name);
-      const dialog = new PebbleGroupDialog({
+      const group = await FSApi.getGroup(connectionNode.connection, this.node.name);
+      const dialog = new FSGroupDialog({
         title: 'Edit User: ' + this.node.name,
         acceptButton: 'Save changes',
         connection: connectionNode.connection,
@@ -1515,7 +1531,7 @@ export class PebbleCore {
       });
       let groupData = await dialog.open();
       if (groupData) {
-        if (await PebbleApi.addGroup(connectionNode.connection, groupData)) {
+        if (await FSApi.addGroup(connectionNode.connection, groupData)) {
           this.node.connectionNode.connection.groups.push(group.groupName);
           this.addGroupNode(connectionNode.security.groups, group.groupName);
         }
@@ -1524,16 +1540,16 @@ export class PebbleCore {
   }
 
   public async addGroup() {
-    if (PebbleNode.is(this.node)) {
+    if (FSNode.is(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const dialog = new PebbleGroupDialog({
+      const dialog = new FSGroupDialog({
         title: 'Add Group',
         connection: connectionNode.connection
       });
       let group = await dialog.open();
       if (group) {
         console.log(group);
-        if (await PebbleApi.addGroup(connectionNode.connection, group)) {
+        if (await FSApi.addGroup(connectionNode.connection, group)) {
           this.node.connectionNode.connection.groups.push(group.groupName);
           this.addGroupNode(connectionNode.security.groups, group.groupName);
         }

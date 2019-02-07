@@ -1,12 +1,12 @@
-import { PebbleTemplate } from "../../classes/template";
+import { FSTemplate } from "../../classes/template";
 
-export type PebbleTemplateXSDVersion = '1' | '1.1';
-export interface PebbleTemplateXSDParams {
-  version: PebbleTemplateXSDVersion;
+export type FSTemplateXSDVersion = '1' | '1.1';
+export interface FSTemplateXSDParams {
+  version: FSTemplateXSDVersion;
   namespace: string;
 };
 
-export const PebbleTemplateXSD: PebbleTemplate<PebbleTemplateXSDParams> = {
+export const FSTemplateXSD: FSTemplate<FSTemplateXSDParams> = {
   name: 'XML Schema',
   fields: {
     namespace: 'Namespace',
@@ -23,7 +23,7 @@ export const PebbleTemplateXSD: PebbleTemplate<PebbleTemplateXSDParams> = {
       namespace: 'mynamespace',
   },
   ext: () => 'xsd',
-  execute: ({ version, namespace }: PebbleTemplateXSDParams) => `<?xml version="1.0" encoding="UTF-8"?>
+  execute: ({ version, namespace }: FSTemplateXSDParams) => `<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
     xmlns="${namespace}"

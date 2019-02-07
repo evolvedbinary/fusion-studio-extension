@@ -1,6 +1,6 @@
-import { PebbleTemplate } from "../../classes/template";
+import { FSTemplate } from "../../classes/template";
 
-export const PebbleTemplateXML: PebbleTemplate = {
+export const FSTemplateXML: FSTemplate = {
   name: 'XML Document',
   ext: () => 'xml',
   execute: () => `<?xml version="1.0" encoding="UTF-8"?>

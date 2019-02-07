@@ -1,25 +1,25 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
-import { createError, PebbleError } from "../../classes/error";
-import { PebbleGroup, PebbleGroupAttributes, PEBBLE_GROUP_ATTRIBUTE_LABELS } from "../../classes/group";
-import { PebbleGroupData, sameGroup } from "../../classes/group";
-import { PebbleConnection } from "../../classes/connection";
+import { createError, FSError } from "../../classes/error";
+import { FSGroup, FSGroupAttributes, FS_GROUP_ATTRIBUTE_LABELS } from "../../classes/group";
+import { FSGroupData, sameGroup } from "../../classes/group";
+import { FSServerConnection } from "../../classes/connection";
 import { IDialogField, createField } from "../../classes/dialog-field";
-import { PebbleTabs } from "../../classes/tabs";
+import { FSTabs } from "../../classes/tabs";
 import { createKeys, IKeysElement, addKey, addKeys, IKeys } from "../../classes/keys";
 import { Checkbox } from "../../classes/checkbox";
 
 @injectable()
-export class PebbleGroupDialogProps extends DialogProps {
-  readonly connection?: PebbleConnection;
+export class FSGroupDialogProps extends DialogProps {
+  readonly connection?: FSServerConnection;
   readonly acceptButton?: string;
   readonly cancelButton?: string;
-  readonly group?: PebbleGroup;
+  readonly group?: FSGroup;
 }
 
-export type PebbleGroupDialogResult = PebbleGroupData;
+export type FSGroupDialogResult = FSGroupData;
 
-export class PebbleGroupDialog extends AbstractDialog<PebbleGroupDialogResult> {
+export class FSGroupDialog extends AbstractDialog<FSGroupDialogResult> {
 
   protected metadataCounter: number = 0;
   protected readonly managersKeys: IKeysElement = createKeys({});
@@ -28,10 +28,10 @@ export class PebbleGroupDialog extends AbstractDialog<PebbleGroupDialogResult> {
   protected readonly managers: { [k: string]: Checkbox } = {};
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly groupname: IDialogField = createField('Group name', '');
-  protected readonly tabs: PebbleTabs = new PebbleTabs(['Information', 'Metadata']);
+  protected readonly tabs: FSTabs = new FSTabs(['Information', 'Metadata']);
 
   constructor(
-    @inject(PebbleGroupDialogProps) protected readonly props: PebbleGroupDialogProps,
+    @inject(FSGroupDialogProps) protected readonly props: FSGroupDialogProps,
   ) {
     super(props);
     if (props.connection) {
@@ -55,9 +55,9 @@ export class PebbleGroupDialog extends AbstractDialog<PebbleGroupDialogResult> {
       this.tabs.tabs[0].appendChild(this.managersKeys.container);
       
       const keys: IKeys = {};
-      for (let index in PEBBLE_GROUP_ATTRIBUTE_LABELS) {
+      for (let index in FS_GROUP_ATTRIBUTE_LABELS) {
         const el = document.createElement('input');
-        const i = PEBBLE_GROUP_ATTRIBUTE_LABELS[index] || '';
+        const i = FS_GROUP_ATTRIBUTE_LABELS[index] || '';
         keys[i] = {
           type: 'string',
           value: '',
@@ -81,26 +81,26 @@ export class PebbleGroupDialog extends AbstractDialog<PebbleGroupDialogResult> {
       this.appendAcceptButton(props.acceptButton || 'Add');
       this.appendCloseButton(props.cancelButton || 'Cancel');
     } else {
-      throw createError(PebbleError.unknown);
+      throw createError(FSError.unknown);
     }
   }
 
-  readMetadata(): PebbleGroupAttributes {
-    const result: PebbleGroupAttributes = {};
-    for (let i in PEBBLE_GROUP_ATTRIBUTE_LABELS) {
+  readMetadata(): FSGroupAttributes {
+    const result: FSGroupAttributes = {};
+    for (let i in FS_GROUP_ATTRIBUTE_LABELS) {
       if (this.attributes[i].value) {
         result[i] = this.attributes[i].value;
       }
     }
     return result;
   }
-  writeMetadata(metadata: PebbleGroupAttributes) {
-    for (let i in PEBBLE_GROUP_ATTRIBUTE_LABELS) {
+  writeMetadata(metadata: FSGroupAttributes) {
+    for (let i in FS_GROUP_ATTRIBUTE_LABELS) {
       this.attributes[i].value = metadata[i] || '';
     }
   }
 
-  get value(): PebbleGroupDialogResult {
+  get value(): FSGroupDialogResult {
     return {
       managers: Object.keys(this.managers).filter(group => this.managers[group].checked),
       metadata: this.readMetadata(),
@@ -108,7 +108,7 @@ export class PebbleGroupDialog extends AbstractDialog<PebbleGroupDialogResult> {
     };
   }
 
-  protected isValid(value: PebbleGroupDialogResult, mode: DialogMode): DialogError {
+  protected isValid(value: FSGroupDialogResult, mode: DialogMode): DialogError {
     if (value.managers.length > 0) {
       if (this.props.group) {
         return !sameGroup(value, this.props.group);

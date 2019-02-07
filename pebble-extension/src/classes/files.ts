@@ -1,19 +1,19 @@
-export const pebbleFilesePath = '/services/pebble-files';
+export const FSFilesePath = '/services/fusion-files';
 
-export const PebbleFiles = Symbol('PebbleFiles');
-export interface PebbleFilenameList {
+export const FSFiles = Symbol('FusionFiles');
+export interface FSFilenameList {
   [key: string]: string;
 }
-export interface PebbleFileList {
+export interface FSFileList {
   [key: string]: Blob;
 }
-export interface PebbleFileEntryList {
+export interface FSFileEntryList {
   [key: string]: File | WebKitFileEntry;
 }
 
-export interface PebbleFiles {
+export interface FSFiles {
   read: (file: string) => Promise<string>;
   isDir: (file: string) => Promise<boolean>;
   getFiles: (params: { file: string | string[] }) => Promise<string[]>;
-  readMulti: (params: { files: string[] }) => Promise<PebbleFilenameList>;
+  readMulti: (params: { files: string[] }) => Promise<FSFilenameList>;
 }
