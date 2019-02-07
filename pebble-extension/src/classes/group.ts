@@ -1,29 +1,29 @@
-export type PebbleGroupAttributes = {
+export type FSGroupAttributes = {
   email?: string;
   language?: string;
   description?: string;
   [k: string]: string | undefined;
 }
-export const PEBBLE_GROUP_ATTRIBUTE_LABELS: PebbleGroupAttributes = {
+export const FS_GROUP_ATTRIBUTE_LABELS: FSGroupAttributes = {
   email:  'email',
   language:  'language',
   description:  'description',
 };
 
-export const PEBBLE_GROUP_ATTRIBUTES: PebbleGroupAttributes = {
+export const FS_GROUP_ATTRIBUTES: FSGroupAttributes = {
   email:  'http://axschema.org/contact/email',
   language:  'http://axschema.org/pref/language',
   description:  'http://exist-db.org/security/description',
 };
 
-export interface PebbleGroup {
+export interface FSGroup {
   groupName: string;
   managers: string[];
-  metadata: PebbleGroupAttributes;
+  metadata: FSGroupAttributes;
 };
-export type PebbleGroupData = PebbleGroup;
+export type FSGroupData = FSGroup;
 
-export function sameGroup(user1: PebbleGroup, user2: PebbleGroup): boolean {
+export function sameGroup(user1: FSGroup, user2: FSGroup): boolean {
   if (user1.managers.length !== user2.managers.length) {
     return false
   }
@@ -39,21 +39,21 @@ export function sameGroup(user1: PebbleGroup, user2: PebbleGroup): boolean {
   return true;
 }
 
-export function writeGroupData(group: PebbleGroupData): string {
+export function writeGroupData(group: FSGroupData): string {
   return JSON.stringify({
     ...group,
-    metadata: Object.keys(group.metadata).map(key => ({ key: PEBBLE_GROUP_ATTRIBUTES[key], value: group.metadata[key] })),
+    metadata: Object.keys(group.metadata).map(key => ({ key: FS_GROUP_ATTRIBUTES[key], value: group.metadata[key] })),
   });
 }
 
-export function readGroup(groupData: any): PebbleGroup {
+export function readGroup(groupData: any): FSGroup {
   if (typeof groupData === 'string') {
     groupData = JSON.parse(groupData);
   }
-  const metadata: PebbleGroupAttributes = {};
+  const metadata: FSGroupAttributes = {};
   groupData.metadata.forEach((attribute: any) => {
-    Object.keys(PEBBLE_GROUP_ATTRIBUTES).find(v => {
-      if (PEBBLE_GROUP_ATTRIBUTES[v] == attribute.key) {
+    Object.keys(FS_GROUP_ATTRIBUTES).find(v => {
+      if (FS_GROUP_ATTRIBUTES[v] == attribute.key) {
         metadata[v] = attribute.value || '';
         return true;
       }

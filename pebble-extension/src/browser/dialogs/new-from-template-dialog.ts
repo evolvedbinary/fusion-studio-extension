@@ -1,27 +1,27 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
-import { PebbleTemplate } from "../../classes/template";
+import { FSTemplate } from "../../classes/template";
 import { IDialogField, IDialogFields, createField } from "../../classes/dialog-field";
 
 @injectable()
-export class PebbleNewFromTemplateDialogProps extends DialogProps {
+export class FSNewFromTemplateDialogProps extends DialogProps {
   initialValue?: string;
-  template?: PebbleTemplate;
+  template?: FSTemplate;
   validate?: (filename: string) => boolean;
 }
 
-export interface PebbleNewFromTemplateDialogResult {
+export interface FSNewFromTemplateDialogResult {
   params: any;
 }
 
-export class NewFromTemplateDialog extends AbstractDialog<PebbleNewFromTemplateDialogResult> {
+export class FSNewFromTemplateDialog extends AbstractDialog<FSNewFromTemplateDialogResult> {
 
   protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly fields: IDialogFields = {};
 
   constructor(
-    @inject(PebbleNewFromTemplateDialogProps) protected readonly props: PebbleNewFromTemplateDialogProps
+    @inject(FSNewFromTemplateDialogProps) protected readonly props: FSNewFromTemplateDialogProps
   ) {
     super(props);
 
@@ -53,7 +53,7 @@ export class NewFromTemplateDialog extends AbstractDialog<PebbleNewFromTemplateD
     this.appendCloseButton('Cancel');
   }
 
-  get value(): PebbleNewFromTemplateDialogResult {
+  get value(): FSNewFromTemplateDialogResult {
     const params: any = {};
     for (const key in this.fields) {
       params[key] = this.fields[key].input.value;
@@ -62,7 +62,7 @@ export class NewFromTemplateDialog extends AbstractDialog<PebbleNewFromTemplateD
     return { params };
   }
   
-  protected isValid(value: PebbleNewFromTemplateDialogResult, mode: DialogMode): DialogError {
+  protected isValid(value: FSNewFromTemplateDialogResult, mode: DialogMode): DialogError {
     return !this.props.validate || this.props.validate(value.params.name);
   }
 

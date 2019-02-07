@@ -1,47 +1,47 @@
 import * as React from "react";
 import { injectable, inject } from "inversify";
-import { PebbleCore } from "../core";
-import { PebbleNode, PebbleCollectionNode, PebbleConnectionNode, PebbleItemNode } from "../../classes/node";
+import { FSCore } from "../core";
+import { FSNode, FSCollectionNode, FSConnectionNode, FSItemNode } from "../../classes/node";
 import { DisposableCollection } from "@theia/core";
 import { Disposable } from "vscode-jsonrpc";
 import { TreeNode } from "@theia/core/lib/browser";
-import { PebbleFileList } from "../../classes/files";
+import { FSFileList } from "../../classes/files";
 
-export interface PebbleDragOperation {
-  destinationContainer: PebbleCollectionNode;
+export interface FSDragOperation {
+  destinationContainer: FSCollectionNode;
   destination: string[];
-  source: PebbleItemNode[];
+  source: FSItemNode[];
   event: React.DragEvent<HTMLElement>;
   copy: boolean;
 }
 
-export const DRAG_NODE = 'pebble-node';
+export const DRAG_NODE = 'fusion-node';
 
 @injectable()
 export class DragController {
   protected readonly toCancelNodeExpansion = new DisposableCollection();
-  protected dragged: PebbleItemNode[] = [];
+  protected dragged: FSItemNode[] = [];
   protected draggedIDs: string[] = [];
   constructor(
-    @inject(PebbleCore) private core: PebbleCore,
+    @inject(FSCore) private core: FSCore,
   ) {}
 
   private dragOperation(event: React.DragEvent<HTMLElement>): void {
     event.dataTransfer.dropEffect = event.ctrlKey ? 'copy' : 'move';
   }
 
-  private checkOperation(node: TreeNode | undefined, event: React.DragEvent<HTMLElement>): PebbleDragOperation | undefined {
+  private checkOperation(node: TreeNode | undefined, event: React.DragEvent<HTMLElement>): FSDragOperation | undefined {
     event.dataTransfer.dropEffect = event.ctrlKey ? 'copy' : 'move';
-    const destinationContainer = this.getParentContainer(node as PebbleItemNode);
-    if (destinationContainer && PebbleNode.isCollection(destinationContainer)) {
+    const destinationContainer = this.getParentContainer(node as FSItemNode);
+    if (destinationContainer && FSNode.isCollection(destinationContainer)) {
       const data = event.dataTransfer.getData(DRAG_NODE);
       const ids: string[] = data ? JSON.parse(data) : this.draggedIDs;
-      const source = ids.map(id => this.core.getNode(id)).filter(node => PebbleNode.isItem(node)) as PebbleItemNode[];
+      const source = ids.map(id => this.core.getNode(id)).filter(node => FSNode.isItem(node)) as FSItemNode[];
       if (!this.core.canMoveTo(source, destinationContainer.uri)) {
         return;
       }
       const destination = ids.map(id => destinationContainer.uri + '/' + id.split('/').pop());
-      const result: PebbleDragOperation = {
+      const result: FSDragOperation = {
         source,
         destination,
         destinationContainer,
@@ -51,22 +51,22 @@ export class DragController {
       return result;
     }
   }
-  private getParentContainer(node: PebbleItemNode | PebbleConnectionNode): PebbleCollectionNode | undefined {
+  private getParentContainer(node: FSItemNode | FSConnectionNode): FSCollectionNode | undefined {
     let container = node;
-    while (container && !PebbleNode.isCollection(container)) {
-      container = container.parent as PebbleCollectionNode;
+    while (container && !FSNode.isCollection(container)) {
+      container = container.parent as FSCollectionNode;
     }
     return container;
   }
 
   public onDragStart(node: TreeNode, event: React.DragEvent<HTMLElement>): void {
     event.stopPropagation();
-    if (!PebbleNode.is(node)) {
+    if (!FSNode.is(node)) {
       return;
     }
     let nodes = this.core.topNodes(this.core.selection);
-    if (nodes.indexOf(node as PebbleItemNode) < 0) {
-      nodes = [node as PebbleItemNode];
+    if (nodes.indexOf(node as FSItemNode) < 0) {
+      nodes = [node as FSItemNode];
     }
     if (nodes.length > 0) {
       this.dragged = nodes;
@@ -102,7 +102,7 @@ export class DragController {
       return;
     }
     const timer = setTimeout(() => {
-      if ((PebbleNode.isCollection(node) || PebbleNode.isConnection(node)) && !node.expanded) {
+      if ((FSNode.isCollection(node) || FSNode.isConnection(node)) && !node.expanded) {
           this.core.expand(node);
       }
     }, 500);
@@ -113,15 +113,15 @@ export class DragController {
     event.stopPropagation();
     this.toCancelNodeExpansion.dispose();
   }
-  public async listFiles(list: WebKitEntry[]): Promise<PebbleFileList> {
-    const files: PebbleFileList = {};
+  public async listFiles(list: WebKitEntry[]): Promise<FSFileList> {
+    const files: FSFileList = {};
     await Promise.all(list.map(entry => this.listFile(entry, files)));
     return files;
   }
   public async getFile(item: WebKitFileEntry): Promise<File> {
     return new Promise<any>(resolve => (item as WebKitFileEntry).file(f => resolve(f)));
   }
-  public async listFile(item: WebKitEntry, files: PebbleFileList): Promise<any> {
+  public async listFile(item: WebKitEntry, files: FSFileList): Promise<any> {
     if (item.isDirectory) {
       const reader = (item as WebKitDirectoryEntry).createReader();
       const entries = await new Promise<WebKitEntry[]>(resolve => reader.readEntries(entries => resolve(entries)));

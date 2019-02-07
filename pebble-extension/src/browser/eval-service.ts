@@ -1,19 +1,19 @@
 import { WidgetFactory, Widget } from "@theia/core/lib/browser";
 import { injectable, inject, interfaces, Container } from "inversify";
-import { PebbleEvalWidget, PebbleEvalWidgetFactory } from "./widget/eval";
+import { FSEvalWidget, FSEvalWidgetFactory } from "./widget/eval";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
-import { PebbleCore } from "./core";
+import { FSCore } from "./core";
 
 @injectable()
-export class PebbleEvalService implements WidgetFactory {
+export class FSEvalService implements WidgetFactory {
 
-  id = 'pebble-eval';
+  id = 'fusion-eval';
 
-  protected widget?: PebbleEvalWidget;
+  protected widget?: FSEvalWidget;
 
   constructor(
-    @inject(PebbleCore) protected core: PebbleCore,
-    @inject(PebbleEvalWidgetFactory) protected factory: PebbleEvalWidgetFactory,
+    @inject(FSCore) protected core: FSCore,
+    @inject(FSEvalWidgetFactory) protected factory: FSEvalWidgetFactory,
   ) {}
   
   createWidget(): Promise<Widget> {
@@ -27,11 +27,11 @@ export class PebbleEvalService implements WidgetFactory {
   }
 }
 
-export function createPebbleEvalWidget(parent: interfaces.Container): PebbleEvalWidget {
+export function createFSEvalWidget(parent: interfaces.Container): FSEvalWidget {
   const child = new Container({ defaultScope: 'Singleton' });
   child.parent = parent;
 
-  child.bind(PebbleEvalWidget).toSelf();
+  child.bind(FSEvalWidget).toSelf();
 
-  return child.get(PebbleEvalWidget);
+  return child.get(FSEvalWidget);
 }

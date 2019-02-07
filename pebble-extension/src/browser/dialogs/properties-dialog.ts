@@ -1,11 +1,11 @@
 import { injectable, inject } from "inversify";
 import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
 import { IKeysElement, createKeys, addKeys, addKey } from "../../classes/keys";
-import { PebbleItem, PebblePermissions, samePermissions, PebbleCollection, PebbleDocument } from "../../classes/item";
-import { PebblePermissionsEditor } from "./permissions-editor";
-import { PebbleNode, PebbleDocumentNode } from "../../classes/node";
-import { createError, PebbleError } from "../../classes/error";
-import { PebbleApi } from "../../common/api";
+import { FSItem, FSPermissions, samePermissions, FSCollection, FSDocument } from "../../classes/item";
+import { FSPermissionsEditor } from "./permissions-editor";
+import { FSNode, FSDocumentNode } from "../../classes/node";
+import { createError, FSError } from "../../classes/error";
+import { FSApi } from "../../common/api";
 import { autocomplete, autocompleteChanges } from '../../classes/autocomplete';
 
 const SPINNER = 'fa-fw fa fa-spin fa-spinner';
@@ -14,27 +14,27 @@ const CONVERT_BIN = 'fa-fw fa fa-file-o';
 const CANT_CONVERT = 'fa-fw fa fa-exclamation';
 
 @injectable()
-export class PebblePropertiesDialogProps extends DialogProps {
+export class FSPropertiesDialogProps extends DialogProps {
   readonly acceptButton?: string;
   readonly cancelButton?: string;
-  readonly node?: PebbleNode;
+  readonly node?: FSNode;
   validate?: (filename: string) => boolean;
 }
 
-export interface PebblePropertiesDialogResult {
-  permissions?: PebblePermissions;
+export interface FSPropertiesDialogResult {
+  permissions?: FSPermissions;
   binary: boolean;
   name: string;
   owner: string;
   group: string;
 }
 
-export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialogResult> {
+export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult> {
 
   protected readonly keys: IKeysElement = createKeys({});
   protected readonly nameField: HTMLInputElement = document.createElement('input');
   protected name: string = '';
-  protected item?: PebbleCollection | PebbleDocument;
+  protected item?: FSCollection | FSDocument;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly ownerSelect: HTMLInputElement = document.createElement('input');
   protected readonly groupSelect: HTMLInputElement = document.createElement('input');
@@ -43,14 +43,14 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     text: document.createElement('span'),
     icon: document.createElement('span'),
   };
-  protected readonly permissionsEditor: PebblePermissionsEditor = new PebblePermissionsEditor();
+  protected readonly permissionsEditor: FSPermissionsEditor = new FSPermissionsEditor();
 
   constructor(
-    @inject(PebblePropertiesDialogProps) protected readonly props: PebblePropertiesDialogProps,
+    @inject(FSPropertiesDialogProps) protected readonly props: FSPropertiesDialogProps,
   ) {
     super(props);
     if (props.node) {
-      const item = PebbleNode.isCollection(props.node) ? props.node.collection as PebbleCollection : (props.node as PebbleDocumentNode).document as PebbleDocument;
+      const item = FSNode.isCollection(props.node) ? props.node.collection as FSCollection : (props.node as FSDocumentNode).document as FSDocument;
       const slash = item.name.lastIndexOf('/');
       this.name = props.node.name;
       this.nameField.value = this.name;
@@ -66,7 +66,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
         'Collection': item.name.substr(0, slash),
         'Created': { type: 'date', value: item.created },
       }, this.keys);
-      if (PebbleItem.isDocument(item)) {
+      if (FSItem.isDocument(item)) {
         this.convertBtn.icon.className = item.binaryDoc ? CONVERT_XML : CONVERT_BIN;
         this.convertBtn.button.append(this.convertBtn.icon);
         this.convertBtn.text.innerHTML = 'Convert to ' + (item.binaryDoc ? 'non-' : '') + 'binary';
@@ -134,24 +134,24 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
   }
 
   async convert(): Promise<boolean> {
-    if (PebbleNode.isDocument(this.props.node)) {
-      return PebbleApi.convert(this.props.node.connectionNode.connection, this.props.node.document);
+    if (FSNode.isDocument(this.props.node)) {
+      return FSApi.convert(this.props.node.connectionNode.connection, this.props.node.document);
     } else {
-      throw createError(PebbleError.unknown);
+      throw createError(FSError.unknown);
     }
   }
 
-  get value(): PebblePropertiesDialogResult {
+  get value(): FSPropertiesDialogResult {
     return {
       permissions: this.permissionsEditor.permissions,
-      binary: PebbleItem.isDocument(this.props.node) && this.props.node.binaryDoc,
+      binary: FSItem.isDocument(this.props.node) && this.props.node.binaryDoc,
       owner: this.ownerSelect.value,
       group: this.groupSelect.value,
       name: this.nameField.value
     };
   }
 
-  protected isValid(value: PebblePropertiesDialogResult, mode: DialogMode): DialogError {
+  protected isValid(value: FSPropertiesDialogResult, mode: DialogMode): DialogError {
     if (this.props.node && this.props.node.connectionNode.connection.groups.indexOf(value.group) < 0) {
       return false;
     }
@@ -161,7 +161,7 @@ export class PebblePropertiesDialog extends AbstractDialog<PebblePropertiesDialo
     const sameName = value.name === this.name;
     const sameOwner = value.owner === (this.item ? this.item.owner : '');
     const sameGroup = value.group === (this.item ? this.item.group : '');
-    const item = PebbleNode.isCollection(this.props.node) ? this.props.node.collection as PebbleCollection : (this.props.node as PebbleDocumentNode).document as PebbleDocument;
+    const item = FSNode.isCollection(this.props.node) ? this.props.node.collection as FSCollection : (this.props.node as FSDocumentNode).document as FSDocument;
     const same = samePermissions(item.permissions, value.permissions) && sameName && sameGroup && sameOwner ;
     let validName = true;
     if (!sameName && this.props.validate) {

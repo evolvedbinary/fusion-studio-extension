@@ -1,20 +1,20 @@
 import * as React from 'react';
 import { ReactWidget, StatefulWidget } from "@theia/core/lib/browser";
 import { inject } from "inversify";
-import { PebbleCore } from '../core';
+import { FSCore } from '../core';
 import { EditorManager, EditorWidget, TextEditor } from '@theia/editor/lib/browser';
-import { PebbleDocumentNode, PebbleConnectionNode } from '../../classes/node';
+import { FSDocumentNode, FSConnectionNode } from '../../classes/node';
 import { Disposable, MaybePromise } from '@theia/core';
-import { PebbleApi, RANGE_LENGTH } from '../../common/api';
+import { FSApi, RANGE_LENGTH } from '../../common/api';
 import { SERIALIZATION_TYPES } from '../../classes/eval';
 
-export type PebbleEvalWidgetFactory = () => PebbleEvalWidget;
-export const PebbleEvalWidgetFactory = Symbol('PebbleEditorWidgetFactory');
+export type FSEvalWidgetFactory = () => FSEvalWidget;
+export const FSEvalWidgetFactory = Symbol('FSEditorWidgetFactory');
 
-export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
+export class FSEvalWidget extends ReactWidget implements StatefulWidget {
   protected listenerConnections: Disposable;
   protected listenerEditor: Disposable | undefined;
-  protected documentNode: PebbleDocumentNode | undefined;
+  protected documentNode: FSDocumentNode | undefined;
   protected editorWidget: EditorWidget | undefined;
   protected lastEditorWidget: EditorWidget | undefined;
   protected editor: TextEditor | undefined;
@@ -33,15 +33,15 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
   };
   constructor(
     @inject(EditorManager) protected readonly manager: EditorManager,
-    @inject(PebbleCore) protected readonly core: PebbleCore,
+    @inject(FSCore) protected readonly core: FSCore,
   ) {
     super();
-    this.id = 'pebble-eval';
+    this.id = 'fusion-eval';
     this.title.label = 'Evaluation';
     this.title.caption = 'Evaluation';
     this.title.iconClass = 'fa fa-code';
     this.title.closable = true;
-    this.addClass('pebble-eval');
+    this.addClass('fusion-eval');
     this.scrollOptions = undefined;
     this.update();
     this.scrollBar && this.scrollBar.destroy();
@@ -69,7 +69,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
       this.lastEditorWidget = this.editorWidget;
       this.editorWidget = widget;
       if (widget) {
-        const node = this.core.getNode(widget.editor.uri.path.toString()) as PebbleDocumentNode;
+        const node = this.core.getNode(widget.editor.uri.path.toString()) as FSDocumentNode;
         this.changeTo(widget, node);
       }
     }
@@ -78,7 +78,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     }
   }
 
-  changeTo(widget?: EditorWidget, node?: PebbleDocumentNode) {
+  changeTo(widget?: EditorWidget, node?: FSDocumentNode) {
     if (this.listenerEditor) {
       this.listenerEditor.dispose();
     }
@@ -99,7 +99,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
     return SERIALIZATION_TYPES.map(mode => <option value={mode.value} key={mode.value}>{mode.text}</option>);
   }
 
-  connections(node?: PebbleDocumentNode) {
+  connections(node?: FSDocumentNode) {
     if (this.connection === '' &&Object.keys(this.core.connections).length > 0) {
       this.connection = this.core.connectionID(this.core.connections[Object.keys(this.core.connections)[0]]);
     }
@@ -136,7 +136,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
       const { size } = this.pager;
       const start = (page - 1) * size + 1;
       try {
-        const node = this.documentNode ? this.documentNode.connectionNode : this.core.getNode(this.connection) as PebbleConnectionNode;
+        const node = this.documentNode ? this.documentNode.connectionNode : this.core.getNode(this.connection) as FSConnectionNode;
         let isContent: boolean;
         let value: string;
         if (this.documentNode && !this.editor.document.dirty) {
@@ -147,7 +147,7 @@ export class PebbleEvalWidget extends ReactWidget implements StatefulWidget {
           isContent = true;
         }
         if (node) {
-          const result = await PebbleApi.evaluate(node.connection, this.serialization, value, isContent, start, size);
+          const result = await FSApi.evaluate(node.connection, this.serialization, value, isContent, start, size);
           if (result !== '') {
             this.pager.start = start;
             this.pager.pages = Math.max(this.pager.pages, page);

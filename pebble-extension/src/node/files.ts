@@ -1,7 +1,7 @@
-import { PebbleFiles, PebbleFilenameList } from "../classes/files";
+import { FSFiles, FSFilenameList } from "../classes/files";
 import { injectable } from "inversify";
 import { readFileSync, statSync, readdirSync } from "fs";
-import { createError, PebbleError } from "../classes/error";
+import { createError, FSError } from "../classes/error";
 import { isArray } from "util";
 
 function getFiles(files: string | string[], result?: string[]): string[] {
@@ -29,18 +29,18 @@ function read(file: string): string {
     const content = readFileSync(file).toString('binary');
     return content;
   } catch (e) {
-    throw createError(PebbleError.unknown);
+    throw createError(FSError.unknown);
   }
 }
 
 @injectable()
-export class PebbleFilesClass implements PebbleFiles {
+export class FSFilesClass implements FSFiles {
   dispose() {}
   async read(file: string): Promise<string> {
     return read(file);
   }
-  async readMulti(params: { files: string[] }): Promise<PebbleFilenameList> {
-    const result: PebbleFilenameList = {};
+  async readMulti(params: { files: string[] }): Promise<FSFilenameList> {
+    const result: FSFilenameList = {};
     params.files.map(file => result[file] = read(file));
     return result;
   }

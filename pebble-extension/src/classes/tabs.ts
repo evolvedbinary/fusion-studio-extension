@@ -1,4 +1,4 @@
-export class PebbleTabs {
+export class FSTabs {
   protected _active: number = 0;
   protected _tabs: string[] = [];
   protected header: HTMLDivElement = document.createElement('div');
@@ -17,7 +17,7 @@ export class PebbleTabs {
     } else {
       this._tabs = arg;
     }
-    this.container.className = 'pebble-tabs';
+    this.container.className = 'fusion-tabs';
     this.body.className = 'pb-body';
     this.header.className = 'pb-headers';
     this._tabs.forEach((title, i) => {

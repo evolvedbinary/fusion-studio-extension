@@ -1,10 +1,10 @@
-import { PebbleTemplate } from "../../classes/template";
+import { FSTemplate } from "../../classes/template";
 
-export type PebbleTemplateXLSTVersion = '1' | '2' | '3';
-export interface PebbleTemplateXLSTParams {
-  version: PebbleTemplateXLSTVersion;
+export type FSTemplateXLSTVersion = '1' | '2' | '3';
+export interface FSTemplateXLSTParams {
+  version: FSTemplateXLSTVersion;
 };
-export const PebbleTemplateXLST: PebbleTemplate<PebbleTemplateXLSTParams> = {
+export const FSTemplateXLST: FSTemplate<FSTemplateXLSTParams> = {
   name: 'XSLT Stylesheet',
   fields: {
     version: {
@@ -20,7 +20,7 @@ export const PebbleTemplateXLST: PebbleTemplate<PebbleTemplateXLSTParams> = {
     version: '2',
   },
   ext: () => 'xslt',
-  execute: ({ version }: PebbleTemplateXLSTParams) => {
+  execute: ({ version }: FSTemplateXLSTParams) => {
     switch (version) {
       default: return `<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"

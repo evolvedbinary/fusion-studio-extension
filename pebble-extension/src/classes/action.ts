@@ -1,21 +1,21 @@
-import { PebbleCore } from "../browser/core";
+import { FSCore } from "../browser/core";
 import { CommandRegistry, MenuModelRegistry, CommandHandler } from "@theia/core";
 import { KeybindingRegistry } from "@theia/core/lib/browser";
 
-export const ACTIONS_SCOPE = 'pebble';
-export namespace PebbleAction {
-  export function is(action: any): action is PebbleAction {
+export const ACTIONS_SCOPE = 'fusion';
+export namespace FSAction {
+  export function is(action: any): action is FSAction {
     return !!action && typeof action === 'object'
       && 'id' in action
       && 'label' in action
       && 'execute' in action;
   }
 }
-export interface PebbleSubMenu {
+export interface FSSubMenu {
   menu: string[];
   label: string;
 }
-export interface PebbleAction {
+export interface FSAction {
   id: string,
   label: string,
   menu?: string[],
@@ -25,41 +25,41 @@ export interface PebbleAction {
   keys?: string,
   icon?: string,
   order?: string,
-  execute: (core: PebbleCore) => (...args: any[]) => any;
-  enabled?(core: PebbleCore): (...args: any[]) => boolean;
-  visible?(core: PebbleCore): (...args: any[]) => boolean;
-  toggled?(core: PebbleCore): (...args: any[]) => boolean;
+  execute: (core: FSCore, prepare?: () => Promise<any>) => (...args: any[]) => any;
+  enabled?: (core: FSCore, prepare?: () => Promise<any>) => (...args: any[]) => boolean;
+  visible?: (core: FSCore, prepare?: () => Promise<any>) => (...args: any[]) => boolean;
+  toggled?: (core: FSCore, prepare?: () => Promise<any>) => (...args: any[]) => boolean;
 }
 
 export function actionID(id: string): string {
   return id.indexOf('.') > -1 ? id : ACTIONS_SCOPE + '.' + id;
 }
 
-export function registerCommands(core: PebbleCore, commands: CommandRegistry, ...actions: PebbleAction[]) {
+export function registerCommands(core: FSCore, prepare: () => Promise<any>, commands: CommandRegistry, ...actions: FSAction[]) {
   actions.forEach(action => {
     const command = {
       id: actionID(action.id),
       label: action.label,
     }
     const handler: CommandHandler = {
-      execute: action.execute(core),
+      execute: action.execute(core, prepare),
     }
     if (action.enabled) {
-      handler.isEnabled = action.enabled(core);
+      handler.isEnabled = action.enabled(core, prepare);
     }
     if (action.visible) {
-      handler.isVisible = action.visible(core);
+      handler.isVisible = action.visible(core, prepare);
     }
     if (action.toggled) {
-      handler.isToggled = action.toggled(core);
+      handler.isToggled = action.toggled(core, prepare);
     }
     commands.registerCommand(command, handler);
   });
 }
-export function registerSubMenus(menus: MenuModelRegistry, ...submenus: PebbleSubMenu[]) {
+export function registerSubMenus(menus: MenuModelRegistry, ...submenus: FSSubMenu[]) {
   submenus.forEach(submenu => menus.registerSubmenu(submenu.menu, submenu.label));
 }
-export function registerMenus(menus: MenuModelRegistry, ...actions: PebbleAction[]) {
+export function registerMenus(menus: MenuModelRegistry, ...actions: FSAction[]) {
   actions.forEach(action => {
     if (action.menu) {
       menus.registerMenuAction(action.menu, {
@@ -79,7 +79,7 @@ export function registerMenus(menus: MenuModelRegistry, ...actions: PebbleAction
     }
   });
 }
-export function registerKeybindings(keybindings: KeybindingRegistry, ...actions: PebbleAction[]) {
+export function registerKeybindings(keybindings: KeybindingRegistry, ...actions: FSAction[]) {
   actions.forEach(action => {
     if (action.keys) {
       keybindings.registerKeybinding({

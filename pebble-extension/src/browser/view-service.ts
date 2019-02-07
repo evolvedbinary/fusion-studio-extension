@@ -1,22 +1,22 @@
 import { WidgetFactory, Widget, SelectableTreeNode, ExpandableTreeNode, createTreeContainer, Tree, TreeModel, TreeProps, TreeWidget, defaultTreeProps } from "@theia/core/lib/browser";
 import { injectable, inject, interfaces } from "inversify";
-import { PebbleViewWidget, PebbleViewWidgetFactory } from "./widget/main";
-import { PebbleNode, PebbleDocumentNode } from "../classes/node";
+import { FSViewWidget, FSViewWidgetFactory } from "./widget/main";
+import { FSNode, FSDocumentNode } from "../classes/node";
 import { DisposableCollection } from "vscode-ws-jsonrpc";
-import { PebbleCore } from "./core";
-import { PebbleTree, PebbleTreeModel } from "../classes/tree";
+import { FSCore } from "./core";
+import { FSTree, FSTreeModel } from "../classes/tree";
 import { CONTEXT_MENU } from "./commands";
 
 @injectable()
-export class PebbleViewService implements WidgetFactory {
+export class FSViewService implements WidgetFactory {
 
-  id = 'pebble-view';
+  id = 'fusion-view';
 
-  protected widget?: PebbleViewWidget;
+  protected widget?: FSViewWidget;
 
   constructor(
-    @inject(PebbleCore) protected core: PebbleCore,
-    @inject(PebbleViewWidgetFactory) protected factory: PebbleViewWidgetFactory,
+    @inject(FSCore) protected core: FSCore,
+    @inject(FSViewWidgetFactory) protected factory: FSViewWidgetFactory,
   ) { }
 
   get open(): boolean {
@@ -24,11 +24,11 @@ export class PebbleViewService implements WidgetFactory {
   }
   
   async onOpen(node: Readonly<any>): Promise<void> {
-    if (PebbleNode.isDocument(node as any)) {
-      const document = node as PebbleDocumentNode;
+    if (FSNode.isDocument(node as any)) {
+      const document = node as FSDocumentNode;
       document.editor = await this.core.openDocument(document);
       this.widget && this.widget.model.refresh();
-    } else if (PebbleNode.isConnection(node as any)) {
+    } else if (FSNode.isConnection(node as any)) {
       this.core.showPropertiesDialog();
     }
   }
@@ -37,7 +37,7 @@ export class PebbleViewService implements WidgetFactory {
     if (!this.widget) {
       return;
     }
-    if (node.expanded && PebbleNode.isContainer(node)) {
+    if (node.expanded && FSNode.isContainer(node)) {
       this.core.expanded(node);
     }
   }
@@ -46,7 +46,7 @@ export class PebbleViewService implements WidgetFactory {
     if (!this.widget) {
       return;
     }
-    const toolbar = nodes.find(node => PebbleNode.isToolbar(node));
+    const toolbar = nodes.find(node => FSNode.isToolbar(node));
     if (toolbar) {
       this.widget.model.toggleNode(toolbar);
     } else {
@@ -73,19 +73,19 @@ const TREE_PROPS = {
   contextMenuPath: CONTEXT_MENU,
 }
 
-export function createPebbleViewWidget(parent: interfaces.Container): PebbleViewWidget {
+export function createFSViewWidget(parent: interfaces.Container): FSViewWidget {
   const child = createTreeContainer(parent);
 
-  child.bind(PebbleTree).toSelf();
-  child.rebind(Tree).toService(PebbleTree);
+  child.bind(FSTree).toSelf();
+  child.rebind(Tree).toService(FSTree);
 
-  child.bind(PebbleTreeModel).toSelf();
-  child.rebind(TreeModel).toService(PebbleTreeModel);
+  child.bind(FSTreeModel).toSelf();
+  child.rebind(TreeModel).toService(FSTreeModel);
 
   child.rebind(TreeProps).toConstantValue({ ...defaultTreeProps, ...TREE_PROPS });
 
   child.unbind(TreeWidget);
-  child.bind(PebbleViewWidget).toSelf();
+  child.bind(FSViewWidget).toSelf();
 
-  return child.get(PebbleViewWidget);
+  return child.get(FSViewWidget);
 }
