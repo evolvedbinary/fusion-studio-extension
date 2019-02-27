@@ -16,7 +16,7 @@
     "rebuild:electron": "theia rebuild:electron"
   },
   "devDependencies": {
-    "lerna": "2.4.0",
+    "lerna": "3.13.1",
     "node-sass": "^4.9.4"
   },
   "workspaces": [
