@@ -14,7 +14,7 @@
     "@theia/languages": "^0.3.19",
     "@theia/markers": "^0.3.19",
     "@theia/monaco": "^0.3.19",
-    "@theia/typescript": "^0.3.19",
+    "@theia/typescript": "^0.4.0",
     "@theia/messages": "^0.3.19",
     "@theia/textmate-grammars": "^0.3.19",
     "pebble-extension": "0.0.0"
