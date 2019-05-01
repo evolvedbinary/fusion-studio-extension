@@ -13,7 +13,7 @@
     "@theia/editor": "^0.3.19",
     "@theia/languages": "^0.3.19",
     "@theia/markers": "^0.3.19",
-    "@theia/monaco": "^0.3.19",
+    "@theia/monaco": "^0.6.0",
     "@theia/typescript": "^0.3.19",
     "@theia/messages": "^0.3.19",
     "@theia/textmate-grammars": "^0.3.19",
