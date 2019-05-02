@@ -1,20 +1,20 @@
 # Fusion Studio Theia Extension
-[![Build Status](https://travis-ci.com/evolvedbinary/pebble-extension.svg?branch=master)](https://travis-ci.com/evolvedbinary/pebble-extension)
+[![Build Status](https://travis-ci.com/evolvedbinary/fusion-studio-extension.svg?branch=master)](https://travis-ci.com/evolvedbinary/fusion-studio-extension)
 
 **Fusion DB**'s extension for [Theia IDE](https://theia-ide.org).
-If you don't know what Theia is, then you likely want the full [Fusion Studio IDE application](https://github.com/evolvedbinary/pebble).
+If you don't know what Theia is, then you likely want the full [Fusion Studio IDE application](https://github.com/evolvedbinary/fusion-studio).
 
 
 
 ## Getting started:
 ### Requirements:
-* [Yarn](https://yarnpkg.com/lang/en/docs/install/#install-via-chocolatey)
-* [Node 8](https://nodejs.org/dist/v8.11.4/) (it should be installed with Yarn)
+* [Yarn](https://yarnpkg.com/lang/en/docs/install/#install-via-chocolatey) Tested with v1.7.0
+* [Node 8](https://nodejs.org/dist/v8.11.4/) Tested with v8.11.4 (it should be installed with Yarn)
 ### Install and build:
 Clone the repo, and build the source:
 ```bash
-$ git clone https://github.com/ccheraa/pebble-extension.git
-$ cd pebble-extension
+$ git clone https://github.com/evolvedbinary/fusion-studio-extension.git
+$ cd fusion-studio-extension
 $ yarn
 ```
 ### Test the extension
