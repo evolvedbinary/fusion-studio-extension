@@ -8,8 +8,12 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 
 ## Getting started:
 ### Requirements:
-* [Yarn](https://yarnpkg.com/lang/en/docs/install/#install-via-chocolatey) Tested with v1.7.0
-* [Node 8](https://nodejs.org/dist/v8.11.4/) Tested with v8.11.4 (it should be installed with Yarn)
+* [Yarn](https://yarnpkg.com/lang/en/docs/install/#install-via-chocolatey). Tested with v1.7.0 and v1.15.2
+* [Node 8](https://nodejs.org/dist/v8.11.4/). Tested with v8.11.4 (it should be installed with nvm or Yarn)
+* [Python 2](https://www.python.org/). Tested with 2.7.16
+* Windows platforms only:
+    * Microsoft Visual Studio 2015 C++. Tested with Community Edition
+ 
 ### Install and build:
 Clone the repo, and build the source:
 ```bash
