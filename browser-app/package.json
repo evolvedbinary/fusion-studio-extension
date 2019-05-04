@@ -17,7 +17,7 @@
     "@theia/typescript": "^0.3.19",
     "@theia/messages": "^0.3.19",
     "@theia/textmate-grammars": "^0.3.19",
-    "pebble-extension": "0.0.0"
+    "fusion-studio-extension": "0.1.0"
   },
   "devDependencies": {
     "@theia/cli": "^0.3.19"

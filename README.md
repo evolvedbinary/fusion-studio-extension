@@ -50,7 +50,7 @@ $ yarn run sass:watch
 ```
 * To compile the extension
 ```bash
-$ cd pebble-extension
+$ cd fusion-studio-extension
 $ yarn watch
 ```
 * To compile the browser app

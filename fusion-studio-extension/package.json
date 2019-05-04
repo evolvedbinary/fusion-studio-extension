@@ -1,9 +1,9 @@
 {
-  "name": "pebble-extension",
+  "name": "fusion-studio-extension",
   "keywords": [
     "theia-extension"
   ],
-  "version": "0.0.0",
+  "version": "0.1.0",
   "author": "Evolved Binary <tech@evolvedbinary.com>",
   "license": "GPL-3.0",
   "files": [
@@ -27,7 +27,6 @@
     "rimraf": "latest"
   },
   "scripts": {
-    "prepare": "yarn run clean && yarn run build",
     "clean": "rimraf lib",
     "build": "tsc",
     "watch": "tsc -w"
