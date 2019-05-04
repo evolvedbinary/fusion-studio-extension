@@ -3,7 +3,7 @@
   "keywords": [
     "theia-extension"
   ],
-  "version": "0.1.0",
+  "version": "0.6.0",
   "author": "Evolved Binary <tech@evolvedbinary.com>",
   "license": "GPL-3.0",
   "files": [
@@ -12,7 +12,7 @@
     "src"
   ],
   "dependencies": {
-    "@theia/core": "^0.3.19",
+    "@theia/core": "latest",
     "awesomplete": "^1.1.4",
     "filesize": "^4.0.0",
     "mime-types": "^2.1.21",
@@ -27,14 +27,15 @@
     "rimraf": "latest"
   },
   "scripts": {
+    "prepare": "yarn run clean && yarn run build",
     "clean": "rimraf lib",
     "build": "tsc",
     "watch": "tsc -w"
   },
   "theiaExtensions": [
     {
-      "frontend": "lib/browser/frontend-module",
-      "backend": "lib/node/backend-module"
+      "frontend": "lib/browser/fusion-studio-frontend-module",
+      "backend": "lib/node/fusion-studio-backend-module"
     }
   ]
 }

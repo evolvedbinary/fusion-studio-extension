@@ -21,6 +21,12 @@ $ git clone https://github.com/evolvedbinary/fusion-studio-extension.git
 $ cd fusion-studio-extension
 $ yarn
 ```
+
+> You may get the error `No package 'x11' found` on Ubuntu (Minimal installation), you'll need to install these packages:
+> ```bash
+> sudo apt install libx11-dev libxkbfile-dev libxkbfile-dev
+> ```
+
 ### Test the extension
 #### Test on the browser
 * run this after install, and run it right after switching from Electron to the browser:
