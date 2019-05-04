@@ -35,3 +35,11 @@ script:
 
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - libx11-dev
+      - libxkbfile-dev
