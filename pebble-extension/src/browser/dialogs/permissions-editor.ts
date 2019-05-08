@@ -24,7 +24,8 @@ export class FSPermissionsEditor {
   } = {};
   constructor (permissions?: FSPermissions) {
     this.table.className = 'permissions-editor';
-    for (let scope of FS_PERMISSION_SCOPES) {
+    for (let i in FS_PERMISSION_SCOPES) {
+      const scope = FS_PERMISSION_SCOPES[i];
       this.rows[scope] = document.createElement('tr');
       this.cells[scope] = { label: document.createElement('td') };
       this.cells[scope].label.innerHTML = scope;
@@ -33,24 +34,11 @@ export class FSPermissionsEditor {
       this.labels[scope] = {};
       this.checks[scope] = {};
       for (let type of FS_PERMISSION_TYPES) {
-        this.checks[scope][type] = new Checkbox(type);
+        this.checks[scope][type] = new Checkbox(type === 'special' ? FS_PERMISSION_SPECIAL[i] : type);
         this.cells[scope][type] = document.createElement('td');
         this.cells[scope][type].append(this.checks[scope][type].container);
         this.rows[scope].append(this.cells[scope][type]);
       }
-    }
-    this.rows.special = document.createElement('tr');
-    this.cells.special = { label: document.createElement('td') };
-    this.cells.special.label.innerHTML = 'Special';
-    this.table.append(this.rows.special);
-    this.rows.special.append(this.cells.special.label);
-    this.labels.special = {};
-    this.checks.special = {};
-    for (let type of FS_PERMISSION_SPECIAL) {
-      this.checks.special[type] = new Checkbox(type);
-      this.cells.special[type] = document.createElement('td');
-      this.cells.special[type].append(this.checks.special[type].container);
-      this.rows.special.append(this.cells.special[type]);
     }
     this.permissions = permissions;
   }
@@ -76,9 +64,6 @@ export class FSPermissionsEditor {
         add(this.checks[scope][type].container, 'click');
       }
     }
-    for (let type of FS_PERMISSION_SPECIAL) {
-      add(this.checks.special[type].container, 'click');
-    }
   }
   private write(permissions: FSPermissions) {
     for (let scope of FS_PERMISSION_SCOPES) {
@@ -86,18 +71,12 @@ export class FSPermissionsEditor {
         this.checks[scope][type].checked = (permissions as any)[scope][type];
       }
     }
-    for (let type of FS_PERMISSION_SPECIAL) {
-      this.checks.special[type].checked = (permissions.special as any)[type];
-    }
   }
   private read() {
     for (let scope of FS_PERMISSION_SCOPES) {
       for (let type of FS_PERMISSION_TYPES) {
         (this._permissions as any)[scope][type] = this.checks[scope][type].checked;
       }
-    }
-    for (let type of FS_PERMISSION_SPECIAL) {
-      (this._permissions.special as any)[type] = this.checks.special[type].checked;
     }
   }
 }
