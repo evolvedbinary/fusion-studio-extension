@@ -1,7 +1,6 @@
 version: '{branch}-{build}'
 
 environment:
-  nodejs_version: 8.16.0
   YARN_GPG: no
 
   matrix:
@@ -18,6 +17,7 @@ stack: node 8
 
 install:
   - node --version && yarn --version && python --version
+  - sh: sudo apt-get --yes install libx11-dev libxkbfile-dev
   - cmd: yarn
   - sh: yarn
 
