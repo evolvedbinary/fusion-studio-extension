@@ -12,9 +12,9 @@ cache:
   - '%APPDATA%\npm-cache'               # npm cache
 
 install:
+  - node --version && yarn --version && python --version
   - cmd: yarn
   - sh: yarn
 
 build_script:
-  - cmd: yarn run rebuild:browser && yarn run rebuild:electron
-  - sh: yarn run rebuild:browser && yarn run rebuild:electron 
+  - yarn run rebuild:browser && yarn run rebuild:electron
