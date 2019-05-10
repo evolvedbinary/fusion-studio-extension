@@ -1,6 +1,7 @@
 version: '{branch}-{build}'
 
 environment:
+  nodejs_version: 8.16.0
   YARN_GPG: no
 
   matrix:
@@ -10,6 +11,9 @@ environment:
 cache:
   - node_modules                        # local npm modules
   - '%APPDATA%\npm-cache'               # npm cache
+
+# used on Ubuntu
+stack: node 8
 
 install:
   - node --version && yarn --version && python --version
