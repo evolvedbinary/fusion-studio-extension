@@ -42,3 +42,6 @@ addons:
     packages:
       - libx11-dev
       - libxkbfile-dev
+  homebrew:
+    packages:
+      - yarn
