@@ -5,6 +5,7 @@ environment:
   YARN_GPG: no
 
   matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
 
