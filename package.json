@@ -3,13 +3,13 @@
   "author": "Evolved Binary <tech@evolvedbinary.com>",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/evolvedbinary/pebble-extension/issues"
+    "url": "https://github.com/evolvedbinary/fusion-studio-extension/issues"
   },
-  "homepage": "https://github.com/evolvedbinary/pebble-extension#readme",
+  "homepage": "https://github.com/evolvedbinary/fusion-studio-extension#readme",
   "scripts": {
     "postinstall": "yarn sass & yarn dependencies",
-    "sass" : "node-sass ./pebble-extension/src/browser/style/index.scss ./pebble-extension/src/browser/style/index.css",
-    "sass:watch" : "node-sass ./pebble-extension/src/browser/style/index.scss ./pebble-extension/src/browser/style/index.css --watch",
+    "sass" : "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css",
+    "sass:watch" : "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css --watch",
     "dependencies" : "node ./dependencies.js",
     "prepare": "lerna run prepare",
     "rebuild:browser": "theia rebuild:browser",
@@ -20,6 +20,6 @@
     "node-sass": "^4.9.4"
   },
   "workspaces": [
-    "pebble-extension", "browser-app", "electron-app"
+    "fusion-studio-extension", "browser-app", "electron-app"
   ]
 }

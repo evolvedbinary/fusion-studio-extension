@@ -3,24 +3,24 @@
   "name": "browser-app",
   "version": "0.0.0",
   "dependencies": {
-    "@theia/core": "^0.3.19",
-    "@theia/filesystem": "^0.3.19",
-    "@theia/workspace": "^0.3.19",
-    "@theia/preferences": "^0.3.19",
-    "@theia/navigator": "^0.3.19",
-    "@theia/process": "^0.3.19",
-    "@theia/terminal": "^0.3.19",
-    "@theia/editor": "^0.3.19",
-    "@theia/languages": "^0.3.19",
-    "@theia/markers": "^0.3.19",
-    "@theia/monaco": "^0.3.19",
-    "@theia/typescript": "^0.3.19",
-    "@theia/messages": "^0.3.19",
-    "@theia/textmate-grammars": "^0.3.19",
-    "pebble-extension": "0.0.0"
+    "@theia/core": "latest",
+    "@theia/filesystem": "latest",
+    "@theia/workspace": "latest",
+    "@theia/preferences": "latest",
+    "@theia/navigator": "latest",
+    "@theia/process": "latest",
+    "@theia/terminal": "latest",
+    "@theia/editor": "latest",
+    "@theia/languages": "latest",
+    "@theia/markers": "latest",
+    "@theia/monaco": "latest",
+    "@theia/typescript": "latest",
+    "@theia/messages": "latest",
+    "@theia/textmate-grammars": "latest",
+    "fusion-studio-extension": "latest"
   },
   "devDependencies": {
-    "@theia/cli": "^0.3.19"
+    "@theia/cli": "latest"
   },
   "scripts": {
     "prepare": "theia build --mode development",    
