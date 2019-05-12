@@ -63,6 +63,10 @@ To run the integrations tests you need a running database with the fusion-studio
 ```bash
 yarn run cypress open
 ```
+or in cases where the above fails to load the [cypress test runner](https://docs.cypress.io/guides/core-concepts/test-runner.html#Overview), use:
+```bash
+./node_modules/.bin/cypress open
+```
 
 Integration tests are also run on travis. To see a similar command line style output use:
 ```bash
