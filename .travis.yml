@@ -13,14 +13,14 @@ env:
 
 os:
   - linux
+
   - osx
 #  - windows
 
 cache:
   directories:
   - node_modules
-  - $HOME/.cache/electron
-  - $HOME/.cache/electron-builder
+  - $HOME/.cache
   - $HOME/.npm/_prebuilds
 
 before_install:
@@ -29,8 +29,11 @@ before_install:
 install:
   - yarn
 
-script:
+before_script:
   - yarn run sass
+
+script:
+  - yarn run cypress
 
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
@@ -42,6 +45,7 @@ addons:
     packages:
       - libx11-dev
       - libxkbfile-dev
+      - libgconf2-4
   homebrew:
     packages:
       - yarn

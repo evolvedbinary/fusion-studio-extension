@@ -18,6 +18,9 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 *   Windows platforms only:
     *   Microsoft Visual Studio 2015 C++. Tested with Community Edition
 
+#### For Testing
+*   [cypress.js](https://www.cypress.io) v3.2.0    
+
 
 
 ### Install and build:
@@ -54,6 +57,13 @@ $ yarn run rebuild:electron
 $ cd electron-app
 $ yarn start
 ```
+
+#### Integration Testing
+You can run the integration test GUI by using:
+```bash
+yarn run cypress open
+```
+
 ### Developing
 To watch for files changes:
 *   To compile css:
