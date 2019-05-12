@@ -59,11 +59,15 @@ $ yarn start
 ```
 
 #### Integration Testing
-You can run the integration test GUI by using:
+To run the integrations tests you need a running database with the fusion-studio-api installed. It should be reachable at `localhost:8080` and have an empty admin password. You can then run the integration test GUI locally by using:
 ```bash
 yarn run cypress open
 ```
 
+Integration tests are also run on travis. To see a similar command line style output use:
+```bash
+yarn run cypress
+```
 ### Developing
 To watch for files changes:
 *   To compile css:

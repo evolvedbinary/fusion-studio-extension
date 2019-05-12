@@ -1,6 +1,10 @@
 language: node_js
+
 node_js:
   - "8"
+
+services:
+  - docker
 
 matrix:
   include:
@@ -19,6 +23,9 @@ matrix:
       homebrew:
         packages:
           - yarn
+      before_install: skip
+      script: skip
+
 #  - os: windows
 
 env:
@@ -26,15 +33,30 @@ env:
     - ELECTRON_CACHE=$HOME/.cache/electron
     - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - YARN_GPG=no
+    # Add further images as needed to expand the matrix
+    - IMG=existdb/existdb:experimental
+    # Adjust for new releases of api
+    - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.0/fusion-studio-api-0.1.0.xar
 
 before_install:
-  - node --version && yarn --version && python --version
+  - docker pull $IMG
+  - docker create  --name exist-ci -p 8080:8080 $IMG
+  - wget $API_XAR
+  - docker cp ./*.xar exist-ci:exist/autodeploy
+  - docker start exist-ci
+  - rm *.xar
+  - sleep 10
 
 install:
   - yarn
+  - yarn run sass
+  - yarn run rebuild:browser
+  - cd browser-app
+  - yarn start &
+  - cd ..
 
 before_script:
-  - yarn run sass
+  - yarn test
 
 script:
   - yarn run cypress

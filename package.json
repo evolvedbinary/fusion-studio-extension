@@ -14,7 +14,8 @@
     "prepare": "lerna run prepare",
     "rebuild:browser": "theia rebuild:browser",
     "rebuild:electron": "theia rebuild:electron",
-    "cypress": "cypress run"
+    "cypress": "cypress run",
+    "test": "echo \"no test specified\" && exit 0"
   },
   "devDependencies": {
     "cypress": "^3.2.0",
