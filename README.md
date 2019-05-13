@@ -73,11 +73,11 @@ Integration tests are also run on travis. To see a similar command line style ou
 yarn run cypress
 ```
 ### Developing
-To watch for files changes:
 *   To compile css:
 ```bash
 $ yarn run sass:watch
 ```
+To watch for files changes:
 *   To compile the extension
 ```bash
 $ cd fusion-studio-extension

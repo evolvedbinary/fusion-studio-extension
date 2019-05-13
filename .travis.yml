@@ -3,13 +3,12 @@ language: node_js
 node_js:
   - "8"
 
-services:
-  - docker
-
 matrix:
   include:
     - os: linux
       dist: xenial
+      services:
+        - docker
       addons:
         apt:
           sources:
@@ -18,6 +17,13 @@ matrix:
             - libx11-dev
             - libxkbfile-dev
             - libgconf2-4
+      env:
+        # Adjust as necessary following exist-db development
+        - IMG=existdb/existdb:experimental
+        # - IMG=existdb/existdb:latest
+        # - IMG=existdb/existdb:release
+        # Adjust for new releases of api
+        - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.0/fusion-studio-api-0.1.0.xar
     - os: osx
       osx_image: xcode10.1
       homebrew:
@@ -33,10 +39,6 @@ env:
     - ELECTRON_CACHE=$HOME/.cache/electron
     - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - YARN_GPG=no
-    # Add further images as needed to expand the matrix
-    - IMG=existdb/existdb:experimental
-    # Adjust for new releases of api
-    - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.0/fusion-studio-api-0.1.0.xar
 
 before_install:
   - docker pull $IMG
@@ -59,7 +61,7 @@ before_script:
   - yarn test
 
 script:
-  - yarn run cypress
+  - yarn run cypress open
 
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
