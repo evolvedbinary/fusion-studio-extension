@@ -70,3 +70,7 @@ lib
 *-app/*
 !*-app/package.json
 fusion-studio-extension/src/browser/style/index.css
+
+# integration test files
+cypress/videos/*
+cypress/screenshots/*
