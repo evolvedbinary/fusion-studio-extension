@@ -70,7 +70,7 @@ or in cases where the above fails to load the [cypress test runner](https://docs
 
 Integration tests are also run on travis. To see a similar command line style output use:
 ```bash
-yarn run cypress
+yarn run cypress run
 ```
 ### Developing
 *   To compile css:

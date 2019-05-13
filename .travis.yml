@@ -61,13 +61,9 @@ before_script:
   - yarn test
 
 script:
-  - yarn run cypress open
+  - yarn run cypress run
 
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
 cache: yarn
-  # directories:
-  # - node_modules
-  # - $HOME/.cache
-  # - $HOME/.npm/_prebuilds
