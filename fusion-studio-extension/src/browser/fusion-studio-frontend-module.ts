@@ -20,6 +20,9 @@ import { LanguageGrammarDefinitionContribution } from "@theia/monaco/lib/browser
 import { XQueryGrammaribution } from "./language-contribution";
 
 import '../../src/browser/style/index.css';
+import { FSWelcomeWidgetFactory } from "./widget/welcome";
+import { FSWelcomeContribution } from "./welcome-contribution";
+import { FSWelcomeService, createFSWelcomeWidget } from "./welcome-service";
 
 export default new ContainerModule(bind => {
 
@@ -34,14 +37,20 @@ export default new ContainerModule(bind => {
   bind(FSEvalWidgetFactory).toFactory(ctx =>
     () => createFSEvalWidget(ctx.container)
   );
+  bind(FSWelcomeWidgetFactory).toFactory(ctx =>
+    () => createFSWelcomeWidget(ctx.container)
+  );
 
   bind(FSViewService).toSelf().inSingletonScope();
   bind(WidgetFactory).toDynamicValue(context => context.container.get(FSViewService));
   bind(FSEvalService).toSelf().inSingletonScope();
   bind(WidgetFactory).toDynamicValue(context => context.container.get(FSEvalService));
+  bind(FSWelcomeService).toSelf().inSingletonScope();
+  bind(WidgetFactory).toDynamicValue(context => context.container.get(FSWelcomeService));
 
   bindViewContribution(bind, FSContribution);
   bindViewContribution(bind, FSEvalContribution);
+  bindViewContribution(bind, FSWelcomeContribution);
 
   bind(FSCore).toSelf().inSingletonScope();
   bind(DragController).toSelf().inSingletonScope();
