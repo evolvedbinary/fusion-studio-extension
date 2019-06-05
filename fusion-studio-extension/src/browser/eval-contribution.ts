@@ -22,7 +22,6 @@ export class FSEvalContribution extends AbstractViewContribution<FSEvalWidget> {
   }
 
   async initializeLayout(): Promise<void> {
-    console.log('initializw layout: evel');
     await this.openView();
   }
 
