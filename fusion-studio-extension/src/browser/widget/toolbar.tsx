@@ -23,7 +23,7 @@ export class FSToolbar extends React.Component<FSToolbarProps, any> {
     } else {
       click = action && action.bind(this);
     }
-    return <button id={id} className={'fusion-action' + (color ? ' color-' + color : '')} title={text} onClick={click}>
+    return <button id={id} className={'fusion-action open-workspace-button' + (color ? ' color-' + color : '')} title={text} onClick={click}>
       <span className={'fa-fw ' + icon}></span>
     </button>;
   }
