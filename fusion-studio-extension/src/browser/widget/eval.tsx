@@ -191,13 +191,13 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
         }}>
           {this.serializationTypes()}
         </select>
-        <button className="x-btn" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
+        <button className="x-btn open-workspace-button" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
       </div>
       <div className='x-body' ref={this.elBody}>{this.result}</div>
       <div className='x-footer'>
         {((this.serialization === 'xml' || this.serialization === 'json') && (this.pager.pages > 1 || !this.pager.loaded)) && this.renderPager()}
         <span className="x-separator"></span>
-        <button disabled={this.result === ''} onClick={() => this.core.newItemFromResult()}><i className="fa fa-fw fa-file-code-o"></i> New file</button>
+        <button className="open-workspace-button" disabled={this.result === ''} onClick={() => this.core.newItemFromResult()}><i className="fa fa-fw fa-file-code-o"></i> New file</button>
       </div>
     </React.Fragment>
   }

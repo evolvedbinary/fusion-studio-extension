@@ -5,6 +5,7 @@ export type FSWelcomeWidgetFactory = () => FSWelcomeWidget;
 export const FSWelcomeWidgetFactory = Symbol('FSEditorWidgetFactory');
 
 export class FSWelcomeWidget extends ReactWidget {
+  checked = this.restore();
   constructor(
   ) {
     super();
@@ -16,14 +17,18 @@ export class FSWelcomeWidget extends ReactWidget {
     this.addClass('fusion-welcome');
     this.update();
   }
-  checked = this.restore();
 
-  store(state: any) {
-    localStorage.setItem('welcome.show', state);
+  store(state: boolean) {
+    if (state === this.checked) {
+      return;
+    }
+    this.checked = state;
+    localStorage.setItem('welcome.show', state ? 'true' : 'false');
+    this.update();
   }
   
   restore() {
-    return !!localStorage.getItem('welcome.show');
+    return localStorage.getItem('welcome.show') !== 'false';
   }
 
   protected render(): React.ReactNode {
@@ -35,11 +40,7 @@ export class FSWelcomeWidget extends ReactWidget {
         <li><p>For more information about FusionDB, visit <a href="https://www.fusiondb.com">https://www.fusiondb.com</a>.</p></li>
         <li><p>For the Fusion Studio, visit <a href="https://github.com/evolvedbinary/fusion-studio">https://github.com/evolvedbinary/fusion-studio</a>.</p></li>
       </ul>
-      <span className="checkbox" onClick={e => {
-        this.checked = !this.checked;
-        this.store(this.checked ? 'true' : '');
-        this.update();
-      }}>
+      <span className="checkbox" onClick={e => this.store(!this.checked)}>
         <span className={'checkbox-box' + (this.checked ? ' checked' : '')}>
           <span></span>
         </span>
