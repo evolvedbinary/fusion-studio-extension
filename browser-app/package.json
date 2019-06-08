@@ -17,7 +17,7 @@
     "@theia/typescript": "latest",
     "@theia/messages": "latest",
     "@theia/textmate-grammars": "latest",
-    "fusion-studio-extension": "latest"
+    "fusion-studio-extension": "file:../fusion-studio-extension"
   },
   "devDependencies": {
     "@theia/cli": "latest"

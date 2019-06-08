@@ -103,7 +103,6 @@ export class FSCore {
 
   protected async sort(node: CompositeTreeNode, sortfunc: (a: FSNode, b: FSNode) => number) {
     if (this._model) {
-      console.log('sorting...', node.id);
       if (FSNode.isContainer(node)) {
         node.children = (node.children as FSNode[]).sort(sortfunc);
       }
@@ -1548,7 +1547,6 @@ export class FSCore {
       });
       let group = await dialog.open();
       if (group) {
-        console.log(group);
         if (await FSApi.addGroup(connectionNode.connection, group)) {
           this.node.connectionNode.connection.groups.push(group.groupName);
           this.addGroupNode(connectionNode.security.groups, group.groupName);

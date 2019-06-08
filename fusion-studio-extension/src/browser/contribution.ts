@@ -5,6 +5,7 @@ import { MenuModelRegistry, CommandRegistry } from "@theia/core";
 import { FSCore } from "./core";
 import { registerCommands, registerMenus, registerKeybindings, registerSubMenus } from "../classes/action";
 import { FS_COMMANDS, FS_SUBMENUES } from "./commands";
+import { FrontendApplicationStateService } from "@theia/core/lib/browser/frontend-application-state";
 
 export const FS_CONNECTIONS_WIDGET_FACTORY_ID = 'fusion-view';
 @injectable()
@@ -14,6 +15,7 @@ export class FSContribution extends AbstractViewContribution<FSViewWidget> {
     @inject(FSCore) protected readonly core: FSCore,
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WidgetManager) protected widgetManager: WidgetManager,
+    @inject(FrontendApplicationStateService) protected applicationStateService: FrontendApplicationStateService,
   ) {
     super({
       widgetId: FS_CONNECTIONS_WIDGET_FACTORY_ID,
@@ -23,6 +25,11 @@ export class FSContribution extends AbstractViewContribution<FSViewWidget> {
       },
       toggleCommandId: 'FusionView:toggle',
       toggleKeybinding: 'ctrlcmd+shift+c'
+    });
+    this.applicationStateService.onStateChanged(e => {
+      if (e === 'initialized_layout') {
+        this.openView({ activate: true, reveal: true })
+      }
     });
   }
 
