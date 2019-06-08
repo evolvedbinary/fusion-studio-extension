@@ -1139,7 +1139,7 @@ export class FSCore {
     const dialog = new FSConnectionDialog({
       title: 'New Connection',
       name: 'localhost',
-      server: 'http://localhost:8080',
+      server: 'http://localhost:4059',
       username: 'admin',
       password: '',
     });

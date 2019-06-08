@@ -34,7 +34,12 @@ export class FSWelcomeWidget extends ReactWidget {
   protected render(): React.ReactNode {
     return <React.Fragment>
       <h1><i className="fa fa-plug fa-fw" /> Fusion Studio</h1>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Officiis, dolore. Praesentium maxime ipsa perferendis harum sunt quisquam, totam excepturi aut. Cumque rem debitis culpa modi et. Possimus dolorum nihil quis?</p>
+      <p>Welcome to Fusion Studio, an IDE and Management Tool for FusionDB Server.</p>
+      <br/>
+      <ul>
+        <li><p>For more information about FusionDB, visit <a href="https://www.fusiondb.com">https://www.fusiondb.com</a>.</p></li>
+        <li><p>For the Fusion Studio, visit <a href="https://github.com/evolvedbinary/fusion-studio">https://github.com/evolvedbinary/fusion-studio</a>.</p></li>
+      </ul>
       <span className="checkbox" onClick={e => this.store(!this.checked)}>
         <span className={'checkbox-box' + (this.checked ? ' checked' : '')}>
           <span></span>
