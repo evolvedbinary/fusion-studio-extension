@@ -22,9 +22,11 @@ export class FSWelcomeContribution extends AbstractViewContribution<FSWelcomeWid
     this.applicationStateService.onStateChanged(e => {
       if (e === 'initialized_layout') {
         this.openView({ activate: true, reveal: true });
-        if (!localStorage.getItem('welcome.show')) {
-          this.openView({ toggle: true });
-        }
+        this.widget.then(w => {
+          if (!w.restore()) {
+            this.openView({ toggle: true });
+          }
+        });
       }
     });
   }
