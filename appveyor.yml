@@ -13,7 +13,7 @@ cache:
   - '%APPDATA%\npm-cache'               # npm cache
 
 # used on Ubuntu
-stack: node 8
+stack: node 10
 
 install:
   - node --version && yarn --version && python --version
