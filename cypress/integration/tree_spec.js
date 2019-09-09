@@ -17,7 +17,12 @@ context('Fusion Studio', function() {
             .trigger('mousemove')
             .click()
         })
-      // accept default credentials
+      // set connection credentials
+      cy.get('div.name-field > input').clear().type('localhost')
+      cy.get('div.server-field > input').clear().type('http://localhost:8080')
+      cy.get('div.username-field > input').clear().type('admin')
+      cy.get('div.password-field > input').clear()
+      // open connection
       cy.get('.main').click()
       // see it in action
       cy.get('.ReactVirtualized__Grid')
