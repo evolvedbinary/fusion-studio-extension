@@ -38,7 +38,7 @@ export class FSWelcomeWidget extends ReactWidget {
       <br/>
       <ul>
         <li><p>For more information about FusionDB, visit <a href="https://www.fusiondb.com">https://www.fusiondb.com</a>.</p></li>
-        <li><p>For the Fusion Studio, visit <a href="https://github.com/evolvedbinary/fusion-studio">https://github.com/evolvedbinary/fusion-studio</a>.</p></li>
+        <li><p>For the Fusion Studio source code, visit <a href="https://github.com/evolvedbinary/fusion-studio">https://github.com/evolvedbinary/fusion-studio</a>.</p></li>
       </ul>
       <span className="checkbox" onClick={e => this.store(!this.checked)}>
         <span className={'checkbox-box' + (this.checked ? ' checked' : '')}>
