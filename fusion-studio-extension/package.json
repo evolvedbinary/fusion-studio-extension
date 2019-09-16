@@ -3,7 +3,7 @@
   "keywords": [
     "theia-extension"
   ],
-  "version": "0.7.0",
+  "version": "0.7.2",
   "author": "Evolved Binary <tech@evolvedbinary.com>",
   "license": "GPL-3.0",
   "files": [
