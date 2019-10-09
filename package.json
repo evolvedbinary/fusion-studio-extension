@@ -7,10 +7,9 @@
   },
   "homepage": "https://github.com/evolvedbinary/fusion-studio-extension#readme",
   "scripts": {
-    "postinstall": "yarn sass & yarn dependencies",
+    "postinstall": "yarn sass",
     "sass": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css",
     "sass:watch": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css --watch",
-    "dependencies": "node ./dependencies.js",
     "prepare": "lerna run prepare",
     "rebuild:browser": "theia rebuild:browser",
     "rebuild:electron": "theia rebuild:electron",
