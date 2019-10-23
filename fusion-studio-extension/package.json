@@ -21,7 +21,7 @@
     "typescript": "3.6.4"
   },
   "devDependencies": {
-    "@types/awesomplete": "1.1.9",
+    "@types/awesomplete": "1.1.10",
     "@types/filesize": "4.2.0",
     "@types/mime-types": "2.1.0",
     "@types/ripemd160": "2.0.0",
