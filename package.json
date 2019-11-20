@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "cypress": "3.5.0",
-    "lerna": "3.18.3",
+    "lerna": "3.18.5",
     "node-sass": "4.13.0"
   },
   "workspaces": [
