@@ -25,7 +25,7 @@
     "@types/filesize": "5.0.0",
     "@types/mime-types": "2.1.0",
     "@types/ripemd160": "2.0.0",
-    "rimraf": "3.0.0"
+    "rimraf": "3.0.1"
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build",
