@@ -16,7 +16,7 @@
     "awesomplete": "1.1.5",
     "filesize": "5.0.3",
     "mime-types": "2.1.24",
-    "moment": "2.24.0",
+    "moment": "2.25.0",
     "ripemd160": "2.0.2",
     "typescript": "3.6.4"
   },
