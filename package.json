@@ -16,7 +16,7 @@
     "test": "echo \"no test specified\" && exit 0"
   },
   "devDependencies": {
-    "cypress": "3.5.0",
+    "cypress": "4.6.0",
     "lerna": "3.18.3",
     "node-sass": "4.13.0"
   },
