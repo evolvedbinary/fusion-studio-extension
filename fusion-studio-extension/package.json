@@ -3,13 +3,15 @@
   "keywords": [
     "theia-extension"
   ],
-  "version": "0.7.3",
+  "version": "0.8.3",
   "author": "Evolved Binary <tech@evolvedbinary.com>",
   "license": "GPL-3.0",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "files": [
     "data",
     "lib",
-    "src"
+    "src/browser/style/index.css"
   ],
   "dependencies": {
     "@theia/core": "latest",
@@ -20,6 +22,7 @@
     "ripemd160": "2.0.2",
     "typescript": "3.9.6"
   },
+
   "devDependencies": {
     "@types/awesomplete": "1.1.10",
     "@types/filesize": "5.0.0",
