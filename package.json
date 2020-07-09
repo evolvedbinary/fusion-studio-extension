@@ -16,9 +16,9 @@
     "test": "echo \"no test specified\" && exit 0"
   },
   "devDependencies": {
-    "cypress": "3.5.0",
-    "lerna": "3.18.3",
-    "node-sass": "4.13.0"
+    "cypress": "4.10.0",
+    "lerna": "3.22.1",
+    "node-sass": "4.14.1"
   },
   "workspaces": [
     "fusion-studio-extension",
