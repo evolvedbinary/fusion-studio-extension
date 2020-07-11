@@ -14,10 +14,8 @@
     "@theia/languages": "latest",
     "@theia/markers": "latest",
     "@theia/monaco": "latest",
-    "@theia/typescript": "latest",
     "@theia/messages": "latest",
     "@theia/electron": "latest",
-    "@theia/textmate-grammars": "latest",
     "fusion-studio-extension": "file:../fusion-studio-extension"
   },
   "devDependencies": {

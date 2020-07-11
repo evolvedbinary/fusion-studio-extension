@@ -1,12 +1,13 @@
 import { Resource, ResourceResolver } from "@theia/core";
 import URI from "@theia/core/lib/common/uri";
 import { injectable, inject } from "inversify";
-import { TextDocumentContentChangeEvent, TextDocument } from "vscode-languageserver-types";
+import { TextDocument } from "vscode-languageserver-types";
 import { FSApi } from "../common/api";
 import { FSDocument } from "../classes/item";
 import { FSCore, FS_RESOURCE_SCHEME } from "./core";
 import { FSDocumentNode, FSNode, FSConnectionNode } from "../classes/node";
 import { createError, FSError, FSErrorObject } from '../classes/error';
+import { TextDocumentContentChangeEvent } from "vscode";
 
 @injectable()
 export class FSResource implements Resource {
