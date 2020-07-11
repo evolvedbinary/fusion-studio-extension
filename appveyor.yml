@@ -1,6 +1,7 @@
 version: '{branch}-{build}'
 
 environment:
+  nodejs_version: "10"
   YARN_GPG: no
   nodejs_version: "10"
 
