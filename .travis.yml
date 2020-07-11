@@ -28,7 +28,7 @@ matrix:
         - rm *.xar
         - sleep 10
       script:
-        - yarn run cypress run
+        - yarn run cypress run --record
     - os: osx
       osx_image: xcode11
       addons:
