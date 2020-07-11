@@ -17,7 +17,7 @@
     "@theia/core": "latest",
     "awesomplete": "1.1.5",
     "filesize": "6.1.0",
-    "mime-types": "2.1.24",
+    "mime-types": "2.1.27",
     "moment": "2.24.0",
     "ripemd160": "2.0.2",
     "typescript": "3.9.6"
