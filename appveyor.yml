@@ -1,6 +1,7 @@
 version: '{branch}-{build}'
 
 environment:
+  nodejs_version: "10"
   YARN_GPG: no
 
   matrix:
@@ -16,6 +17,7 @@ cache:
 stack: node 10
 
 install:
+  - cmd: PowerShell.exe "Install-Product node $env:nodejs_version"
   - node --version && yarn --version && python --version
   - sh: sudo apt-get --yes install libx11-dev libxkbfile-dev
   - cmd: yarn
