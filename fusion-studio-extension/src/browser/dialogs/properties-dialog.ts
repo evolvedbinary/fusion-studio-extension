@@ -55,6 +55,7 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
       this.name = props.node.name || '';
       this.nameField.value = this.name;
       this.nameField.type = 'text';
+      this.nameField.className = 'theia-input';
       this.nameField.addEventListener('focus', e => this.nameField.select());
       this.item = item;
       addKeys({
@@ -90,6 +91,7 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
           }
           this.convertBtn.icon.className = item.binaryDoc ? CONVERT_XML : CONVERT_BIN;
         })
+        this.convertBtn.button.className = 'theia-button';
         addKeys({
           'Modified': { type: 'date', value: item.lastModified },
           'Media Type': item.mediaType,
@@ -120,8 +122,10 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
       this.permissionsEditor.permissions = item.permissions;
       autocomplete(this.ownerSelect, props.node.connectionNode.connection.users);
       this.ownerSelect.value = item.owner;
+      this.ownerSelect.className = 'theia-input';
       autocomplete(this.groupSelect, props.node.connectionNode.connection.groups);
       this.groupSelect.value = item.group;
+      this.groupSelect.className = 'theia-input';
     }
     this.containerDiv.appendChild(this.keys.container);
     this.containerDiv.appendChild(this.permissionsEditor.table);

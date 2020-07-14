@@ -18,7 +18,7 @@ export class FSHome extends React.Component<FSHomeProps, any> {
           <p>To start add a new one.</p>
         </div>
         <div className='open-workspace-button-container'>
-          <button className='open-workspace-button' title='Connect to a server' onClick={() => this.props.core.execute('connect')}><i className="fa fa-plus fa-fw" /> New Server...</button>
+          <button className='open-workspace-button theia-button' title='Connect to a server' onClick={() => this.props.core.execute('connect')}><i className="fa fa-plus fa-fw" /> New Server...</button>
         </div>
       </div>
     );

@@ -50,7 +50,7 @@ export class FSGroupDialog extends AbstractDialog<FSGroupDialogResult> {
       });
       const label = document.createElement('div');
       label.style.fontWeight = 'bold';
-      label.innerText = 'managers';
+      label.innerText = 'Managers';
       this.tabs.tabs[0].appendChild(label);
       this.tabs.tabs[0].appendChild(this.managersKeys.container);
       

@@ -71,10 +71,12 @@ export function addKey(index: string, key: string | number | Date | IKey, elemen
         value: document.createElement('input'),
       }
       inputs.key.placeholder = 'key...';
+      inputs.key.className = 'theia-input';
       inputs.key.value = index;
       label.append(inputs.key);
       inputs.value.placeholder = 'value...';
       inputs.value.value = key as string;
+      inputs.value.className = 'theia-input';
       value.append(inputs.value);
       element.data[editable] = { row, label, value, inputs };
     } else {
