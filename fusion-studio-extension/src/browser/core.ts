@@ -23,6 +23,7 @@ import { FSTreeModel } from "../classes/tree";
 import { FSUserDialog } from "./dialogs/user-dialog";
 import { FSGroupDialog } from "./dialogs/group-dialog";
 import { FS_EVAL_WIDGET_FACTORY_ID, XQ_EXT } from '../classes/eval';
+import { FSLabelProviderContribution } from "./label-provider-contribution";
 
 function sortText(A: string, B: string, caseSensetive = false): number {
   let a = A;
@@ -42,9 +43,11 @@ export class FSCore {
   protected statusEntry: FSStatusEntry = { text: '', alignment: StatusBarAlignment.LEFT, command: actionID(actProperties.id) };
   protected clipboard: Partial<FSDragOperation> = {};
   protected lastNameID: number = 1;
+  protected _labelProvider?: FSLabelProviderContribution;
   public result: string = '';
   public connectionsChange = new Emitter<FSServerConnectionsChangeEvent>();
   public connections: FSServerConnections = {};
+  protected nodesToUpdate: FSNode[] = [];
   constructor(
     @inject(CommandRegistry) protected readonly commands: CommandRegistry,
     @inject(WorkspaceService) protected readonly workspace: WorkspaceService,
@@ -54,6 +57,10 @@ export class FSCore {
     @inject(StatusBar) protected readonly statusBar: StatusBar,
     @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {}
+
+  setLabelProvider(labelProvider: FSLabelProviderContribution) {
+    this._labelProvider = labelProvider;
+  }
 
   // tree model
   private _model?: FSTreeModel;
@@ -114,7 +121,6 @@ export class FSCore {
     if (this._model) {
       this._model.root = {
         id: 'fusion-connections-view-root',
-        name: 'Servers Root',
         visible: false,
         children: [],
         parent: undefined
@@ -132,6 +138,9 @@ export class FSCore {
         await this._model.refresh();
       }
     }
+    if (child.id !== 'fusion-toolbar') {
+      this.addNodesToUpdate(child);
+    }
     return this.getNode(child.id) as FSNode;
   }
 
@@ -140,7 +149,6 @@ export class FSCore {
       type: 'toolbar',
       id: 'fusion-toolbar',
       uri: 'toolbar',
-      name: 'Fusion Toolbar',
       parent: parent,
       selected: false,
       connectionNode: undefined as any,
@@ -262,16 +270,12 @@ export class FSCore {
       try {
         const root = await FSApi.connect(connectionNode.connection);
         connectionNode.loaded = true;
-        // connectionNode.db = await this.addCollection(connectionNode, root);
-        // connectionNode.db.loaded = true;
-        // root.collections.forEach(subCollection => this.addCollection(connectionNode, subCollection));
         this.addCollection(connectionNode, root.collections[0]);
-        // root.documents.forEach(document => this.addDocument(connectionNode, document));
         this.expand(connectionNode.db);
-        // await this.sort(connectionNode.db, this.sortItems);
         connectionNode.security = await this.addSecurity(connectionNode);
         connectionNode.indexes = await this.addIndexes(connectionNode);
         connectionNode.rest = await this.addRestNode(connectionNode);
+        this.pushNodesToUpdate();
       } catch (error) {
         connectionNode.expanded = false;
         console.error('caught:', error);
@@ -360,6 +364,7 @@ export class FSCore {
           await Promise.all(collection.documents.map(document => this.addDocument(node, document)));
           node.collection = collection;
         }
+        this.pushNodesToUpdate();
       } catch (error) {
         node.expanded = false;
         console.error('caught:', error);
@@ -414,7 +419,6 @@ export class FSCore {
       children: [],
       expanded,
       id: this.connectionID(connection),
-      name: connection.name,
       connectionNode: (parent as FSContainerNode).connectionNode,
       connection,
       parent: parent as any,
@@ -427,7 +431,18 @@ export class FSCore {
     } as FSConnectionNode, parent) as FSConnectionNode;
     connectionNode.connectionNode = connectionNode;
     this.connectionAdded(connectionNode);
+    this.pushNodesToUpdate();
     return connectionNode;
+  }
+  addNodesToUpdate(...nodes: FSNode[]) {
+    if (nodes.length < 1) return;
+    this.nodesToUpdate = this.nodesToUpdate.concat(nodes.filter(node => !this.nodesToUpdate.find(_node => _node.id === node.id)));
+  }
+  pushNodesToUpdate() {
+    if (this._labelProvider) {
+      this._labelProvider.update(this.nodesToUpdate);
+      this.nodesToUpdate = [];
+    }
   }
   protected async addCollectionRecursive(connection: FSServerConnection, uri: string): Promise<FSCollectionNode> {
     const node = this.getNode(this.connectionID(connection) + uri);
@@ -466,7 +481,6 @@ export class FSCore {
       connectionNode: parent.connectionNode,
       isCollection: false,
       id: this.itemID(parent.connectionNode.connection, document),
-      name,
       parent: parent,
       link: FS_RESOURCE_SCHEME + ':' + document.name,
       isNew,
@@ -490,7 +504,6 @@ export class FSCore {
       children: [],
       id: this.itemID(parent.connectionNode.connection, collection),
       link: FS_RESOURCE_SCHEME + ':' + collection.name,
-      name,
       parent: parent as CompositeTreeNode,
       selected: false,
       expanded: false,
@@ -506,7 +519,7 @@ export class FSCore {
       connectionNode: parent.connectionNode,
       id: this.userID(parent.connectionNode.connection, user),
       description: user,
-      name: user,
+      user,
       parent,
       uri: '/users/' + user,
       selected: false,
@@ -536,7 +549,6 @@ export class FSCore {
       children: [],
       id: this.userID(parent.connectionNode.connection),
       description: 'Users',
-      name: 'Users',
       parent,
       uri: '/users',
       expanded: false,
@@ -552,8 +564,8 @@ export class FSCore {
       type: 'group',
       connectionNode: parent.connectionNode,
       id: this.groupID(parent.connectionNode.connection, group),
+      group,
       description: group,
-      name: group,
       parent,
       uri: '/groups/' + group,
       selected: false,
@@ -583,7 +595,6 @@ export class FSCore {
       children: [],
       id: this.groupID(parent.connectionNode.connection),
       description: 'Groups',
-      name: 'Groups',
       parent,
       uri: '/groups',
       expanded: false,
@@ -601,7 +612,6 @@ export class FSCore {
       children: [],
       id: this.securityID(connectionNode.connection),
       description: 'Security',
-      name: 'Security',
       parent,
       uri: '/security',
       expanded: false,
@@ -614,13 +624,13 @@ export class FSCore {
     return securityNode;
   }
 
-  protected createIndexNode(parent: FSContainerNode, uri: string): FSIndexNode {
+  protected createIndexNode(parent: FSContainerNode, index: string): FSIndexNode {
     return {
       connectionNode: parent.connectionNode,
-      id: this.indexID(parent.connectionNode.connection, uri),
-      name: uri,
+      id: this.indexID(parent.connectionNode.connection, index),
       parent: parent,
-      uri: uri,
+      index,
+      uri: index,
       type: 'index',
       selected: false,
     };
@@ -658,7 +668,6 @@ export class FSCore {
       connectionNode,
       children: [],
       id: this.indexID(connectionNode.connection),
-      name: 'Indexes',
       parent: connectionNode,
       uri: '/index',
       type: 'indexes',
@@ -676,7 +685,6 @@ export class FSCore {
       children: [],
       id: this.restID(connectionNode.connection),
       uri: 'rest',
-      name: 'RestXQ',
       parent: connectionNode,
       selected: false,
       expanded: false,
@@ -690,7 +698,6 @@ export class FSCore {
         id: this.restID(connectionNode.connection, uri.uri),
         uri: 'rest',
         restURI: uri,
-        name: uri.uri,
         parent: rest,
         selected: false,
         expanded: false,
@@ -700,7 +707,6 @@ export class FSCore {
         type: 'rest-method',
         id: this.restID(connectionNode.connection, uri.uri, method.name),
         uri: 'rest',
-        name: method.name,
         restMethod: method,
         parent: uriNode,
         selected: false,
@@ -866,7 +872,7 @@ export class FSCore {
     return false;
   }
   
-  protected getName(id: string): string {
+  public getName(id: string): string {
     return id.split('/').pop() || id;
   }
   
@@ -1110,12 +1116,10 @@ export class FSCore {
           if (isCollection) {
             resultNode = await this.addCollection(operation.destinationContainer, {
               ...(source as FSCollectionNode).collection,
-              name: operation.destination[i],
             });
           } else {
             resultNode = this.addDocument(operation.destinationContainer, {
               ...(source as FSDocumentNode).document,
-              name: operation.destination[i],
             });
           }
           if (!operation.copy) {
