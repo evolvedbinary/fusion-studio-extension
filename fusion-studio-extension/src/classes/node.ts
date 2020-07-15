@@ -42,12 +42,14 @@ export interface FSDocumentNode extends FSItemNode {
 }
 export interface FSUserNode extends FSNode, SelectableTreeNode {
   type: 'user',
+  user: string;
 }
 export interface FSUsersNode extends FSContainerNode, SelectableTreeNode {
   type: 'users',
 }
 export interface FSGroupNode extends FSNode, SelectableTreeNode {
   type: 'group',
+  group: string;
 }
 export interface FSGroupsNode extends FSContainerNode, SelectableTreeNode {
   type: 'groups',
@@ -59,6 +61,7 @@ export interface FSSecurityNode extends FSContainerNode, SelectableTreeNode {
 }
 export interface FSIndexNode extends FSNode, SelectableTreeNode {
   type: 'index',
+  index: string,
 }
 export interface FSIndexesNode extends FSContainerNode, SelectableTreeNode {
   type: 'indexes',
