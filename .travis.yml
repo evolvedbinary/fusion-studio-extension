@@ -10,8 +10,8 @@ matrix:
     - os: linux
       dist: bionic
       env:
-        - IMG=existdb/existdb:latest
-        - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.0/fusion-studio-api-0.1.0.xar
+        - IMG=existdb/existdb:5.2.0
+        - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.1/fusion-studio-api-0.1.1.xar
       services:
         - docker
       addons:
