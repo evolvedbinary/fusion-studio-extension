@@ -1,6 +1,7 @@
 # Fusion Studio Theia Extension
 [![Build Status](https://travis-ci.com/evolvedbinary/fusion-studio-extension.svg?branch=master)](https://travis-ci.com/evolvedbinary/fusion-studio-extension)
 [![Build status](https://ci.appveyor.com/api/projects/status/3fxvhf0k0cjjcukv/branch/master?svg=true)](https://ci.appveyor.com/project/AdamRetter/fusion-studio-extension/branch/master)
+[![Cypress Dashboard](https://img.shields.io/badge/cypress-dashboard-brightgreen.svg)](https://dashboard.cypress.io/#/projects/ftw148/runs)
 [![License](https://img.shields.io/badge/license-GPL%203-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 
 **Fusion DB**'s extension for [Theia IDE](https://theia-ide.org).
