@@ -15,7 +15,6 @@ addons:
   homebrew:
     update: true
     packages:
-      - pyenv
       - yarn
 
 env:
@@ -105,9 +104,10 @@ jobs:
       os: osx
       osx_image: xcode12
       node_js: 10
+      env:
+        - PYTHON=/usr/bin/python3
       before_install:
-        - python --version
-        - pyenv versions
+        - $PYTHON --version
 
     #  - os: windows
 
