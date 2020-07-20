@@ -1,11 +1,14 @@
 language: node_js
 
 node_js:
+  - "node"
+  - "12"
   - "10"
 
 matrix:
   include:
     - os: linux
+      dist: bionic
       env:
         - IMG=existdb/existdb:latest
         - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.0/fusion-studio-api-0.1.0.xar
@@ -30,7 +33,7 @@ matrix:
       script:
         - yarn run cypress run --record
     - os: osx
-      osx_image: xcode11
+      osx_image: xcode12
       addons:
         homebrew:
           packages:
