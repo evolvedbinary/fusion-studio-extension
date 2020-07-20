@@ -101,6 +101,14 @@ jobs:
       before_install:
         - python --version
 
+    - name: macOS Catalina (10.15) / NodeJS 10 / Python 3
+      os: osx
+      osx_image: xcode12
+      node_js: 10
+      before_install:
+        - python --version
+        - pyenv versions
+
     #  - os: windows
 
 install:
