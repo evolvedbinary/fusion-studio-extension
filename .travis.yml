@@ -1,3 +1,5 @@
+os: linux
+dist: bionic
 language: node_js
 
 node_js:
@@ -7,8 +9,33 @@ node_js:
 
 matrix:
   include:
-    - os: linux
-      dist: bionic
+    - language: python
+      python: 2.7
+      env:
+        - IMG=existdb/existdb:5.2.0
+        - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.1/fusion-studio-api-0.1.1.xar
+      services:
+        - docker
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libx11-dev
+            - libxkbfile-dev
+            - libgconf2-4
+      before_install:
+        - docker pull $IMG
+        - docker create  --name exist-ci -p 8080:8080 $IMG
+        - wget $API_XAR
+        - docker cp ./*.xar exist-ci:exist/autodeploy
+        - docker start exist-ci
+        - rm *.xar
+        - sleep 10
+      script:
+        - yarn run cypress run --record
+    - language: python
+      python: 3.8
       env:
         - IMG=existdb/existdb:5.2.0
         - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.1/fusion-studio-api-0.1.1.xar
