@@ -51,13 +51,6 @@ jobs:
       before_install:
         - python --version
 
-#    - name: Ubuntu Xenial (16.04) / NodeJS 14 / Python 2
-#      os: linux
-#      dist: xenial
-#      node_js: 14
-#      before_install:
-#        - python --version
-
     - name: Ubuntu Focal (20.04) / NodeJS 10 / Python 3
       os: linux
       dist: focal
@@ -104,6 +97,15 @@ jobs:
       os: osx
       osx_image: xcode12
       node_js: 10
+      env:
+        - PYTHON=/usr/bin/python3
+      before_install:
+        - $PYTHON --version
+
+    - name: macOS Catalina (10.15) / NodeJS 12 / Python 3
+      os: osx
+      osx_image: xcode12
+      node_js: 12
       env:
         - PYTHON=/usr/bin/python3
       before_install:
