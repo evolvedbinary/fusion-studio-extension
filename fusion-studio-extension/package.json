@@ -20,7 +20,7 @@
     "mime-types": "2.1.27",
     "moment": "2.24.0",
     "ripemd160": "2.0.2",
-    "typescript": "3.9.6"
+    "typescript": "3.9.7"
   },
 
   "devDependencies": {
