@@ -14,11 +14,50 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 *   [Fusion Studio API](https://github.com/evolvedbinary/fusion-studio-api) a compatible exist or fusion database.
 
 #### For building
-*   [Node 10](https://nodejs.org/dist/v10.16.3/). Tested with v10.16.3 (it should be installed with [nvm](https://github.com/nvm-sh/nvm))
-*   [Yarn](https://yarnpkg.com). Tested with v1.17.3 (it should be installed with [nvm](https://github.com/nvm-sh/nvm)).
-*   [Python 2](https://www.python.org/). Tested with 2.7.16
+*   [Node 10](https://nodejs.org/dist/v10.16.3/). `>= 10.16.3` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm))
+*   [Yarn](https://yarnpkg.com). `> 1.15.x` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm)).
+*   [Python](https://www.python.org/) `>= 2.7.12` or `>= 3.7.7.` (if your system does not provide it, consider using [pyenv](https://github.com/pyenv/pyenv)).
+        If you are having trouble building and have multiple versions of Python installed via `pyenv` or any other mechanism, see the [Debugging Python Build Issues](#debugging-python-build-issues) section).
 *   Windows platforms only:
     *   Microsoft Visual Studio 2015 C++. Tested with Community Edition
+*   macOS playforms only:
+    *   XCode Command Line tools. You can check that these are installed and compatible with node-gyp by following these [instructions](https://github.com/nodejs/node-gyp/blob/master/macOS_Catalina.md).
+
+#### Debugging Python Build Issues
+If you are experiencing build issues and have multiple versions of Python installed via pyenv or some other such mechanism
+then the following information may be useful.
+
+*   Due to upstream constraints from [theia](https://theia-ide.org) we can override the inherited dependency on Python 2. For systems that ship with python2 pre-installed, fusion-studio-extension should continue to build normally.
+    *   Build errors with node-gyp are unfortunately common on systems with multiple python installations. On systems that no longer include python2, or on macOS >10.14 we recommend using python 3.8, and configuring the build environment. The following assumes you used `nvm` and `pyenv` to install your desired versions.
+    1.  Make sure your system and shell use the correct python environment:
+        -   ```bash
+            python --version
+            ```
+            It should indicate `Python 3.8.x` or better.
+        -   Set an environment variable to force node-gyp to use this version, e.g. `3.8.3`
+            ```bash
+            echo 'export NODE_GYP_FORCE_PYTHON="~/.pyenv/versions/3.8.3/bin/python3"' >> ~/.zshrc
+            ```
+            For bash users replace `.zshrc` with `bashrc`
+
+#### Example of setting up a Ubuntu 20.04 build environment
+The following commands will install the required packages and setup Python 3 via pyenv on Ubuntu 20.04.
+
+```
+sudo apt-get install nodejs yarnpkg libxkbfile-dev
+alias yarn=yarnpkg
+
+git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bashrc
+
+sudo apt-get install --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+pyenv install 3.8.4
+pyenv global 3.8.4
+exec $SHELL
+
+```
 
 #### For Testing
 *   [cypress.js](https://www.cypress.io) v3.2.0    
