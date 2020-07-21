@@ -1,7 +1,16 @@
-os: linux
-dist: xenial
+os:
+  - linux
+  - osx
+dist: focal
+osx_image:
+  - xcode9.3
+  - xcode11
 
 language: node_js
+
+node_js:
+  - 10
+  - 12
 
 services:
   - docker
@@ -25,16 +34,26 @@ env:
     - ELECTRON_CACHE=$HOME/.cache/electron
     - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
     - YARN_GPG=no
+    - PYTHON=/usr/bin/python3
 
 jobs:
+  exclude:
+    - os: osx
+      osx_image: xcode9.3
+      node_js: 12
+    - os: osx
+      osx_image: xcode11
+      node_js: 12
+
   include:
     - name: Ubuntu Xenial (16.04) / NodeJS 10 / Python 2 / Cypress
+      dist: xenial
       node_js: 10
       env:
         - IMG=existdb/existdb:latest
         - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.1/fusion-studio-api-0.1.1.xar
-      before_install:
-        - python --version
+        - PYTHON=/usr/bin/python
+      before_script:
         - docker pull $IMG
         - docker create  --name exist-ci -p 8080:8080 $IMG
         - wget $API_XAR
@@ -42,58 +61,43 @@ jobs:
         - docker start exist-ci
         - rm *.xar
         - sleep 10
-      script:
+      after_success:
         - yarn run cypress run --record
 
     - name: Ubuntu Xenial (16.04) / NodeJS 12 / Python 2
+      env:
+        - PYTHON=/usr/bin/python
+      dist: xenial
       node_js: 12
-      before_install:
-        - python --version
 
-    - name: Ubuntu Focal (20.04) / NodeJS 10 / Python 3
+    - name: Ubuntu Focal (20.04) / NodeJS 14 / Python 3
       dist: focal
-      node_js: 10
-      before_install:
-        - python --version
-
-    - name: Ubuntu Focal (20.04) / NodeJS 12 / Python 3
-      dist: focal
-      node_js: 12
-      before_install:
-        - python --version
-
-    - name: macOS High Sierra (10.13) / NodeJS 10 / Python 2
-      os: osx
-      osx_image: xcode9.3
-      node_js: 10
-      before_install:
-        - python --version
-
-    - name: macOS Catalina (10.15) / NodeJS 10 / Python 2
-      os: osx
-      osx_image: xcode12
-      node_js: 10
-      before_install:
-        - python --version
+      node_js: 14
 
     - name: macOS Catalina (10.15) / NodeJS 10 / Python 3
       os: osx
       osx_image: xcode12
       node_js: 10
-      env:
-        - PYTHON=/usr/bin/python3
-      before_install:
-        - $PYTHON --version
+
+    - name: macOS Catalina (10.15) / NodeJS 12 / Python 3
+      os: osx
+      osx_image: xcode12
+      node_js: 12
 
   allow_failures:
     - name: Ubuntu Focal (20.04) / NodeJS 14 / Python 3
       dist: focal
       node_js: 14
-      before_install:
-        - python --version
+
+    - name: macOS Catalina (10.15) / NodeJS 12 / Python 3
+      os: osx
+      osx_image: xcode12
+      node_js: 12
 
 
-    #  - os: windows
+before_install:
+  - python --version
+  - npm i -g node-gyp
 
 install:
   - yarn
@@ -103,7 +107,7 @@ install:
   - yarn start &
   - cd ..
 
-before_script:
+script:
   - yarn test
 
 before_cache:
