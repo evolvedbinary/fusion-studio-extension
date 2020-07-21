@@ -74,3 +74,9 @@ fusion-studio-extension/src/browser/style/index.css
 # integration test files
 cypress/videos/*
 cypress/screenshots/*
+
+# private
+.notes
+
+# node-gyp
+build/
