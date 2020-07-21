@@ -72,12 +72,12 @@ jobs:
       before_install:
         - python --version
 
-    - name: macOS High Sierra (10.13) / NodeJS 12 / Python 2
-      os: osx
-      osx_image: xcode9.3
-      node_js: 12
-      before_install:
-        - python --version
+#    - name: macOS High Sierra (10.13) / NodeJS 12 / Python 2
+#      os: osx
+#      osx_image: xcode9.3
+#      node_js: 12
+#      before_install:
+#        - python --version
 
     - name: macOS Catalina (10.15) / NodeJS 10 / Python 2
       os: osx
@@ -86,12 +86,12 @@ jobs:
       before_install:
         - python --version
 
-    - name: macOS Catalina (10.15) / NodeJS 12 / Python 2
-      os: osx
-      osx_image: xcode12
-      node_js: 12
-      before_install:
-        - python --version
+#    - name: macOS Catalina (10.15) / NodeJS 12 / Python 2
+#      os: osx
+#      osx_image: xcode12
+#      node_js: 12
+#      before_install:
+#        - python --version
 
     - name: macOS Catalina (10.15) / NodeJS 10 / Python 3
       os: osx
@@ -102,16 +102,14 @@ jobs:
       before_install:
         - $PYTHON --version
 
-    - name: macOS Catalina (10.15) / NodeJS 12 / Python 3
-      os: osx
-      osx_image: xcode12
-      node_js: 12
-      env:
-        - PYTHON=/usr/bin/python3
-      before_install:
-        - $PYTHON --version
-
-    #  - os: windows
+#    - name: macOS Catalina (10.15) / NodeJS 12 / Python 3
+#      os: osx
+#      osx_image: xcode12
+#      node_js: 12
+#      env:
+#        - PYTHON=/usr/bin/python3
+#      before_install:
+#        - $PYTHON --version
 
 install:
   - yarn
