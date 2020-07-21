@@ -144,9 +144,9 @@ before_cache:
   - rm -rf $ELECTRON_BUILDER_CACHE/wine
 
 cache:
+  yarn: true
+  npm: true
   directories:
-    - $HOME/.cache/yarn
-    - $HOME/.npm
-    - node_modules
     - $ELECTRON_CACHE
     - $ELECTRON_BUILDER_CACHE
+    - $HOME/.cache/Cypress
