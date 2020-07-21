@@ -14,14 +14,37 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 *   [Fusion Studio API](https://github.com/evolvedbinary/fusion-studio-api) a compatible exist or fusion database.
 
 #### For building
-*   [Node 10](https://nodejs.org/dist/v10.16.3/). Tested with v10.16.3 (it should be installed with [nvm](https://github.com/nvm-sh/nvm))
-*   [Yarn](https://yarnpkg.com). Tested with v1.17.3 (it should be installed with [nvm](https://github.com/nvm-sh/nvm)).
-*   [Python 2](https://www.python.org/). Tested with 2.7.16
+*   [Node 10](https://nodejs.org/dist/v10.16.3/) `>= 10.16.3` (it should be installed with [nvm](https://github.com/nvm-sh/nvm))
+*   [Yarn](https://yarnpkg.com) `> 1.15.x`(it should be installed with [nvm](https://github.com/nvm-sh/nvm)).
+*   [Python](https://www.python.org/) (it should be installed with [pyenv](https://github.com/pyenv/pyenv))
+    *   Due to upstream constraints from [theia](https://theia-ide.org) we override the inherited hard dependency on Python 2. Systems that ship with python2 pre-installed fusion-studio should continue to build normally
+    *   Build errors with node-gyp are unfortunately common on systems with multiple python installations. On systems that no longer include python2, or on macOS >10.14 we recommend using python 3.8, and configuring the build environment accordingly. The following assumes you used nvm and pyenv to install your desired versions.
+    1.  Make sure your system and shell use the correct python environment:
+        -   ```bash
+            python --version
+            ```
+            It should point to `Python 3.8.x`
+        -   Set an environment variable to force node-gyp to use this version, e.g. `3.8.3`
+            ```bash
+            echo 'export NODE_GYP_FORCE_PYTHON="~/.pyenv/versions/3.8.3/bin/python3"' >> ~/.zshrc
+            ```
+            For bash users replace `.zshrc` with `bashrc`
+    1.  Install node-gyp globally:
+        ```shell
+        npm i -g node-gyp
+        ```           
+        If prompted reinstall or update `npm`.
+    1.  If you are still encountering node-gyp related errors, set npm to always use the global node-gyp installation.
+        ```
+        npm config set node_gyp <path to node-gyp>
+        ```            
 *   Windows platforms only:
     *   Microsoft Visual Studio 2015 C++. Tested with Community Edition
+*   MacOS Catalina only:
+    *   You might have to reinstall Xcode CLI tools, check [Catalina](https://github.com/nodejs/node-gyp/blob/master/macOS_Catalina.md) for a one line acid test, and to help you further debug problems.    
 
 #### For Testing
-*   [cypress.js](https://www.cypress.io) v3.2.0    
+*   [cypress.js](https://www.cypress.io)`>=4.1.0`    
 
 
 
