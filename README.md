@@ -60,7 +60,7 @@ exec $SHELL
 ```
 
 #### For Testing
-*   [cypress.js](https://www.cypress.io) v3.2.0    
+*   [cypress.js](https://www.cypress.io) ` >= 4.1.0`.
 
 
 
