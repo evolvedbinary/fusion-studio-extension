@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, TreeDecoration } from "@theia/core/lib/browser";
+import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, TreeDecoration, TREE_NODE_SEGMENT_CLASS, TREE_NODE_SEGMENT_GROW_CLASS } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
 import { FSNode } from '../../classes/node';
 import { FSCore } from '../core';
 import { FSHome } from './home';
 import { FSToolbar } from './toolbar';
-import { FSItem } from './item';
 import { DragController } from './drag';
 import { FSTreeModel } from '../../classes/tree';
+import { notEmpty } from '@theia/core';
 
 export type FSViewWidgetFactory = () => FSViewWidget;
 export const FSViewWidgetFactory = Symbol('FSViewWidgetFactory');
@@ -62,7 +62,7 @@ export class FSViewWidget extends TreeWidget {
       title: node.name,
     };
   }
-  
+
   protected doubleClick(node: TreeNode, event: React.MouseEvent<HTMLElement>, defaultHandler?: (event: React.MouseEvent<HTMLElement>) => void): void {
     if (event.altKey && (FSNode.isConnection(node) || FSNode.isItem(node))) {
       event.stopPropagation();
@@ -83,7 +83,7 @@ export class FSViewWidget extends TreeWidget {
       defaultHandler && defaultHandler(event);
     }
   }
-  
+
   protected isEmpty(model?: TreeModel): boolean {
     model = model || this.model;
     return !model.root || (model.root as CompositeTreeNode).children.length < 2;
@@ -97,14 +97,69 @@ export class FSViewWidget extends TreeWidget {
     }
     return decorations;
   }
-  
-  protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
-    const tooltip = this.getDecorationData(node, 'tooltip').filter(tooltip => !!tooltip).join('\n');
+
+  protected superRenderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
+    console.log('rendering node...');
+    console.log('getting decorations...');
+    const tooltip = this.getDecorationData(node, 'tooltip').filter(notEmpty).join(' • ');
+    const classes = [TREE_NODE_SEGMENT_CLASS];
+    console.log('checking suffixes...');
+    if (!this.hasTrailingSuffixes(node)) {
+      classes.push(TREE_NODE_SEGMENT_GROW_CLASS);
+    }
+    const className = classes.join(' ');
+    console.log('caption...');
+    let attrs = this.decorateCaption(node, {
+      className, id: node.id
+    });
+    if (tooltip.length > 0) {
+      attrs = {
+        ...attrs,
+        title: tooltip
+      };
+    }
+    const children: React.ReactNode[] = [];
+    console.log('nodename...');
+    const caption = this.toNodeName(node);
+    console.log('deco data...');
+    const highlight = this.getDecorationData(node, 'highlight')[0];
+    if (highlight) {
+      console.log('to react node...');
+      children.push(this.toReactNode(caption, highlight));
+    }
+    console.log('search...');
+    const searchHighlight = this.searchHighlights ? this.searchHighlights.get(node.id) : undefined;
+    if (searchHighlight) {
+      console.log('to react node...');
+      children.push(...this.toReactNode(caption, searchHighlight));
+    } else if (!highlight) {
+      console.log('no search...');
+      children.push(caption);
+    }
+    console.log('create...');
+    return React.createElement('div', attrs, ...children);
+  }
+
+  protected renderIcon(node: TreeNode, props: NodeProps): React.ReactNode {
+      const icon = this.toNodeIcon(node);
+      if (icon) {
+          return <div className={icon + ' fs-icon'}></div>;
+      }
+      return null;
+  }
+
+  protected createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
+    return [...super.createNodeClassNames(node, props), 'fusion-item'];
+  }
+
+  protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
+    // const tooltip = this.getDecorationData(node, 'tooltip').filter(tooltip => !!tooltip).join('\n');
     if (FSNode.is(node)) {
       if (FSNode.isToolbar(node)) {
         return this.isEmpty(this.model) ? <FSHome core={this.core} /> : <FSToolbar core={this.core} />;
       } else {
-        return <FSItem tooltip={tooltip} core={this.core} node={node} />;
+        //return <FSItem tooltip={tooltip} core={this.core} node={node} />;
+        return super.renderNode.apply(this, [node, props]);
       }
     }
     console.error('unknown node:', node);

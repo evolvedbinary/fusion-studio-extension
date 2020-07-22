@@ -24,7 +24,11 @@ import { FSWelcomeWidgetFactory } from "./widget/welcome";
 import { FSWelcomeContribution } from "./welcome-contribution";
 import { FSWelcomeService, createFSWelcomeWidget } from "./welcome-service";
 
+import { bindFSProvider } from './label-provider-command-contribution';
+
 export default new ContainerModule(bind => {
+
+  bindFSProvider(bind);
 
   bind(FSFiles).toDynamicValue(ctx => {
     const provider = ctx.container.get(WebSocketConnectionProvider);
