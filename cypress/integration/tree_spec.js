@@ -28,7 +28,7 @@ context('Fusion Studio', function() {
       cy.get('.ReactVirtualized__Grid')
         .should('be.visible')
         .should('contain', 'localhost')
-      cy.get('.fusion-item')
+      cy.get('.theia-TreeNode')
         .click()
         .then(() => {
           cy.get('.ReactVirtualized__Grid__innerScrollContainer')
@@ -54,7 +54,7 @@ context('Fusion Studio', function() {
       cy.get('.ReactVirtualized__Grid')
         .should('be.visible')
         .should('contain', 'localhost')
-      cy.get('.fusion-item')
+      cy.get('.theia-TreeNode')
         .click()
         .then(() => {
           cy.get('.ReactVirtualized__Grid__innerScrollContainer')
