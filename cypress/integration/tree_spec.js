@@ -2,7 +2,7 @@
 context('Fusion Studio', function() {
   beforeEach('IDE', function(){
     cy.visit('http://localhost:3000')
-      .get('#theia-top-panel', {timeout: 12000})
+      .get('#theia-top-panel', {timeout: 30000})
       .should('be.visible')
   })
 
