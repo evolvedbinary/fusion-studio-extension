@@ -148,6 +148,10 @@ export class FSViewWidget extends TreeWidget {
       return null;
   }
 
+  protected createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
+    return [...super.createNodeClassNames(node, props), 'fusion-item'];
+  }
+
   protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
     // const tooltip = this.getDecorationData(node, 'tooltip').filter(tooltip => !!tooltip).join('\n');
     if (FSNode.is(node)) {
