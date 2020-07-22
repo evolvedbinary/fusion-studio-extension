@@ -4,6 +4,7 @@
     "ccheraa",
     "duncdrum",
 
-    "dependabot-preview"
+    "dependabot-preview",
+    "@dependabot-preview[bot]"
   ]
 }
