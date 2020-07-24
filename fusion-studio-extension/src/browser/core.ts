@@ -95,17 +95,17 @@ export class FSCore {
   protected sortItems(a: FSNode, b: FSNode): number {
     if (FSNode.isItem(a) && FSNode.isItem(b)) {
       if (a.isCollection === b.isCollection) {
-        return sortText(a.name || '', b.name || '');
+        return sortText(a.uri, b.uri);
       } else {
         return a.isCollection ? -1 : 1;
       }
     } else {
-      return FSNode.isItem(a) ? 1 : FSNode.isItem(b) ? -1 : sortText(a.name || '', b.name || '');
+      return FSNode.isItem(a) ? 1 : FSNode.isItem(b) ? -1 : sortText(a.uri, b.uri);
     }
   }
 
   protected sortRest(a: FSNode, b: FSNode): number {
-    return sortText(a.name || '', b.name || '');
+    return sortText(a.uri, b.uri);
   }
 
   protected async sort(node: CompositeTreeNode, sortfunc: (a: FSNode, b: FSNode) => number) {
@@ -1457,7 +1457,7 @@ export class FSCore {
       });
       const result = await dialog.open();
       if (result) {
-        if (await FSApi.removeUser(this.node.connectionNode.connection, this.node.name || '')) {
+        if (await FSApi.removeUser(this.node.connectionNode.connection, this.node.user)) {
           this.removeNode(this.node);
         }
       }
@@ -1467,7 +1467,7 @@ export class FSCore {
   public async editUser() {
     if (FSNode.isUser(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const user = await FSApi.getUser(connectionNode.connection, this.node.name || '');
+      const user = await FSApi.getUser(connectionNode.connection, this.node.user);
       const dialog = new FSUserDialog({
         title: 'Edit User: ' + this.node.name,
         acceptButton: 'Save changes',
@@ -1515,7 +1515,7 @@ export class FSCore {
       });
       const result = await dialog.open();
       if (result) {
-        if (await FSApi.removeGroup(this.node.connectionNode.connection, this.node.name || '')) {
+        if (await FSApi.removeGroup(this.node.connectionNode.connection, this.node.group)) {
           this.removeNode(this.node);
         }
       }
@@ -1525,7 +1525,7 @@ export class FSCore {
   public async editGroup() {
     if (FSNode.isGroup(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const group = await FSApi.getGroup(connectionNode.connection, this.node.name || '');
+      const group = await FSApi.getGroup(connectionNode.connection, this.node.group);
       const dialog = new FSGroupDialog({
         title: 'Edit User: ' + this.node.name,
         acceptButton: 'Save changes',
