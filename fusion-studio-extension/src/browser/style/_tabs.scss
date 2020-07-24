@@ -7,17 +7,18 @@
   }
   .pb-headers {
     white-space: nowrap;
-    background: var(--theia-layout-color0);
+    background: var(--theia-editor-background);
     .pb-header {
-      background: var(--theia-layout-color1);
-      border: 1px solid var(--theia-layout-color0);
-      border-bottom: none;
+      background: var(--theia-tab-inactiveBackground);
+      color: var(--theia-tab-inactiveForeground);
+      border-left: 1px solid var(--theia-editor-background);
+      border-bottom: 1px solid var(--theia-tab-activeBackground);
       display: inline-block;
       padding: 8px 12px;
       cursor: pointer;
       &.active {
-        background: var(--theia-ui-dialog-color);
-        border-color: var(--theia-ui-dialog-color);
+        background: var(--theia-tab-activeBackground);
+        color: var(--theia-tab-activeForeground);
       }
     }
   }

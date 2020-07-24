@@ -57,6 +57,7 @@ export class FSGroupDialog extends AbstractDialog<FSGroupDialogResult> {
       const keys: IKeys = {};
       for (let index in FS_GROUP_ATTRIBUTE_LABELS) {
         const el = document.createElement('input');
+        el.className = 'theia-input';
         const i = FS_GROUP_ATTRIBUTE_LABELS[index] || '';
         keys[i] = {
           type: 'string',

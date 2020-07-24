@@ -24,7 +24,8 @@ span.checkbox {
     width: 14px;
     height: 14px;
     margin-right: 8px;
-    background-color: var(--theia-ui-button-color);
+    color: var(--theia-button-foreground);
+    background-color: var(--theia-button-background);
     position: relative;
     &.checked > span {
       display: block;
@@ -34,7 +35,7 @@ span.checkbox {
       border-top: none;
       border-right: none;
       transform: rotate(-45deg);
-      top: 3px;
+      top: 4px;
       position: relative;
       left: 2px;
     }
