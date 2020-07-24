@@ -169,7 +169,6 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
   
   protected render(): React.ReactNode {
     const editor = !!this.editorWidget;
-    (console as any).originalConsoleLog(this.editorWidget);
     const title = this.editorWidget ? this.editorWidget.title.label : 'Open a document to evaluate.';
     const connectionsAvailable = Object.keys(this.core.connections).length > 0;
     const connection = this.documentNode ? this.documentNode.connectionNode.id : this.connection;
