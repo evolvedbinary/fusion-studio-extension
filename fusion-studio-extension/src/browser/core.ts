@@ -1451,7 +1451,7 @@ export class FSCore {
     if (FSNode.isUser(this.node) && this._model) {
       const dialog = new ConfirmDialog({
         title: 'Delete user',
-        msg: 'Are you sure you want to delete the user "' + this.node.name + '"?',
+        msg: 'Are you sure you want to delete the user "' + this.node.user + '"?',
         cancel: 'Keep',
         ok: 'Delete'
       });
@@ -1469,7 +1469,7 @@ export class FSCore {
       const connectionNode = this.node.connectionNode;
       const user = await FSApi.getUser(connectionNode.connection, this.node.user);
       const dialog = new FSUserDialog({
-        title: 'Edit User: ' + this.node.name,
+        title: 'Edit User: ' + this.node.user,
         acceptButton: 'Save changes',
         connection: connectionNode.connection,
         user,
@@ -1509,7 +1509,7 @@ export class FSCore {
     if (FSNode.isGroup(this.node) && this._model) {
       const dialog = new ConfirmDialog({
         title: 'Delete group',
-        msg: 'Are you sure you want to delete the group "' + this.node.name + '"?',
+        msg: 'Are you sure you want to delete the group "' + this.node.group + '"?',
         cancel: 'Keep',
         ok: 'Delete'
       });
@@ -1527,7 +1527,7 @@ export class FSCore {
       const connectionNode = this.node.connectionNode;
       const group = await FSApi.getGroup(connectionNode.connection, this.node.group);
       const dialog = new FSGroupDialog({
-        title: 'Edit User: ' + this.node.name,
+        title: 'Edit Group: ' + this.node.group,
         acceptButton: 'Save changes',
         connection: connectionNode.connection,
         group,
