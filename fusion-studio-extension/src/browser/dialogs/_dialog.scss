@@ -29,8 +29,8 @@
     border-top-style: none;
     li {
       &:hover, &[aria-selected=true] {
-        color: var(--theia-ui-button-font-color);
-        background-color: var(--theia-ui-button-color);
+        color: var(--theia-secondaryButton-foreground);
+        background-color: var(--theia-secondaryButton-background);
         mark {
           color: inherit;
           background-color: transparent;
@@ -41,7 +41,8 @@
         background-color: transparent;
         text-decoration: underline;
       }
-      background-color: var(--theia-ui-dialog-color);
+      background-color: var(--theia-input-background);
+      color: var(--theia-input-foreground);
       padding: 2px 5px
     }
   }

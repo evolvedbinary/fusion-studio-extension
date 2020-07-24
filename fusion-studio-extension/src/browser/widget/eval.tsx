@@ -169,6 +169,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
   
   protected render(): React.ReactNode {
     const editor = !!this.editorWidget;
+    (console as any).originalConsoleLog(this.editorWidget);
     const title = this.editorWidget ? this.editorWidget.title.label : 'Open a document to evaluate.';
     const connectionsAvailable = Object.keys(this.core.connections).length > 0;
     const connection = this.documentNode ? this.documentNode.connectionNode.id : this.connection;
@@ -185,19 +186,19 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
           }</React.Fragment>
         }
         <span className={!editor ? 'disabled' : ''}>Serialization Type:</span>
-        <select className="x-select" disabled={!editor} onChange={e => {
+        <select className="x-select theia-select" disabled={!editor} onChange={e => {
           this.serialization = e.target.value;
           this.update();
         }}>
           {this.serializationTypes()}
         </select>
-        <button className="x-btn open-workspace-button" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
+        <button className="x-btn theia-button" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
       </div>
       <div className='x-body' ref={this.elBody}>{this.result}</div>
       <div className='x-footer'>
         {((this.serialization === 'xml' || this.serialization === 'json') && (this.pager.pages > 1 || !this.pager.loaded)) && this.renderPager()}
         <span className="x-separator"></span>
-        <button className="open-workspace-button" disabled={this.result === ''} onClick={() => this.core.newItemFromResult()}><i className="fa fa-fw fa-file-code-o"></i> New file</button>
+        <button className="theia-button" disabled={this.result === ''} onClick={() => this.core.newItemFromResult()}><i className="fa fa-fw fa-file-code-o"></i> New file</button>
       </div>
     </React.Fragment>
   }

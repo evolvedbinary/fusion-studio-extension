@@ -29,6 +29,7 @@ export function createField(label: string, className: string, type: string | FST
     label: document.createElement('span'),
   };
   result.container.className = className;
+  result.input.className = 'theia-input';
   result.label.innerHTML = label;
   result.container.appendChild(result.label);
   result.container.appendChild(result.input);
