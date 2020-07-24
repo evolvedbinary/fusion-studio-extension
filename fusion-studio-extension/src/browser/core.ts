@@ -95,17 +95,17 @@ export class FSCore {
   protected sortItems(a: FSNode, b: FSNode): number {
     if (FSNode.isItem(a) && FSNode.isItem(b)) {
       if (a.isCollection === b.isCollection) {
-        return sortText(a.name || '', b.name || '');
+        return sortText(a.uri, b.uri);
       } else {
         return a.isCollection ? -1 : 1;
       }
     } else {
-      return FSNode.isItem(a) ? 1 : FSNode.isItem(b) ? -1 : sortText(a.name || '', b.name || '');
+      return FSNode.isItem(a) ? 1 : FSNode.isItem(b) ? -1 : sortText(a.uri, b.uri);
     }
   }
 
   protected sortRest(a: FSNode, b: FSNode): number {
-    return sortText(a.name || '', b.name || '');
+    return sortText(a.uri, b.uri);
   }
 
   protected async sort(node: CompositeTreeNode, sortfunc: (a: FSNode, b: FSNode) => number) {
@@ -1451,13 +1451,13 @@ export class FSCore {
     if (FSNode.isUser(this.node) && this._model) {
       const dialog = new ConfirmDialog({
         title: 'Delete user',
-        msg: 'Are you sure you want to delete the user "' + this.node.name + '"?',
+        msg: 'Are you sure you want to delete the user "' + this.node.user + '"?',
         cancel: 'Keep',
         ok: 'Delete'
       });
       const result = await dialog.open();
       if (result) {
-        if (await FSApi.removeUser(this.node.connectionNode.connection, this.node.name || '')) {
+        if (await FSApi.removeUser(this.node.connectionNode.connection, this.node.user)) {
           this.removeNode(this.node);
         }
       }
@@ -1467,9 +1467,9 @@ export class FSCore {
   public async editUser() {
     if (FSNode.isUser(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const user = await FSApi.getUser(connectionNode.connection, this.node.name || '');
+      const user = await FSApi.getUser(connectionNode.connection, this.node.user);
       const dialog = new FSUserDialog({
-        title: 'Edit User: ' + this.node.name,
+        title: 'Edit User: ' + this.node.user,
         acceptButton: 'Save changes',
         connection: connectionNode.connection,
         user,
@@ -1509,13 +1509,13 @@ export class FSCore {
     if (FSNode.isGroup(this.node) && this._model) {
       const dialog = new ConfirmDialog({
         title: 'Delete group',
-        msg: 'Are you sure you want to delete the group "' + this.node.name + '"?',
+        msg: 'Are you sure you want to delete the group "' + this.node.group + '"?',
         cancel: 'Keep',
         ok: 'Delete'
       });
       const result = await dialog.open();
       if (result) {
-        if (await FSApi.removeGroup(this.node.connectionNode.connection, this.node.name || '')) {
+        if (await FSApi.removeGroup(this.node.connectionNode.connection, this.node.group)) {
           this.removeNode(this.node);
         }
       }
@@ -1525,9 +1525,9 @@ export class FSCore {
   public async editGroup() {
     if (FSNode.isGroup(this.node)) {
       const connectionNode = this.node.connectionNode;
-      const group = await FSApi.getGroup(connectionNode.connection, this.node.name || '');
+      const group = await FSApi.getGroup(connectionNode.connection, this.node.group);
       const dialog = new FSGroupDialog({
-        title: 'Edit User: ' + this.node.name,
+        title: 'Edit Group: ' + this.node.group,
         acceptButton: 'Save changes',
         connection: connectionNode.connection,
         group,
