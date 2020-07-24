@@ -111,10 +111,10 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
     const result: any[] = [];
     const { start, size } = this.pager;
     for (let i = 1; i <= this.pager.pages; i++) {
-      result.push(<button key={'btn-' + i} disabled={disabled || (start - 1) / size === i - 1} onClick={() => this.evaluate(i)}>{i}</button>);
+      result.push(<button key={'btn-' + i} className="theia-button" disabled={disabled || (start - 1) / size === i - 1} onClick={() => this.evaluate(i)}>{i}</button>);
     }
     if (!this.pager.loaded) {
-      result.push(<button key="more" disabled={disabled} onClick={() => this.evaluate(this.pager.pages + 1)}>load more...</button>)
+      result.push(<button key="more" className="theia-button" disabled={disabled} onClick={() => this.evaluate(this.pager.pages + 1)}>load more...</button>)
     }
     return result;
   }
@@ -169,7 +169,6 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
   
   protected render(): React.ReactNode {
     const editor = !!this.editorWidget;
-    (console as any).originalConsoleLog(this.editorWidget);
     const title = this.editorWidget ? this.editorWidget.title.label : 'Open a document to evaluate.';
     const connectionsAvailable = Object.keys(this.core.connections).length > 0;
     const connection = this.documentNode ? this.documentNode.connectionNode.id : this.connection;
@@ -180,7 +179,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
         {editor && <React.Fragment>
           <span className={!this.documentNode && !connectionsAvailable ? 'disabled' : ''} >Connection:</span>
           {this.documentNode ? <span className="x-connection">{this.documentNode.connectionNode.connection.name}</span> :
-            <select className="x-select" disabled={!connectionsAvailable} value={connection} onChange={e => this.connection = e.target.value}>
+            <select className="x-select theia-select" disabled={!connectionsAvailable} value={connection} onChange={e => this.connection = e.target.value}>
               {this.connections(this.documentNode)}
             </select>
           }</React.Fragment>

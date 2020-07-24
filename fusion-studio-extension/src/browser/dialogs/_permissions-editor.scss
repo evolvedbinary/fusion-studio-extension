@@ -1,9 +1,6 @@
 table.permissions-editor {
   width: 100%;
   border-collapse: collapse;
-  > tr > td {
-    border-bottom: 1px solid var(--theia-ui-button-color-secondary);
-  }
   > tr:last-child > td {
     border-bottom: none;
   }

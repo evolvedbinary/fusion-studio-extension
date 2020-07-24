@@ -9,9 +9,6 @@
       }
     }
   }
-  select option {
-    background-color: var(--theia-ui-dialog-color);
-  }
   input, select, button {
     &:disbaled {
       opacity: 0.5;;
@@ -25,12 +22,11 @@
   }
   ul[role=listbox] {
     margin-top: -1px;
-    border: 1px solid var(--theia-accent-color3);
+    border: 1px solid var(--theia-dropdown-border);
     border-top-style: none;
     li {
       &:hover, &[aria-selected=true] {
-        color: var(--theia-secondaryButton-foreground);
-        background-color: var(--theia-secondaryButton-background);
+        background: var(--theia-selection-background);
         mark {
           color: inherit;
           background-color: transparent;
@@ -41,8 +37,8 @@
         background-color: transparent;
         text-decoration: underline;
       }
-      background-color: var(--theia-input-background);
-      color: var(--theia-input-foreground);
+      background-color: var(--theia-dropdown-background);
+      color: var(--dropdown-foreground);
       padding: 2px 5px
     }
   }

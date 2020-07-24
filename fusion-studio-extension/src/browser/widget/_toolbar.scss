@@ -1,14 +1,11 @@
 #fusion-toolbar {
   white-space: nowrap;
-  color: var(--theia-ui-font-color1);
   display: flex;
   flex-direction: row;
   align-items: center;
   flex: 1;
-  margin: 0 0 8px 8px;
-  padding-bottom: 4px;
+  margin-bottom: 4px;
   height: 23px;
-  border-bottom: 1px solid var(--theia-border-color2);
   > span:first-child {
     flex: 1;
     i {
