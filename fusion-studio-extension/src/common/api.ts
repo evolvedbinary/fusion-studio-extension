@@ -44,6 +44,9 @@ export namespace FSApi {
     const isString = typeof body === 'string';
     const isHeader = body && !isString && 'headers' in body;
     const headers: any = isHeader ? body.headers : {};
+    if (isHeader) {
+      delete(body.headers);
+    }
     if (connection.username !== '') {
       headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
     }
@@ -203,7 +206,7 @@ export namespace FSApi {
   export async function move(connection: FSServerConnection, source: string, destination: string, collection: boolean, copy: boolean): Promise<boolean> {
     try {
       const headers = {
-        ['x-fusiondb-' + (copy ? 'copy' : 'move') + '-source']: source,
+        ['x-fs-' + (copy ? 'copy' : 'move') + '-source']: source,
       };
       const endpoint = collection ? 'collection' : 'document';
       const result = await _put(connection, FS_API_URI + '/' + endpoint + '?uri=' + destination, { headers });
@@ -221,15 +224,15 @@ export namespace FSApi {
   export async function chmod(connection: FSServerConnection, uri: string, owner: string, group: string, isCollection?: boolean): Promise<boolean> {
     return (await _put(connection, FS_API_URI + '/' + (isCollection ? 'collection' : 'document') + '?uri=' + uri, {
       headers: {
-        'x-fusiondb-owner': owner,
-        'x-fusiondb-group': group,
+        'x-fs-owner': owner,
+        'x-fs-group': group,
       },
     })).status === 200;
   }
 
   export async function convert(connection: FSServerConnection, document: FSDocument): Promise<boolean> {
     return (await _put(connection, FS_API_URI + '/document?uri=' + document.name, {
-      headers: { 'x-fusiondb-convert': !document.binaryDoc },
+      headers: { 'x-fs-convert': !document.binaryDoc },
     })).status === 200;
   }
 

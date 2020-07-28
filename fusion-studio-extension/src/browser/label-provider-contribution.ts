@@ -55,45 +55,7 @@ export class FSLabelProviderContribution implements LabelProviderContribution {
     protected readonly onDidChangeEmitter = new Emitter<DidChangeLabelEvent>();
 
     getName(node: FSNode): string | undefined {
-        if (FSNode.isConnection(node)) {
-            return this.core.getName(node.connection.name);
-        }
-        if (FSNode.isCollection(node)) {
-            return this.core.getName(node.collection.name);
-        }
-        if (FSNode.isDocument(node)) {
-            return this.core.getName(node.document.name);
-        }
-        if (FSNode.isGroups(node)) {
-            return 'Groups';
-        }
-        if (FSNode.isGroup(node)) {
-            return node.group;
-        }
-        if (FSNode.isUsers(node)) {
-            return 'Users';
-        }
-        if (FSNode.isUser(node)) {
-            return node.user;
-        }
-        if (FSNode.isIndexes(node)) {
-            return 'Indexs';
-        }
-        if (FSNode.isIndex(node)) {
-            return node.index;
-        }
-        if (FSNode.isSecurity(node)) {
-            return 'Security';
-        }
-        if (FSNode.isRest(node)) {
-            return 'RestXQ';
-        }
-        if (FSNode.isRestURI(node)) {
-            return node.restURI.uri;
-        }
-        if (FSNode.isRestMethod(node)) {
-            return node.restMethod.name;
-        }
+        return node.nodeName;
     }
 
     getLongName(node: FSNode): string {
