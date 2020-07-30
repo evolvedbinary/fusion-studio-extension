@@ -46,7 +46,7 @@ export class DragController {
         destination,
         destinationContainer,
         event,
-        copy: event.dataTransfer.dropEffect === 'copy',
+        copy: event.ctrlKey,
       };
       return result;
     }
@@ -141,7 +141,6 @@ export class DragController {
     }
     event.preventDefault();
     event.stopPropagation();
-    this.dragOperation(event);
     const operation = this.checkOperation(node, event);
     if (operation) {
       if (event.dataTransfer.files.length) {
