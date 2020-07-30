@@ -141,6 +141,7 @@ export class DragController {
     }
     event.preventDefault();
     event.stopPropagation();
+    this.toCancelNodeExpansion.dispose();
     const operation = this.checkOperation(node, event);
     if (operation) {
       if (event.dataTransfer.files.length) {
