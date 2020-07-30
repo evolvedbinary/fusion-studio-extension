@@ -1392,14 +1392,14 @@ export class FSCore {
       const node = this.node as FSDocumentNode;
       const msg = document.createElement('p');
       if (nodes.length === 1) {
-        msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.name + '</strong>?';
+        msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.nodeName + '</strong>?';
       } else {
         msg.innerHTML = '<p>Are you sure you want to delete the following items?</p>';
         if (collections.length > 0) {
-          msg.innerHTML += '<strong>Collection:</strong><ul>' + collections.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
+          msg.innerHTML += '<strong>Collection:</strong><ul>' + collections.map(node => '<li>' + node.nodeName + '</li>').join('') + '</ul>';
         }
         if (documents.length > 0) {
-          msg.innerHTML += '<strong>Document:</strong><ul>' + documents.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
+          msg.innerHTML += '<strong>Document:</strong><ul>' + documents.map(node => '<li>' + node.nodeName + '</li>').join('') + '</ul>';
         }
       }
       const dialog = new ConfirmDialog({
