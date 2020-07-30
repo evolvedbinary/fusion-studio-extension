@@ -58,6 +58,8 @@ export class FSCore {
     @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {}
 
+  updating = false;
+
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
   }
@@ -160,7 +162,7 @@ export class FSCore {
   protected removeNode(child: FSNode) {
     const parent = FSNode.isCollection(child.parent) ? child.parent : undefined;
     this._model && this._model.removeNode(child);
-    this.refresh(parent);
+    return this.updating ? null : this.refresh(parent);
   }
 
   public get selectedCount(): number {
@@ -1126,7 +1128,9 @@ export class FSCore {
   }
 
   public async move(operation: FSDragOperation): Promise<FSItemNode[]> {
+    const id = operation.destinationContainer.id;
     if (operation.source.length) {
+      this.updating = true;
       let result = (await asyncForEach(operation.source, async (source: FSItemNode, i) => {
         const isCollection = FSNode.isCollection(source);
         const result = await FSApi.move(
@@ -1150,11 +1154,22 @@ export class FSCore {
             });
           }
           if (!operation.copy) {
-            this.removeNode(source);
+            await this.removeNode(source);
           }
           return resultNode as FSItemNode;
         }
       })).filter(node => !!node) as FSItemNode[];
+      // TODO: implement softRefresh method
+      let container: FSNode | undefined;
+      const interval = setInterval(() => {
+        container = this.getNode(id);
+        if (FSNode.isCollection(container)) {
+          const collection = container;
+          clearInterval(interval);
+          this.refresh(collection);
+        }
+      }, 33);
+      this.updating = true;
       return result;
     } else {
       return [];
@@ -1200,7 +1215,7 @@ export class FSCore {
       if (result) {
         this.connectionDeleted(node);
         this.removeNode(node);
-        // this._model.refresh();
+        this._model.refresh();
       } else {
         this._model.selectNode(node);
       }
@@ -1358,7 +1373,7 @@ export class FSCore {
         this.expand(node);
         return;
       } else {
-        this._model.refresh(node);
+        return this._model.refresh(node);
       }
     }
   }
@@ -1377,7 +1392,6 @@ export class FSCore {
         }
       } catch (error) {
         console.error('caught:', error);
-        core.endLoading(node);
       }
     };
     if (!this.isSelected || !this._model) {
@@ -1387,6 +1401,7 @@ export class FSCore {
     const documents: any[] = [];
     let nodes = this.topNodes(this.selection);
     nodes.forEach(node => (FSNode.isCollection(node) ? collections : documents).push(node));
+    const isMultiple = nodes.length > 1;
     if (nodes.length > 0) {
       const isCollection = FSNode.isCollection(this.node);
       const node = this.node as FSDocumentNode;
@@ -1403,17 +1418,17 @@ export class FSCore {
         }
       }
       const dialog = new ConfirmDialog({
-        title: 'Delete ' + (isCollection ? 'collection' : 'document'),
+        title: 'Delete ' + (isMultiple ? 'items' : isCollection ? 'collection' : 'document'),
         msg,
         cancel: 'Keep',
         ok: 'Delete'
       });
       const result = await dialog.open();
       if (result) {
-        nodes.forEach(node => deleteNode(this, node));
+        await Promise.all(nodes.map(node => deleteNode(this, node)));
+        this._model && this._model.refresh();
       } else {
         this._model.selectNode(node);
-        this.endLoading(node);
       }
     }
   }
