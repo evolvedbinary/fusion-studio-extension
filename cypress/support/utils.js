@@ -1,8 +1,9 @@
 export function treenode(id) {
   return '[id=' + CSS.escape(id) + ']';
 }
-Cypress.Commands.add('getMenuCommand', (command, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=command][data-command=' + CSS.escape(command) + ']', options));
-Cypress.Commands.add('getSubMenu', (text, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=submenu]', options).should('contain.text', text));
+Cypress.Commands.add('waitForLoading', (options) => cy.wait(1000).get('.fs-icon.fa-spinner', options).should('not.exist').wait(1000));
+Cypress.Commands.add('getMenuCommand', (command, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=command][data-command=' + CSS.escape(command) + ']', options).should('not.have.class', 'p-mod-disabled'));
+Cypress.Commands.add('getSubMenu', (text, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=submenu]', options).should('contain.text', text).should('not.have.class', 'p-mod-disabled'));
 Cypress.Commands.add('getTreeNode', (id, options) => cy.get(treenode(id), options));
 Cypress.Commands.add('addConnection', (name = 'localhost', server = 'http://localhost:8080', username = 'admin', password = '') => {
   cy.get('#theia-top-panel .p-MenuBar-item').contains('File')
@@ -34,6 +35,7 @@ Cypress.Commands.add('addConnection', (name = 'localhost', server = 'http://loca
   cy.getTreeNode(username + '@' + server + '/rest').should('be.visible')
 });
 Cypress.Commands.add('addCollection', (id, name) => {
+  cy.waitForLoading();
   cy.getTreeNode(id).rightclick()
   cy.getMenuCommand('fusion.new-collection').should('be.visible').click()
   cy.get(dialogTitle).should('contain.text', 'New collection');
