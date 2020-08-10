@@ -45,7 +45,7 @@ export namespace FSApi {
     const isHeader = body && !isString && 'headers' in body;
     const headers: any = isHeader ? body.headers : {};
     if (isHeader) {
-      delete(body.headers);
+      body = body.body;
     }
     if (connection.username !== '') {
       headers.Authorization = 'Basic ' + btoa(connection.username + ':' + connection.password);
