@@ -9,6 +9,7 @@ export interface FSNode extends TreeNode {
   type: FSNodeType;
   connectionNode: FSConnectionNode;
   uri: string;
+  nodeName: string;
   loading?: boolean;
   loaded?: boolean;
 }
@@ -92,7 +93,7 @@ export namespace FSNode {
   export function isToolbar(node?: TreeNode): node is FSToolbarNode {
     return FSNode.is(node) && node.type === 'toolbar';
   }
-  export function isItem(node?: TreeNode): node is FSCollectionNode {
+  export function isItem(node?: TreeNode): node is FSItemNode {
     return FSNode.is(node) && node.type === 'item';
   }
   export function isCollection(node?: TreeNode): node is FSCollectionNode {

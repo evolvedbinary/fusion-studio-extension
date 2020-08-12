@@ -58,6 +58,8 @@ export class FSCore {
     @inject(WidgetManager) protected widgetManager: WidgetManager,
   ) {}
 
+  updating = false;
+
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
   }
@@ -95,17 +97,17 @@ export class FSCore {
   protected sortItems(a: FSNode, b: FSNode): number {
     if (FSNode.isItem(a) && FSNode.isItem(b)) {
       if (a.isCollection === b.isCollection) {
-        return sortText(a.uri, b.uri);
+        return sortText(a.nodeName, b.nodeName);
       } else {
         return a.isCollection ? -1 : 1;
       }
     } else {
-      return FSNode.isItem(a) ? 1 : FSNode.isItem(b) ? -1 : sortText(a.uri, b.uri);
+      return FSNode.isItem(a) ? 1 : FSNode.isItem(b) ? -1 : sortText(a.nodeName, b.nodeName);
     }
   }
 
   protected sortRest(a: FSNode, b: FSNode): number {
-    return sortText(a.uri, b.uri);
+    return sortText(a.nodeName, b.nodeName);
   }
 
   protected async sort(node: CompositeTreeNode, sortfunc: (a: FSNode, b: FSNode) => number) {
@@ -123,6 +125,7 @@ export class FSCore {
         id: 'fusion-connections-view-root',
         visible: false,
         children: [],
+        nodeName: 'root',
         parent: undefined
       } as CompositeTreeNode;
       this.addToolbar(this._model.root as CompositeTreeNode);
@@ -149,6 +152,7 @@ export class FSCore {
       type: 'toolbar',
       id: 'fusion-toolbar',
       uri: 'toolbar',
+      nodeName: 'toolbar',
       parent: parent,
       selected: false,
       connectionNode: undefined as any,
@@ -156,8 +160,9 @@ export class FSCore {
   }
 
   protected removeNode(child: FSNode) {
+    const parent = FSNode.isCollection(child.parent) ? child.parent : undefined;
     this._model && this._model.removeNode(child);
-    this.refresh();
+    return this.updating ? null : this.refresh(parent);
   }
 
   public get selectedCount(): number {
@@ -434,6 +439,7 @@ export class FSCore {
       connection,
       parent: parent as any,
       selected: false,
+      nodeName: connection.name,
       uri: connection.server,
       db: undefined as any,
       security: undefined as any,
@@ -493,6 +499,7 @@ export class FSCore {
       isCollection: false,
       id: this.itemID(parent.connectionNode.connection, document),
       parent: parent,
+      nodeName: name,
       link: FS_RESOURCE_SCHEME + ':' + document.name,
       isNew,
       selected: false,
@@ -513,6 +520,7 @@ export class FSCore {
       connectionNode: parent.connectionNode,
       isCollection: true,
       children: [],
+      nodeName: name,
       id: this.itemID(parent.connectionNode.connection, collection),
       link: FS_RESOURCE_SCHEME + ':' + collection.name,
       parent: parent as CompositeTreeNode,
@@ -530,6 +538,7 @@ export class FSCore {
       connectionNode: parent.connectionNode,
       id: this.userID(parent.connectionNode.connection, user),
       description: user,
+      nodeName: user,
       user,
       parent,
       uri: '/users/' + user,
@@ -561,6 +570,7 @@ export class FSCore {
       id: this.userID(parent.connectionNode.connection),
       description: 'Users',
       parent,
+      nodeName: 'Users',
       uri: '/users',
       expanded: false,
       selected: false,
@@ -576,6 +586,7 @@ export class FSCore {
       connectionNode: parent.connectionNode,
       id: this.groupID(parent.connectionNode.connection, group),
       group,
+      nodeName: group,
       description: group,
       parent,
       uri: '/groups/' + group,
@@ -606,6 +617,7 @@ export class FSCore {
       children: [],
       id: this.groupID(parent.connectionNode.connection),
       description: 'Groups',
+      nodeName: 'Groups',
       parent,
       uri: '/groups',
       expanded: false,
@@ -623,6 +635,7 @@ export class FSCore {
       children: [],
       id: this.securityID(connectionNode.connection),
       description: 'Security',
+      nodeName: 'Security',
       parent,
       uri: '/security',
       expanded: false,
@@ -641,6 +654,7 @@ export class FSCore {
       id: this.indexID(parent.connectionNode.connection, index),
       parent: parent,
       index,
+      nodeName: index,
       uri: index,
       type: 'index',
       selected: false,
@@ -682,6 +696,7 @@ export class FSCore {
       parent: connectionNode,
       uri: '/index',
       type: 'indexes',
+      nodeName: 'Indexes',
       selected: false,
       expanded: false,
     } as FSIndexesNode, connectionNode) as FSIndexesNode;
@@ -696,6 +711,7 @@ export class FSCore {
       children: [],
       id: this.restID(connectionNode.connection),
       uri: 'rest',
+      nodeName: 'RestXQ',
       parent: connectionNode,
       selected: false,
       expanded: false,
@@ -710,6 +726,7 @@ export class FSCore {
         uri: 'rest',
         restURI: uri,
         parent: rest,
+        nodeName: uri.uri,
         selected: false,
         expanded: false,
         connectionNode,
@@ -721,6 +738,7 @@ export class FSCore {
         restMethod: method,
         parent: uriNode,
         selected: false,
+        nodeName: method.name,
         connectionNode,
       } as FSRestMethodNode, uriNode))
     }));
@@ -729,7 +747,7 @@ export class FSCore {
   }
 
   public status() {
-    const nodes = this.topNodes(this.selection);
+    const nodes = this.topNodesSp(this.selection);
     if (nodes.length) {
       this.statusEntry.active = true;
       if (nodes.length > 1) {
@@ -739,11 +757,11 @@ export class FSCore {
         const node = nodes[0];
         this.statusEntry.arguments = [node.id];
         if (FSNode.isConnection(node)) {
-          this.statusEntry.text = `$(toggle-on) "${node.connectionNode.name}" by "${node.connectionNode.connection.username}" to ${node.connectionNode.connection.server}`;
+          this.statusEntry.text = `$(toggle-on) "${node.connectionNode.connection.name}" by "${node.connectionNode.connection.username}" to ${node.connectionNode.connection.server}`;
         } else if (FSNode.isCollection(node)) {
-          this.statusEntry.text = `$(folder) ${node.name} (${this.getGroupOwner(node.collection)})`;
+          this.statusEntry.text = `$(folder) ${node.nodeName} (${this.getGroupOwner(node.collection)})`;
         } else if (FSNode.isDocument(node)) {
-          this.statusEntry.text = `$(file${node.document.binaryDoc ? '' : '-code'}-o) ${node.name} (${this.getGroupOwner(node.document)})`;
+          this.statusEntry.text = `$(file${node.document.binaryDoc ? '' : '-code'}-o) ${node.nodeName} (${this.getGroupOwner(node.document)})`;
         }
       }
     } else {
@@ -878,7 +896,7 @@ export class FSCore {
   protected fileExists(name: string, node?: FSCollectionNode): boolean {
     node = (node && FSNode.isCollection(node)) ? node : ((this.node && FSNode.isCollection(this.node)) ? this.node : undefined);
     if (node) {
-      return !!node.children.find(file => file.name === name);
+      return !!node.children.find(file => FSNode.isDocument(file) && file.nodeName === name);
     }
     return false;
   }
@@ -896,11 +914,11 @@ export class FSCore {
   }
 
   public itemID(connection: FSServerConnection, item: FSItem): string {
-    return this.connectionID(connection) + item.name;
+    return this.connectionID(connection) + (item.name.length < 1 || item.name[0] != '/' ? '/' : '') + item.name;
   }
   
   public securityID(connection: FSServerConnection, prefix?: string, text?: string): string {
-    return this.connectionID(connection) + 'security' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
+    return this.connectionID(connection) + '/security' + (prefix ? '/' + prefix + (text ? '/' + text : ''): '');
   }
 
   public userID(connection: FSServerConnection, user: string = ''): string {
@@ -916,7 +934,7 @@ export class FSCore {
   }
   
   protected restID(connection: FSServerConnection, prefix?: string, text?: string): string {
-    return this.connectionID(connection) + 'rest' + (prefix ? prefix + '/' + (text ? '/' + text : ''): '');
+    return this.connectionID(connection) + '/rest' + (prefix ? prefix + (text ? '/' + text : ''): '');
   }
 
   protected parentCollection(uri: string): string {
@@ -960,9 +978,7 @@ export class FSCore {
         this.commands.executeCommand('FusionEval:toggle');
       }
     }
-    const result = await open(this.openerService, uriObj, {
-      node: 123,
-    });
+    const result = await open(this.openerService, uriObj);
     return result;
   }
 
@@ -1112,7 +1128,9 @@ export class FSCore {
   }
 
   public async move(operation: FSDragOperation): Promise<FSItemNode[]> {
+    const id = operation.destinationContainer.id;
     if (operation.source.length) {
+      this.updating = true;
       let result = (await asyncForEach(operation.source, async (source: FSItemNode, i) => {
         const isCollection = FSNode.isCollection(source);
         const result = await FSApi.move(
@@ -1127,18 +1145,27 @@ export class FSCore {
           if (isCollection) {
             resultNode = await this.addCollection(operation.destinationContainer, {
               ...(source as FSCollectionNode).collection,
+              name: operation.destination[i],
             });
           } else {
             resultNode = this.addDocument(operation.destinationContainer, {
               ...(source as FSDocumentNode).document,
+              name: operation.destination[i],
             });
           }
           if (!operation.copy) {
-            this.removeNode(source);
+            await this.removeNode(source);
           }
           return resultNode as FSItemNode;
         }
       })).filter(node => !!node) as FSItemNode[];
+      // TODO: implement softRefresh method
+      let container: FSNode | undefined;
+      container = this.getNode(id);
+      if (FSNode.isCollection(container)) {
+        this.expand(container);
+      }
+      this.updating = true;
       return result;
     } else {
       return [];
@@ -1184,7 +1211,7 @@ export class FSCore {
       if (result) {
         this.connectionDeleted(node);
         this.removeNode(node);
-        // this._model.refresh();
+        this._model.refresh();
       } else {
         this._model.selectNode(node);
       }
@@ -1297,15 +1324,15 @@ export class FSCore {
     if (FSNode.isItem(this.node)) {      
       const isCollection = FSNode.isCollection(this.node);
       const collection = this.node.parent as FSCollectionNode;
-      const validator = (input: string) => input === (this.node && this.node.name) || input !== '' && !this.fileExists(input, collection);
+      const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
       const dialog = new SingleTextInputDialog({
-        initialValue: this.node.name,
+        initialValue: this.node.nodeName,
         title: 'Rename ' + (isCollection ? 'collection' : 'document'),
         confirmButtonLabel: 'Rename',
         validate: validator,
       });
       let name = await dialog.open();
-      if (name && name != this.node.name) {
+      if (name && name != this.node.nodeName) {
         this.rename(this.node, name);
       }
     }
@@ -1342,7 +1369,7 @@ export class FSCore {
         this.expand(node);
         return;
       } else {
-        this._model.refresh(node);
+        return this._model.refresh(node);
       }
     }
   }
@@ -1361,7 +1388,6 @@ export class FSCore {
         }
       } catch (error) {
         console.error('caught:', error);
-        core.endLoading(node);
       }
     };
     if (!this.isSelected || !this._model) {
@@ -1371,33 +1397,34 @@ export class FSCore {
     const documents: any[] = [];
     let nodes = this.topNodes(this.selection);
     nodes.forEach(node => (FSNode.isCollection(node) ? collections : documents).push(node));
+    const isMultiple = nodes.length > 1;
     if (nodes.length > 0) {
       const isCollection = FSNode.isCollection(this.node);
       const node = this.node as FSDocumentNode;
       const msg = document.createElement('p');
       if (nodes.length === 1) {
-        msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.name + '</strong>?';
+        msg.innerHTML = 'Are you sure you want to delete the ' + (isCollection ? 'collection' : 'document') + ': <strong>' + node.nodeName + '</strong>?';
       } else {
         msg.innerHTML = '<p>Are you sure you want to delete the following items?</p>';
         if (collections.length > 0) {
-          msg.innerHTML += '<strong>Collection:</strong><ul>' + collections.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
+          msg.innerHTML += '<strong>Collection:</strong><ul>' + collections.map(node => '<li>' + node.nodeName + '</li>').join('') + '</ul>';
         }
         if (documents.length > 0) {
-          msg.innerHTML += '<strong>Document:</strong><ul>' + documents.map(node => '<li>' + node.name + '</li>').join('') + '</ul>';
+          msg.innerHTML += '<strong>Document:</strong><ul>' + documents.map(node => '<li>' + node.nodeName + '</li>').join('') + '</ul>';
         }
       }
       const dialog = new ConfirmDialog({
-        title: 'Delete ' + (isCollection ? 'collection' : 'document'),
+        title: 'Delete ' + (isMultiple ? 'items' : isCollection ? 'collection' : 'document'),
         msg,
         cancel: 'Keep',
         ok: 'Delete'
       });
       const result = await dialog.open();
       if (result) {
-        nodes.forEach(node => deleteNode(this, node));
+        await Promise.all(nodes.map(node => deleteNode(this, node)));
+        this._model && this._model.refresh();
       } else {
         this._model.selectNode(node);
-        this.endLoading(node);
       }
     }
   }
@@ -1455,7 +1482,7 @@ export class FSCore {
   }
 
   public canDeleteUser(): boolean {
-    return FSNode.isUser(this.node) && this.node.name != 'admin' && this.node.name != 'guest';
+    return FSNode.isUser(this.node) && this.node.nodeName != 'admin' && this.node.nodeName != 'guest';
   }
 
   public async deleteUser() {
@@ -1513,7 +1540,7 @@ export class FSCore {
   }
 
   public canDeleteGroup(): boolean {
-    return FSNode.isGroup(this.node) && this.node.name != 'dba' && this.node.name != 'guest';
+    return FSNode.isGroup(this.node) && this.node.nodeName != 'dba' && this.node.nodeName != 'guest';
   }
 
   public async deleteGroup() {

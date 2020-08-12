@@ -100,19 +100,19 @@ context('Fusion Studio', function() {
     it('display users and groups', function() {
       // expand users and groups
       cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=security]').should('be.visible').click();
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=securityuser\\/]').should('be.visible');
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=securitygroup\\/]').should('be.visible');
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=security\\/user]').should('be.visible');
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=security\\/group]').should('be.visible');
       // expand and check users
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=securityuser\\/]').click();
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-user.fs-icon + [id*=securityuser\\/\\/]').should('have.length.gt', 0);
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=security\\/user]').click();
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-user.fs-icon + [id*=security\\/user\\/]').should('have.length.gt', 0);
       // expand and check groups
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=securitygroup\\/]').click();
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-users.fs-icon + [id*=securitygroup\\/\\/]').should('have.length.gt', 0);
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=security\\/group]').click();
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-users.fs-icon + [id*=security\\/group\\/]').should('have.length.gt', 0);
     })
     it('open user information', function() {
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=securityuser\\/]').should('be.visible');
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-user.fs-icon + [id*=securityuser\\/\\/]').should('have.length.gt', 0);
-      const firstUser = cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-user.fs-icon + [id*=securityuser\\/\\/]').first();
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=security\\/user]').should('be.visible');
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-user.fs-icon + [id*=security\\/user\\/]').should('have.length.gt', 0);
+      const firstUser = cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-user.fs-icon + [id*=security\\/user\\/]').first();
       firstUser.then(user => {
         const userName = user.text();
         firstUser.rightclick();
@@ -124,9 +124,9 @@ context('Fusion Studio', function() {
       });
     })
     it('open group information', function() {
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=securitygroup\\/]').should('be.visible');
-      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-users.fs-icon + [id*=securitygroup\\/\\/]').should('have.length.gt', 0);
-      const firstGroup = cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-users.fs-icon + [id*=securitygroup\\/\\/]').first();
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item [data-node-id$=security\\/group]').should('be.visible');
+      cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-users.fs-icon + [id*=security\\/group\\/]').should('have.length.gt', 0);
+      const firstGroup = cy.get('.p-Widget.theia-Tree .theia-TreeNode.fusion-item .fa-users.fs-icon + [id*=security\\/group\\/]').first();
       firstGroup.then(group => {
         const groupName = group.text();
         firstGroup.rightclick();
