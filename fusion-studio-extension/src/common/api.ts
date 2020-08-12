@@ -7,6 +7,8 @@ import { FSGroupData, writeGroupData, readGroup, FSGroup } from "../classes/grou
 import { readIndex, FSIndex } from "../classes/indexes";
 import { FSRestURI } from "../classes/rest";
 
+export const API_MINIMUM_VERSION = '0.2.0';
+export const [API_MAJOR, API_MINOR, API_PATCH] = API_MINIMUM_VERSION.split('.').map(val => Number.parseInt(val));
 export const FS_API_URI = '/exist/restxq/fusiondb';
 export const RANGE_START = 1;
 export const RANGE_LENGTH = 4;
@@ -18,6 +20,7 @@ export interface FSPostOptions {
 export namespace FSApi {
 
   // private methods
+
   async function _get(connection: FSServerConnection, uri: string): Promise<Response> {
     return fetch(connection.server + uri,  connection.username === '' ? undefined : {
       headers: {
@@ -76,6 +79,14 @@ export namespace FSApi {
   }
 
   // public methods
+  function checkAPI(version: string): boolean {
+    const [major, minor, patch] = version.split('.').map(val => Number.parseInt(val));;
+    if (major > API_MAJOR) return true;
+    if (major === API_MAJOR && minor > API_MINOR) return true;
+    if (minor === API_MINOR && patch >= API_PATCH) return true;
+    return false;
+  }
+
   export async function readDocument(data: any, connection?: FSServerConnection, uri?: string): Promise<FSDocument> {
     return {
       ...readItem(data, 'dba', connection ? connection.username : ''),
@@ -155,8 +166,25 @@ export namespace FSApi {
   }
   
   export async function connect(connection: FSServerConnection): Promise<FSCollection> {
-    const root = await load(connection, '/') as FSCollection;
-    return root;
+    try {
+      const result = await _get(connection, FS_API_URI + '/version');
+      switch (result.status) {
+        case 200:
+          const version = (await result.json())?.version;
+          if (!version) {
+            throw createError(FSError.unknown, result);
+          }
+          if (checkAPI(version)) {
+            const root = await load(connection, '/') as FSCollection;
+            return root;
+          }
+          throw createError(FSError.outdatedAPI, version);
+        case 401: throw createError(FSError.permissionDenied, result);
+        default: throw createError(FSError.unknown, result)
+      }
+    } catch (error) {
+      throw createError(FSError.unknown, error);
+    }
   }
 
   export async function remove(connection: FSServerConnection, uri: string, isCollection?: boolean): Promise<boolean> {
