@@ -12,7 +12,7 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 
 ## Getting started:
 ### Requirements:
-*   [Fusion Studio API](https://github.com/evolvedbinary/fusion-studio-api) a compatible exist or fusion database.
+*   [Fusion Studio API](https://github.com/evolvedbinary/fusion-studio-api) installed in a compatible [FusionDB Server](https://www.fusiondb.com) or [eXist-db](https://www.exist-db.org) database.
 
 #### For building
 *   [Node 10](https://nodejs.org/dist/v10.16.3/). `>= 10.16.3` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm))
