@@ -31,7 +31,7 @@ jobs:
       node_js: 10
       env:
         - IMG=existdb/existdb:5.2.0
-        - API_XAR=https://github.com/evolvedbinary/fusion-studio-api/releases/download/0.1.1/fusion-studio-api-0.1.1.xar
+        - API_XAR=https://www.fusiondb.com/download/fusion-studio-api-0.1.1.xar
       before_script:
         - docker pull $IMG
         - docker create  --name exist-ci -p 8080:8080 $IMG
