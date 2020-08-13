@@ -11,7 +11,7 @@ import { FSApi, API_MINIMUM_VERSION } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { FSDragOperation } from "./widget/drag";
 import { FSTemplate } from "../classes/template";
-import { FSConnectionDialog, FSNewFromTemplateDialog, FSPropertiesDialog, FSAlertDialog } from "./dialogs";
+import { FSConnectionDialog, FSNewFromTemplateDialog, FSPropertiesDialog } from "./dialogs";
 import { FSFiles, FSFileList } from "../classes/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
@@ -24,6 +24,7 @@ import { FSUserDialog } from "./dialogs/user-dialog";
 import { FSGroupDialog } from "./dialogs/group-dialog";
 import { FS_EVAL_WIDGET_FACTORY_ID, XQ_EXT } from '../classes/eval';
 import { FSLabelProviderContribution } from "./label-provider-contribution";
+import { FSDialog } from "./dialogs/basic";
 
 function sortText(A: string, B: string, caseSensetive = false): number {
   let a = A;
@@ -284,14 +285,9 @@ export class FSCore {
       } catch (error) {
         connectionNode.expanded = false;
         if (FSErrorObject.is(error)) {
-          const dialog = new FSAlertDialog({
-            title: 'New Connection',
-            message: ERROR_MESSAGES[error.code] + ' "' + (error.data?.length && error.data[0]) + '"',
-            secondaryMessage: 'You need to update your API to version "' + API_MINIMUM_VERSION + '" or higher',
-          });
-          dialog.open();
-          console.warn('caught:', error);
-          console.log(ERROR_MESSAGES[error.code] + ': ' + error.data);
+          FSDialog.alert('New Connection',
+            ERROR_MESSAGES[error.code] + ' "' + (error.data?.length && error.data[0]) + '"',
+            'You need to update your API to version "' + API_MINIMUM_VERSION + '" or higher');
         } else {
           console.error('not caught:', error);
         }
