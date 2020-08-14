@@ -7,6 +7,7 @@ import { FSDocumentNode, FSConnectionNode } from '../../classes/node';
 import { Disposable, MaybePromise } from '@theia/core';
 import { FSApi, RANGE_LENGTH } from '../../common/api';
 import { SERIALIZATION_TYPES } from '../../classes/eval';
+import { FSDialog } from '../dialogs/basic';
 
 export type FSEvalWidgetFactory = () => FSEvalWidget;
 export const FSEvalWidgetFactory = Symbol('FSEditorWidgetFactory');
@@ -129,7 +130,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
   async evaluate(page = 1) {
     if (this.editor) {
       if (page === 0) {
-        page =1;
+        page = 1;
         this.result = '';
         this.resetPager();
       }
@@ -159,10 +160,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
           this.update();
         }
       } catch(e) {
-        this.editorWidget = undefined;
-        this.editor = undefined;
-        this.editorChanged();
-        this.update();
+        FSDialog.alert('XQuery evaluation', 'You have a problem in your XQuery. Please check your code and try again.');
       }
     }
   }
@@ -191,7 +189,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
         }}>
           {this.serializationTypes()}
         </select>
-        <button className="x-btn theia-button" ref={this.elEval} disabled={!this.documentNode && (!editor || !this.connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
+        <button className="x-btn theia-button" ref={this.elEval} disabled={!this.documentNode && (!editor || !connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
       </div>
       <div className='x-body' ref={this.elBody}>{this.result}</div>
       <div className='x-footer'>
