@@ -163,7 +163,7 @@ export class FSCore {
   protected removeNode(child: FSNode) {
     const parent = FSNode.isCollection(child.parent) ? child.parent : undefined;
     this._model && this._model.removeNode(child);
-    return this.updating ? null : this.refresh(parent);
+    return this.updating ? Promise.resolve(undefined) : this.refresh(parent);
   }
 
   public get selectedCount(): number {
@@ -1125,6 +1125,7 @@ export class FSCore {
 
   public async move(operation: FSDragOperation): Promise<FSItemNode[]> {
     const id = operation.destinationContainer.id;
+    const toDelete: FSNode[] = [];
     if (operation.source.length) {
       this.updating = true;
       let result = (await asyncForEach(operation.source, async (source: FSItemNode, i) => {
@@ -1150,7 +1151,7 @@ export class FSCore {
             });
           }
           if (!operation.copy) {
-            await this.removeNode(source);
+            toDelete.push(source);
           }
           return resultNode as FSItemNode;
         }
@@ -1160,6 +1161,8 @@ export class FSCore {
       container = this.getNode(id);
       if (FSNode.isCollection(container)) {
         this.expand(container);
+        await asyncForEach(toDelete, (node: FSNode) => this.removeNode(node));
+        await this._model?.refresh(container);
       }
       this.updating = true;
       return result;
