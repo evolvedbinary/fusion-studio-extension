@@ -90,6 +90,7 @@ context('Fusion Studio', function () {
       cy.get(dialogMainButton).should('be.visible').click();
       cy.get(dialog).should('not.be.visible');
       cy.waitForLoading();
+      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/text_file.txt').should('not.be.visible');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/new_name.txt').should('be.visible');
     })
     it('rename a collectioin', function () {
@@ -101,6 +102,7 @@ context('Fusion Studio', function () {
       cy.get(dialogMainButton).should('be.visible').click();
       cy.get(dialog).should('not.be.visible');
       cy.waitForLoading();
+      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/col1').should('not.be.visible');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/new_col1').should('be.visible');
     })
   })
