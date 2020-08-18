@@ -58,13 +58,14 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
       this.nameField.className = 'theia-input';
       this.nameField.addEventListener('focus', e => this.nameField.select());
       this.item = item;
+      const collectionKey: any = props.node.uri === '/db' ? {} : { 'Collection': item.name.substr(0, slash) };
       addKeys({
         'Name': {
           type: 'string',
           value: '',
           el: this.nameField,
         },
-        'Collection': item.name.substr(0, slash),
+        ...collectionKey,
         'Created': { type: 'date', value: item.created },
       }, this.keys);
       if (FSItem.isDocument(item)) {
