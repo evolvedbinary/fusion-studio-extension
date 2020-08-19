@@ -43,7 +43,7 @@ export class FSUserDialog extends AbstractDialog<FSUserDialogResult> {
     super(props);
     if (props.connection) {
       this.group = createField('Primary group', '');
-      autocomplete(this.group.input, props.connection.groups);
+      autocomplete(this.group.input as HTMLInputElement, props.connection.groups);
       this.group.input.addEventListener('change', e => Object.keys(this.groups).forEach(group => {
         if (group === this.group.input.value) {
           this.groups[group].disabled = true;
