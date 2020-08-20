@@ -103,7 +103,7 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
           },
         }, this.keys);
         if (item.binaryDoc) {
-          addKey('size', { type: 'size', value: item.size }, this.keys);
+          addKey('Size', { type: 'size', value: item.size }, this.keys);
         }
       }
       addKeys({
@@ -123,9 +123,11 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
       this.permissionsEditor.permissions = item.permissions;
       autocomplete(this.ownerSelect, props.node.connectionNode.connection.users);
       this.ownerSelect.value = item.owner;
+      this.ownerSelect.type = 'text';
       this.ownerSelect.className = 'theia-input';
       autocomplete(this.groupSelect, props.node.connectionNode.connection.groups);
       this.groupSelect.value = item.group;
+      this.groupSelect.type = 'text';
       this.groupSelect.className = 'theia-input';
     }
     this.containerDiv.appendChild(this.keys.container);
