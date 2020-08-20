@@ -72,7 +72,7 @@ export const actUploadDocument: FSAction = {
   visible: core => () => core.isCollection,
 };
 const templates: FSAction[] = TEMPLATES.map((template: FSTemplate, i: number) => ({
-  id: 'new-document-template:' + template.name,
+  id: 'new-document-template:' + template.id,
   label: template.name,
   order: 'c' + i.toString(),
   contextMenu: CONTEXT_MENU_NEW_SUBMENU,

@@ -5,6 +5,7 @@ export interface FSTemplateXQMParams {
   namespace: string;
 }
 export const FSTemplateXQM: FSTemplate<FSTemplateXQMParams> = {
+  id: 'xqm',
   name: 'XQuery Library Module',
   fields: {
     namespace: 'Namespace',

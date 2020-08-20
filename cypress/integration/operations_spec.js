@@ -93,17 +93,17 @@ context('Fusion Studio', function () {
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/text_file.txt').should('not.be.visible');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/new_name.txt').should('be.visible');
     })
-    it('rename a collectioin', function () {
+    it('rename a collection', function () {
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/col1').should('be.visible').rightclick();
       cy.getMenuCommand('fusion.rename').should('be.visible').click()
       cy.get(dialogTitle).should('contain.text', 'Rename collection');
-      cy.get(dialogBody).should('be.visible').find('input.theia-input[type=text]').should('contain.value', 'col1').type('new_col1');
+      cy.get(dialogBody).should('be.visible').find('input.theia-input[type=text]').should('contain.value', 'col1').type('other_col1');
       cy.get(dialogMainButton).should('be.visible').click();
       cy.get(dialog).should('not.be.visible');
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/col1').should('not.be.visible');
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/new_col1').should('be.visible');
+      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/other_col1').should('be.visible');
     })
   })
   describe('Deleting', function () {
