@@ -1,6 +1,9 @@
 export function treenode(id) {
   return '[id=' + CSS.escape(id) + ']';
 }
+export function checkbox() {
+  return 'span.checkbox';
+}
 Cypress.formatDate = (date) => {
   if (!date) {
     date = new Date();
@@ -19,6 +22,16 @@ Cypress.Commands.add('waitForLoading', (options) => cy.wait(50).get('.fs-icon.fa
 Cypress.Commands.add('getMenuCommand', (command, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=command][data-command=' + CSS.escape(command) + ']', options).should('exist').should('not.have.class', 'p-mod-disabled'));
 Cypress.Commands.add('getSubMenu', (text, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=submenu]', options).should('contain.text', text).should('not.have.class', 'p-mod-disabled'));
 Cypress.Commands.add('getTreeNode', (id, options) => cy.get(treenode(id), options));
+Cypress.Commands.add('getCheckbox', (label, options) => {
+  const result = cy.get(checkbox(label), options);
+  return label ? result.contains(label) : result;
+});
+Cypress.Commands.add('findCheckbox', { prevSubject: true }, (subject, label, options) => {
+  const result = cy.wrap(subject).find(checkbox(label), options);
+  return label ? result.contains(label) : result;
+});
+Cypress.Commands.add('checked', { prevSubject: true }, subject => cy.wrap(subject).find('.checkbox-box').should('have.class', 'checked'));
+Cypress.Commands.add('notChecked', { prevSubject: true }, subject => cy.wrap(subject).find('.checkbox-box').should('not.have.class', 'checked'));
 Cypress.Commands.add('addConnection', (name = 'localhost', server = 'http://localhost:8080', username = 'admin', password = '') => {
   cy.get('#theia-top-panel .p-MenuBar-item').contains('File')
     .click()
