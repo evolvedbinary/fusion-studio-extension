@@ -10,6 +10,7 @@ export type FSTemplateFields<T> = {
   [P in keyof T]: string | FSTemplateFieldOptions;
 }
 export interface FSTemplate<T = any> {
+  id: string,
   name: string;
   defaults?: Partial<T>;
   fields?: FSTemplateFields<T>;

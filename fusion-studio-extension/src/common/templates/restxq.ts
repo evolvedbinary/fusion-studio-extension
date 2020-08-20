@@ -5,6 +5,7 @@ export interface FSTemplateRestXQParams {
   namespace: string;
 }
 export const FSTemplateRestXQ: FSTemplate = {
+  id: 'restxq',
   name: 'XQuery RESTXQ Module',
   fields: {
     namespace: 'Namespace',

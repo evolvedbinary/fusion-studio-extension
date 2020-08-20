@@ -5,6 +5,7 @@ export interface FSTemplateXLSTParams {
   version: FSTemplateXLSTVersion;
 };
 export const FSTemplateXLST: FSTemplate<FSTemplateXLSTParams> = {
+  id: 'zslt',
   name: 'XSLT Stylesheet',
   fields: {
     version: {

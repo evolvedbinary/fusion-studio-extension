@@ -7,6 +7,7 @@ export interface FSTemplateXSDParams {
 };
 
 export const FSTemplateXSD: FSTemplate<FSTemplateXSDParams> = {
+  id: 'xsd',
   name: 'XML Schema',
   fields: {
     namespace: 'Namespace',

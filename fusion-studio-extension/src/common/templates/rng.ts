@@ -4,6 +4,7 @@ export interface FSTemplateRNParams {
   type: 'xml' | 'compact';
 }
 export const FSTemplateRN: FSTemplate<FSTemplateRNParams> = {
+  id: 'rng',
   name: 'Schematron',
   fields: {
     type: {
