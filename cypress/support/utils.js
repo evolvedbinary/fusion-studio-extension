@@ -1,10 +1,37 @@
 export function treenode(id) {
   return '[id=' + CSS.escape(id) + ']';
 }
+export function checkbox() {
+  return 'span.checkbox';
+}
+Cypress.formatDate = (date) => {
+  if (!date) {
+    date = new Date();
+  }
+  const month = (date.getMonth() + 1).toString();
+  const day = date.getDate().toString();
+  if (month.length < 2) {
+    month = '0' + month;
+  }
+  if (day.length < 2) {
+    day = '0' + day;
+  }
+  return day + '-' + month + '-' + date.getUTCFullYear().toString()
+}
 Cypress.Commands.add('waitForLoading', (options) => cy.wait(50).get('.fs-icon.fa-spinner', { ...options, timeout: options?.timeout || 10000}).should('not.exist').wait(50));
-Cypress.Commands.add('getMenuCommand', (command, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=command][data-command=' + CSS.escape(command) + ']', options).should('not.have.class', 'p-mod-disabled'));
+Cypress.Commands.add('getMenuCommand', (command, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=command][data-command=' + CSS.escape(command) + ']', options).should('exist').should('not.have.class', 'p-mod-disabled'));
 Cypress.Commands.add('getSubMenu', (text, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=submenu]', options).should('contain.text', text).should('not.have.class', 'p-mod-disabled'));
 Cypress.Commands.add('getTreeNode', (id, options) => cy.get(treenode(id), options));
+Cypress.Commands.add('getCheckbox', (label, options) => {
+  const result = cy.get(checkbox(label), options);
+  return label ? result.contains(label) : result;
+});
+Cypress.Commands.add('findCheckbox', { prevSubject: true }, (subject, label, options) => {
+  const result = cy.wrap(subject).find(checkbox(label), options);
+  return label ? result.contains(label) : result;
+});
+Cypress.Commands.add('checked', { prevSubject: true }, subject => cy.wrap(subject).find('.checkbox-box').should('have.class', 'checked'));
+Cypress.Commands.add('notChecked', { prevSubject: true }, subject => cy.wrap(subject).find('.checkbox-box').should('not.have.class', 'checked'));
 Cypress.Commands.add('addConnection', (name = 'localhost', server = 'http://localhost:8080', username = 'admin', password = '') => {
   cy.get('#theia-top-panel .p-MenuBar-item').contains('File')
     .click()
@@ -36,6 +63,20 @@ Cypress.Commands.add('addCollection', (id, name) => {
   cy.get(dialog).should('not.be.visible');
   cy.getTreeNode(id + '/' + name).should('be.visible');
 });
+Cypress.Commands.add('addDocument', (collection, name, type = '') => {
+  cy.waitForLoading();
+  const command = 'fusion.new-document' + (type ? '-template:' + type : '');
+  cy.getTreeNode(collection).rightclick()
+  cy.getSubMenu('New document...').trigger('mousemove').getMenuCommand(command).should('be.visible').click()
+  cy.get(dialogBody).find('input.theia-input[type=text]').clear().type(name);
+  cy.get(dialogMainButton).click();
+  if (type === '') {
+    cy.get('.p-Widget.p-TabBar li[title=' + CSS.escape(collection + '/' + name) + ']').click();
+    cy.get('[role=presentation].editor-scrollable').click().type('Sample text file content');
+  }
+  cy.get('#theia-top-panel .p-MenuBar-item').contains('File').click()
+  cy.get('.p-Menu-item[data-type=command][data-command=core\\.save]').click()
+});
 
 export const dialogOverlay = '.p-Widget.dialogOverlay#theia-dialog-shell';
 export const dialog = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock';
@@ -44,3 +85,4 @@ export const dialogBody = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlo
 export const dialogFooter = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl';
 export const dialogButtons = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl .theia-button';
 export const dialogMainButton = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl .theia-button.main';
+export const dialogSecondaryButton = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl .theia-button.secondary';

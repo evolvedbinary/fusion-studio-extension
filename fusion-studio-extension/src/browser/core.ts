@@ -1468,7 +1468,7 @@ export class FSCore {
         dialog.open().then(async result => {
           if (result) {
             const item = FSNode.isCollection(node) ? node.collection as FSCollection : (node as FSDocumentNode).document as FSDocument;
-            if (result.name !== node.name) {
+            if (result.name !== node.nodeName) {
               await this.rename(node, result.name);
             }
             if ((result.owner !== item.owner) || (result.group !== item.group)) {

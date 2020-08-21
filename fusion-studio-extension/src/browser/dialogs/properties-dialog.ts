@@ -58,13 +58,14 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
       this.nameField.className = 'theia-input';
       this.nameField.addEventListener('focus', e => this.nameField.select());
       this.item = item;
+      const collectionKey: any = props.node.uri === '/db' ? {} : { 'Collection': item.name.substr(0, slash) };
       addKeys({
         'Name': {
           type: 'string',
           value: '',
           el: this.nameField,
         },
-        'Collection': item.name.substr(0, slash),
+        ...collectionKey,
         'Created': { type: 'date', value: item.created },
       }, this.keys);
       if (FSItem.isDocument(item)) {
@@ -102,7 +103,7 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
           },
         }, this.keys);
         if (item.binaryDoc) {
-          addKey('size', { type: 'size', value: item.size }, this.keys);
+          addKey('Size', { type: 'size', value: item.size }, this.keys);
         }
       }
       addKeys({
@@ -122,9 +123,11 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
       this.permissionsEditor.permissions = item.permissions;
       autocomplete(this.ownerSelect, props.node.connectionNode.connection.users);
       this.ownerSelect.value = item.owner;
+      this.ownerSelect.type = 'text';
       this.ownerSelect.className = 'theia-input';
       autocomplete(this.groupSelect, props.node.connectionNode.connection.groups);
       this.groupSelect.value = item.group;
+      this.groupSelect.type = 'text';
       this.groupSelect.className = 'theia-input';
     }
     this.containerDiv.appendChild(this.keys.container);
