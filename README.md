@@ -16,7 +16,7 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 
 #### For building
 *   [Node 10](https://nodejs.org/dist/v10.16.3/). `>= 10.16.3` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm))
-*   [Yarn](https://yarnpkg.com). `> 1.15.x` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm)).
+*   [Yarn](https://yarnpkg.com). `> 1.15.x` (it can easily be installed globally via npm (Node Package Manager), but you should be aware this has a small [security implication](https://classic.yarnpkg.com/en/docs/install/#install-via-npm). npm is installed when you install Node).
 *   [Python](https://www.python.org/) `>= 2.7.12` or `>= 3.7.7.` (if your system does not provide it, consider using [pyenv](https://github.com/pyenv/pyenv)).
         If you are having trouble building and have multiple versions of Python installed via `pyenv` or any other mechanism, see the [Debugging Python Build Issues](#debugging-python-build-issues) section).
 *   Windows platforms only:
