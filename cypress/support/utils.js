@@ -18,7 +18,7 @@ Cypress.formatDate = (date) => {
   }
   return day + '-' + month + '-' + date.getUTCFullYear().toString()
 }
-Cypress.Commands.add('waitForLoading', (options) => cy.wait(50).get('.fs-icon.fa-spinner', options).should('not.exist').wait(50));
+Cypress.Commands.add('waitForLoading', (options) => cy.wait(50).get('.fs-icon.fa-spinner', { ...options, timeout: options?.timeout || 10000}).should('not.exist').wait(50));
 Cypress.Commands.add('getMenuCommand', (command, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=command][data-command=' + CSS.escape(command) + ']', options).should('exist').should('not.have.class', 'p-mod-disabled'));
 Cypress.Commands.add('getSubMenu', (text, options) => cy.get('.p-Widget.p-Menu .p-Menu-item[data-type=submenu]', options).should('contain.text', text).should('not.have.class', 'p-mod-disabled'));
 Cypress.Commands.add('getTreeNode', (id, options) => cy.get(treenode(id), options));
@@ -49,17 +49,9 @@ Cypress.Commands.add('addConnection', (name = 'localhost', server = 'http://loca
   if (password) {
     passwordField.type(password);
   }
-  // open connection
-  cy.get('.main').click()
-  // see it in action
-  cy.get('.ReactVirtualized__Grid')
-    .should('be.visible')
-    .should('contain', 'localhost')
-  cy.getTreeNode(username + '@' + server).click()
-  cy.getTreeNode(username + '@' + server + '/db').should('be.visible')
-  cy.getTreeNode(username + '@' + server + '/security').should('be.visible')
-  cy.getTreeNode(username + '@' + server + '/index').should('be.visible')
-  cy.getTreeNode(username + '@' + server + '/rest').should('be.visible')
+  cy.get(dialogMainButton).click();
+  cy.getTreeNode(username + '@' + server).click();
+  cy.waitForLoading();
 });
 Cypress.Commands.add('addCollection', (id, name) => {
   cy.waitForLoading();
