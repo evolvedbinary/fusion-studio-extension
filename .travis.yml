@@ -39,7 +39,7 @@ jobs:
       before_script:
         - docker login --username $FDB_NIGHTLY_DOCKER_USER --password $FDB_NIGHTLY_DOCKER_PASS repo.evolvedbinary.com:9543
         - docker pull $IMG
-        - docker create  --name fusiondb-server-ci -p 8080:4059 $IMG
+        - docker create  --name fusiondb-server-ci -p 4059:4059 $IMG
         - docker start fusiondb-server-ci
         - sleep 10
       script:
@@ -55,7 +55,7 @@ jobs:
       before_script:
         - docker login --username $FDB_DOCKER_USER --password $FDB_DOCKER_PASS repo.evolvedbinary.com:9443
         - docker pull $IMG
-        - docker create  --name fusiondb-server-ci -p 8080:4059 $IMG
+        - docker create  --name fusiondb-server-ci -p 4059:4059 $IMG
         - docker start fusiondb-server-ci
         - sleep 10
       script:
