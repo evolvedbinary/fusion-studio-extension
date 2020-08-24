@@ -168,23 +168,32 @@ export namespace FSApi {
     }
   }
   
-  export async function connect(connection: FSServerConnection): Promise<FSCollection> {
+  export async function serverInfo(connection: FSServerConnection): Promise<any> {
     try {
       const result = await _get(connection, FS_API_URI + '/version');
       switch (result.status) {
         case 200:
-          const version = (await result.json())?.version;
-          if (!version) {
-            throw createError(FSError.unknown, result);
-          }
-          if (checkAPI(version)) {
-            const root = await load(connection, '/') as FSCollection;
-            return root;
-          }
-          throw createError(FSError.outdatedAPI, version);
+          return await result.json();
         case 401: throw createError(FSError.permissionDenied, result);
         default: throw createError(FSError.unknown, result)
       }
+    } catch (error) {
+      throw createError(FSError.unknown, error);
+    }
+  }
+  
+  export async function connect(connection: FSServerConnection): Promise<FSCollection> {
+    try {
+      const server = await serverInfo(connection);
+      const version = server?.version;
+      if (!version) {
+        throw createError(FSError.unknown, server);
+      }
+      if (checkAPI(version)) {
+        const root = await load(connection, '/') as FSCollection;
+        return root;
+      }
+      throw createError(FSError.outdatedAPI, version);
     } catch (error) {
       throw createError(FSError.unknown, error);
     }
@@ -236,11 +245,11 @@ export namespace FSApi {
     })).status === 200;
   }
 
-  export async function evaluate(connection: FSServerConnection, serialization: string, value: string, isContent?: boolean, start?: number, length?: number): Promise<string> {
+  export async function evaluate(connection: FSServerConnection, serialization: string, indent = false, value: string, isContent?: boolean, start?: number, length?: number): Promise<string> {
     try {
       const body = {
         [isContent ? 'query' : 'query-uri']: value,
-        defaultSerialization: { method: serialization }
+        defaultSerialization: { method: serialization, indent }
       };
       const headers = {
         Range: `items=${start || RANGE_START}-${length || RANGE_LENGTH}`,
@@ -252,6 +261,7 @@ export namespace FSApi {
           const json = await result.json();
           const results = json.results;
           return results;
+        case 400: throw createError(FSError.query, await result.json());
         case 401: throw createError(FSError.permissionDenied, result);
         default: throw createError(FSError.unknown, result);
       }

@@ -151,6 +151,16 @@ export const actProperties: FSAction = {
   execute: core => core.showPropertiesDialog.bind(core),
   visible: core => () => (core.isItem && !core.isNew) || core.isConnection,
 };
+export const actInfo: FSAction = {
+  id: 'info',
+  order: 'd',
+  label: 'Server info',
+  contextMenu: CONTEXT_MENU_FILE,
+  icon: 'fa fa-server',
+  execute: core => () => core.serverInfo(core.node as any),
+  enabled: core => () => !core.isLoading,
+  visible: core => () => core.isConnection,
+};
 export const actAddUser: FSAction = {
   id: 'add-user',
   order: 'a',
@@ -221,6 +231,7 @@ export const FS_COMMANDS: FSAction[] = [
   actRefresh,
   actDelete,
   actProperties,
+  actInfo,
   actAddUser,
   actEditUser,
   actDeleteUser,

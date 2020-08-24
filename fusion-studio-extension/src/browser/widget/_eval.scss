@@ -38,8 +38,12 @@
       margin-left: 4px;
       width: 96px;
     }
+    .x-checkbox {
+      margin-right: 4px;
+    }
   }
   .x-body {
+    white-space: pre;
     flex: 1;
     overflow: auto;
     color: var(--theia-editorWidget-foreground);

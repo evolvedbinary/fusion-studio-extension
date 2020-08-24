@@ -14,7 +14,7 @@ export class FSAlertDialog extends AbstractDialog<any> {
   constructor(
     @inject(FSAlertDialogProps) protected readonly props: FSAlertDialogProps,
   ) {
-    super(props);
+    super({ ...props, maxWidth: props.maxWidth || 600});
     
     const message = document.createElement('p');
     message.className = 'fusion-alert-message';

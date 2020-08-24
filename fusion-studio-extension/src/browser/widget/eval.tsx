@@ -8,6 +8,7 @@ import { Disposable, MaybePromise } from '@theia/core';
 import { FSApi, RANGE_LENGTH } from '../../common/api';
 import { SERIALIZATION_TYPES } from '../../classes/eval';
 import { FSDialog } from '../dialogs/basic';
+import { FSError, FSErrorObject } from '../../classes';
 
 export type FSEvalWidgetFactory = () => FSEvalWidget;
 export const FSEvalWidgetFactory = Symbol('FSEditorWidgetFactory');
@@ -22,6 +23,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
   protected elBody = React.createRef<HTMLDivElement>();
   protected elTitle = React.createRef<HTMLSpanElement>();
   protected elEval = React.createRef<HTMLButtonElement>();
+  protected elIndent = React.createRef<HTMLInputElement>();
   protected connection = '';
   protected result = '';
   protected serialization = 'adaptive';
@@ -148,7 +150,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
           isContent = true;
         }
         if (node) {
-          const result = await FSApi.evaluate(node.connection, this.serialization, value, isContent, start, size);
+          const result = await FSApi.evaluate(node.connection, this.serialization, this.elIndent.current?.checked, value, isContent, start, size);
           if (result !== (this.serialization === 'json' ? 'null' : '')) {
             this.pager.start = start;
             this.pager.pages = Math.max(this.pager.pages, page);
@@ -160,7 +162,14 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
           this.update();
         }
       } catch(e) {
-        FSDialog.alert('XQuery evaluation', 'You have a problem in your XQuery. Please check your code and try again.');
+        if (FSErrorObject.is(e) && e.data) {
+          if (e.code === FSError.query) {
+            const error = e.data[0].error;
+            const xqueryError = e.data[0]['xquery-error'];
+            FSDialog.alert(`${error.description} (${error.code})`, `${xqueryError.description} (${xqueryError.code})\nError at: ${xqueryError['line-number']}:${xqueryError['column-number']}`);
+          }
+        } else 
+          FSDialog.alert('XQuery evaluation', 'You have a problem in your XQuery. Please check your code and try again.');
       }
     }
   }
@@ -189,6 +198,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
         }}>
           {this.serializationTypes()}
         </select>
+        <label className="x-checkbox"><input type="checkbox" ref={this.elIndent}/> Format</label>
         <button className="x-btn theia-button" ref={this.elEval} disabled={!this.documentNode && (!editor || !connection)} onClick={() => this.evaluate(0)}><span className="fa fa-play" /> Evaluate</button>
       </div>
       <div className='x-body' ref={this.elBody}>{this.result}</div>
