@@ -240,7 +240,7 @@ export namespace FSApi {
     try {
       const body = {
         [isContent ? 'query' : 'query-uri']: value,
-        defaultSerialization: { method: serialization, indent: indent ? 'yes' : 'no' }
+        defaultSerialization: { method: serialization, indent }
       };
       const headers = {
         Range: `items=${start || RANGE_START}-${length || RANGE_LENGTH}`,
