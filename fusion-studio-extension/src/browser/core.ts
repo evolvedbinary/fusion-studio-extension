@@ -65,12 +65,28 @@ export class FSCore {
     this._labelProvider = labelProvider;
   }
 
+  async loadState() {
+    try {
+      const connectionsString = localStorage.getItem('connections');
+      if (connectionsString) {
+        this.connections = JSON.parse(connectionsString);
+        for (let id in this.connections) {
+          await this.addConnection(this.connections[id], this._model?.root as CompositeTreeNode);
+        }
+      }
+    } catch {}
+  }
+  saveState() {
+    localStorage.setItem('connections', JSON.stringify(this.connections));
+  }
+
   // tree model
   private _model?: FSTreeModel;
   public set model(model: FSTreeModel | undefined) {
     if (this._model != model) {
       this._model = model;
       this.createRoot();
+      this.loadState();
     }
   }
   public get model(): FSTreeModel | undefined {
@@ -86,11 +102,13 @@ export class FSCore {
   protected connectionAdded(connectionNode: FSConnectionNode) {
     this.connectionsChange.fire({ id: connectionNode.id, action: 'add' })
     this.connections[connectionNode.id] = connectionNode.connection;
+    this.saveState();
   }
 
   protected connectionDeleted(connectionNode: FSConnectionNode) {
     this.connectionsChange.fire({ id: connectionNode.id, action: 'delete' })
     delete(this.connections[connectionNode.id]);
+    this.saveState();
   }
 
   // nodes:
@@ -1434,6 +1452,24 @@ export class FSCore {
       this.openDocumentByURI(node.restMethod.function.src, node.connectionNode.connection);
     }
   }
+// TDOD: add server info interface and functions
+  public async serverInfo(node?: FSConnectionNode) {
+    function serverInfoToString(server: any): string {
+      return `Api:
+- Version: ${server.version}
+Server:
+- Product: ${server.server['product-name']}
+- Version: ${server.server.version}
+- Revision: ${server.server.revision}
+- Build: ${server.server.build}`;
+    }
+    node = node && FSNode.isConnection(node) ? node : FSNode.isConnection(this.node) ? this.node : undefined;
+    if (node) {
+      const connection = node.connectionNode.connection;
+      const server = await FSApi.serverInfo(connection);
+      FSDialog.alert(connection.name + '\'s server info', serverInfoToString(server));
+    }
+  }
 
   public showPropertiesDialog(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
@@ -1455,7 +1491,7 @@ export class FSCore {
             node.connectionNode.connection = result.connection;
             node.selected = false;
             node.uri = result.connection.server;
-            this.connect(node);
+            this.expand(node);
           }
         });
       } else if (FSNode.isItem(node)) {

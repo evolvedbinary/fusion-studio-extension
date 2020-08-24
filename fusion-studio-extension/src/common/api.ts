@@ -168,23 +168,32 @@ export namespace FSApi {
     }
   }
   
-  export async function connect(connection: FSServerConnection): Promise<FSCollection> {
+  export async function serverInfo(connection: FSServerConnection): Promise<any> {
     try {
       const result = await _get(connection, FS_API_URI + '/version');
       switch (result.status) {
         case 200:
-          const version = (await result.json())?.version;
-          if (!version) {
-            throw createError(FSError.unknown, result);
-          }
-          if (checkAPI(version)) {
-            const root = await load(connection, '/') as FSCollection;
-            return root;
-          }
-          throw createError(FSError.outdatedAPI, version);
+          return await result.json();
         case 401: throw createError(FSError.permissionDenied, result);
         default: throw createError(FSError.unknown, result)
       }
+    } catch (error) {
+      throw createError(FSError.unknown, error);
+    }
+  }
+  
+  export async function connect(connection: FSServerConnection): Promise<FSCollection> {
+    try {
+      const server = await serverInfo(connection);
+      const version = server?.version;
+      if (!version) {
+        throw createError(FSError.unknown, server);
+      }
+      if (checkAPI(version)) {
+        const root = await load(connection, '/') as FSCollection;
+        return root;
+      }
+      throw createError(FSError.outdatedAPI, version);
     } catch (error) {
       throw createError(FSError.unknown, error);
     }
