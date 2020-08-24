@@ -1434,6 +1434,25 @@ export class FSCore {
       this.openDocumentByURI(node.restMethod.function.src, node.connectionNode.connection);
     }
   }
+// TDOD: add server info interface and functions
+  public async serverInfo(node?: FSConnectionNode) {
+    function serverInfoToString(server: any): string {
+      return `Api:
+- Version: ${server.version}
+Server:
+- Product: ${server.server['product-name']}
+- Version: ${server.server.version}
+- Revision: ${server.server.revision}
+- Build: ${server.server.build}`;
+    }
+    node = node && FSNode.isConnection(node) ? node : FSNode.isConnection(this.node) ? this.node : undefined;
+    if (node) {
+      const connection = node.connectionNode.connection;
+      const server = await FSApi.serverInfo(connection);
+      console.dir(server);
+      FSDialog.alert(connection.name + '\'s server info', serverInfoToString(server));
+    }
+  }
 
   public showPropertiesDialog(nodeId = '') {
     const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
