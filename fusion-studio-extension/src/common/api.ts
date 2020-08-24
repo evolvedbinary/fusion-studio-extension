@@ -236,11 +236,11 @@ export namespace FSApi {
     })).status === 200;
   }
 
-  export async function evaluate(connection: FSServerConnection, serialization: string, value: string, isContent?: boolean, start?: number, length?: number): Promise<string> {
+  export async function evaluate(connection: FSServerConnection, serialization: string, indent = false, value: string, isContent?: boolean, start?: number, length?: number): Promise<string> {
     try {
       const body = {
         [isContent ? 'query' : 'query-uri']: value,
-        defaultSerialization: { method: serialization }
+        defaultSerialization: { method: serialization, indent }
       };
       const headers = {
         Range: `items=${start || RANGE_START}-${length || RANGE_LENGTH}`,
