@@ -14,6 +14,7 @@ export enum FSError {
   unknown = 0,
   permissionDenied = 401,
   notFound = 404,
+  query,
   outdatedAPI,
   nodeNotFound,
 }
@@ -34,6 +35,7 @@ export const ERROR_MESSAGES: FSErrorMessages = {
   [FSError.unknown]: 'unknown error',
   [FSError.permissionDenied]: 'permission denied',
   [FSError.notFound]: 'Not found',
+  [FSError.query]: 'Query evaluation failed',
   [FSError.nodeNotFound]: 'Node not found',
   [FSError.outdatedAPI]: 'Outdated API',
 }
