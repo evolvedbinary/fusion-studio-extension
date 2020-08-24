@@ -28,7 +28,7 @@ context('Properties dialog', function () {
     cy.addDocument('admin@http://localhost:8080/db/test_col', 'xml_file.xml', 'xml')
   })
   describe('Correct information', function () {
-    it.skip('Document properties', function () {
+    it('Document properties', function () {
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/text_file.txt').rightclick()
         .getMenuCommand('fusion.properties').should('be.visible').click()
