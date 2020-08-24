@@ -57,15 +57,27 @@ export class FSCore {
     @inject(OpenerService) private readonly openerService: OpenerService,
     @inject(StatusBar) protected readonly statusBar: StatusBar,
     @inject(WidgetManager) protected widgetManager: WidgetManager,
-  ) {
-    console.log('loaded:')
-    console.dir('loaded:')
-  }
+  ) {}
 
   updating = false;
 
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
+  }
+
+  async loadState() {
+    try {
+      const connectionsString = localStorage.getItem('connections');
+      if (connectionsString) {
+        this.connections = JSON.parse(connectionsString);
+        for (let id in this.connections) {
+          await this.addConnection(this.connections[id], this._model?.root as CompositeTreeNode);
+        }
+      }
+    } catch {}
+  }
+  saveState() {
+    localStorage.setItem('connections', JSON.stringify(this.connections));
   }
 
   // tree model
@@ -74,6 +86,7 @@ export class FSCore {
     if (this._model != model) {
       this._model = model;
       this.createRoot();
+      this.loadState();
     }
   }
   public get model(): FSTreeModel | undefined {
@@ -89,11 +102,13 @@ export class FSCore {
   protected connectionAdded(connectionNode: FSConnectionNode) {
     this.connectionsChange.fire({ id: connectionNode.id, action: 'add' })
     this.connections[connectionNode.id] = connectionNode.connection;
+    this.saveState();
   }
 
   protected connectionDeleted(connectionNode: FSConnectionNode) {
     this.connectionsChange.fire({ id: connectionNode.id, action: 'delete' })
     delete(this.connections[connectionNode.id]);
+    this.saveState();
   }
 
   // nodes:
@@ -1183,7 +1198,7 @@ export class FSCore {
     const dialog = new FSConnectionDialog({
       title: 'New Connection',
       name: 'localhost',
-      server: 'http://localhost:8080',
+      server: 'http://localhost:4059',
       username: 'admin',
       password: '',
     });
