@@ -43,6 +43,7 @@
     }
   }
   .x-body {
+    white-space: pre;
     flex: 1;
     overflow: auto;
     color: var(--theia-editorWidget-foreground);
