@@ -151,7 +151,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
         }
         if (node) {
           const result = await FSApi.evaluate(node.connection, this.serialization, this.elIndent.current?.checked, value, isContent, start, size);
-          if (result !== '') {
+          if (result !== (this.serialization === 'json' ? 'null' : '')) {
             this.pager.start = start;
             this.pager.pages = Math.max(this.pager.pages, page);
             this.pager.enabled = true;
@@ -203,7 +203,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
       </div>
       <div className='x-body' ref={this.elBody}>{this.result}</div>
       <div className='x-footer'>
-        {((this.serialization === 'xml' || this.serialization === 'json') && (this.pager.pages > 1 || !this.pager.loaded)) && this.renderPager()}
+        {(this.pager.pages > 1 || !this.pager.loaded) && this.renderPager()}
         <span className="x-separator"></span>
         <button className="theia-button" disabled={this.result === ''} onClick={() => this.core.newItemFromResult()}><i className="fa fa-fw fa-file-code-o"></i> New file</button>
       </div>
