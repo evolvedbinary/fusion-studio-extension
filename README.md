@@ -45,7 +45,7 @@ then the following information may be useful.
 The following commands will install the required packages and setup Python 3 via pyenv on Ubuntu 20.04.
 
 ```
-sudo apt-get install nodejs yarnpkg libxkbfile-dev
+sudo apt-get install nodejs yarnpkg libx11-dev libxkbfile-dev
 alias yarn=yarnpkg
 
 git clone https://github.com/pyenv/pyenv.git ~/.pyenv
@@ -58,6 +58,20 @@ pyenv install 3.8.4
 pyenv global 3.8.4
 exec $SHELL
 
+```
+
+#### Example of setting up a CentOS 7 build environment
+The following commands will install the required packages on CentOS 7.
+
+```
+sudo yum update
+sudo yum install -y libX11-devel libxkbfile-devel
+sudo yum install -y gcc-c++ make
+sudo curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+sudo yum install -y nodejs
+curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
+sudo yum install -y yarn
+sudo yum install -y rpm-build
 ```
 
 #### For Testing
