@@ -57,7 +57,10 @@ export class FSCore {
     @inject(OpenerService) private readonly openerService: OpenerService,
     @inject(StatusBar) protected readonly statusBar: StatusBar,
     @inject(WidgetManager) protected widgetManager: WidgetManager,
-  ) {}
+  ) {
+    console.log('loaded:')
+    console.dir('loaded:')
+  }
 
   updating = false;
 
@@ -1180,7 +1183,7 @@ export class FSCore {
     const dialog = new FSConnectionDialog({
       title: 'New Connection',
       name: 'localhost',
-      server: 'http://localhost:4059',
+      server: 'http://localhost:8080',
       username: 'admin',
       password: '',
     });
@@ -1449,7 +1452,6 @@ Server:
     if (node) {
       const connection = node.connectionNode.connection;
       const server = await FSApi.serverInfo(connection);
-      console.dir(server);
       FSDialog.alert(connection.name + '\'s server info', serverInfoToString(server));
     }
   }
@@ -1474,7 +1476,7 @@ Server:
             node.connectionNode.connection = result.connection;
             node.selected = false;
             node.uri = result.connection.server;
-            this.connect(node);
+            this.expand(node);
           }
         });
       } else if (FSNode.isItem(node)) {
