@@ -252,6 +252,7 @@ export namespace FSApi {
           const json = await result.json();
           const results = json.results;
           return results;
+        case 400: throw createError(FSError.query, await result.json());
         case 401: throw createError(FSError.permissionDenied, result);
         default: throw createError(FSError.unknown, result);
       }

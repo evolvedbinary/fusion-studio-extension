@@ -8,6 +8,7 @@ import { Disposable, MaybePromise } from '@theia/core';
 import { FSApi, RANGE_LENGTH } from '../../common/api';
 import { SERIALIZATION_TYPES } from '../../classes/eval';
 import { FSDialog } from '../dialogs/basic';
+import { FSError, FSErrorObject } from '../../classes';
 
 export type FSEvalWidgetFactory = () => FSEvalWidget;
 export const FSEvalWidgetFactory = Symbol('FSEditorWidgetFactory');
@@ -160,7 +161,14 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
           this.update();
         }
       } catch(e) {
-        FSDialog.alert('XQuery evaluation', 'You have a problem in your XQuery. Please check your code and try again.');
+        if (FSErrorObject.is(e) && e.data) {
+          if (e.code === FSError.query) {
+            const error = e.data[0].error;
+            const xqueryError = e.data[0]['xquery-error'];
+            FSDialog.alert(`${error.description} (${error.code})`, `${xqueryError.description} (${xqueryError.code})\nError at: ${xqueryError['line-number']}:${xqueryError['column-number']}`);
+          }
+        } else 
+          FSDialog.alert('XQuery evaluation', 'You have a problem in your XQuery. Please check your code and try again.');
       }
     }
   }
