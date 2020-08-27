@@ -33,7 +33,7 @@ export class FSViewWidget extends TreeWidget {
   @postConstruct()
   protected init(): void {
     super.init();
-    this.core.model = this.model as FSTreeModel;
+    this.core.tree = this;
   }
 
   protected createContainerAttributes(): React.HTMLAttributes<HTMLElement> {
@@ -164,5 +164,9 @@ export class FSViewWidget extends TreeWidget {
     }
     console.error('unknown node:', node);
     return '···';
+  }
+
+  public refreshHeights() {
+    this.forceUpdate({ resize: true });
   }
 }
