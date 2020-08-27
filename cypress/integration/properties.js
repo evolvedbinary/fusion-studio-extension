@@ -79,8 +79,6 @@ context('Properties dialog', function () {
       });
       cy.get(dialogSecondaryButton).should('be.visible').click();
       cy.get(dialog).should('not.be.visible');
-      cy.get(dialogSecondaryButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/xml_file.xml').rightclick()
         .getMenuCommand('fusion.properties').should('be.visible').click()
       cy.get(dialogBody).should('be.visible').find('td.label').contains('Binary')
