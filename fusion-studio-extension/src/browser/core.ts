@@ -25,6 +25,7 @@ import { FSGroupDialog } from "./dialogs/group-dialog";
 import { FS_EVAL_WIDGET_FACTORY_ID, XQ_EXT } from '../classes/eval';
 import { FSLabelProviderContribution } from "./label-provider-contribution";
 import { FSDialog } from "./dialogs/basic";
+import { FSViewWidget } from "./widget";
 
 function sortText(A: string, B: string, caseSensetive = false): number {
   let a = A;
@@ -71,7 +72,7 @@ export class FSCore {
       if (connectionsString) {
         this.connections = JSON.parse(connectionsString);
         for (let id in this.connections) {
-          await this.addConnection(this.connections[id], this._model?.root as CompositeTreeNode);
+          await this.addConnection(this.connections[id], this.model?.root as CompositeTreeNode);
         }
       }
     } catch {}
@@ -81,16 +82,19 @@ export class FSCore {
   }
 
   // tree model
-  private _model?: FSTreeModel;
-  public set model(model: FSTreeModel | undefined) {
-    if (this._model != model) {
-      this._model = model;
+  private _tree?: FSViewWidget;
+  public set tree(tree: FSViewWidget | undefined) {
+    if (this._tree != tree) {
+      this._tree = tree;
       this.createRoot();
       this.loadState();
     }
   }
+  public get tree(): FSViewWidget | undefined {
+    return this._tree;
+  }
   public get model(): FSTreeModel | undefined {
-    return this._model;
+    return this.tree?.model as FSTreeModel;
   }
 
   // connections list
@@ -130,24 +134,24 @@ export class FSCore {
   }
 
   protected async sort(node: CompositeTreeNode, sortfunc: (a: FSNode, b: FSNode) => number) {
-    if (this._model) {
+    if (this.model) {
       if (FSNode.isContainer(node)) {
         node.children = (node.children as FSNode[]).sort(sortfunc);
       }
-      await this._model.refresh(node);
+      await this.model.refresh(node);
     }
   }
 
   protected createRoot() {
-    if (this._model) {
-      this._model.root = {
+    if (this.model) {
+      this.model.root = {
         id: 'fusion-connections-view-root',
         visible: false,
         children: [],
         nodeName: 'root',
         parent: undefined
       } as CompositeTreeNode;
-      this.addToolbar(this._model.root as CompositeTreeNode);
+      this.addToolbar(this.model.root as CompositeTreeNode);
     }
   }
 
@@ -156,8 +160,8 @@ export class FSCore {
     if (FSNode.isCollection(parent)) {
       await this.sort(parent, this.sortItems);
     } else {
-      if (this._model) {
-        await this._model.refresh();
+      if (this.model) {
+        await this.model.refresh();
       }
     }
     if (child.id !== 'fusion-toolbar') {
@@ -180,27 +184,27 @@ export class FSCore {
 
   protected removeNode(child: FSNode) {
     const parent = FSNode.isCollection(child.parent) ? child.parent : undefined;
-    this._model && this._model.removeNode(child);
+    this.model && this.model.removeNode(child);
     return this.updating ? Promise.resolve(undefined) : this.refresh(parent);
   }
 
   public get selectedCount(): number {
-    return this._model ? this._model.selectedNodes.length : 0;
+    return this.model ? this.model.selectedNodes.length : 0;
   }
 
   public get node(): FSNode | undefined {
-    if (this._model && this._model.selectedNodes.length > 0) {
-      return this._model.selectedNodes[0] as any as FSNode;
+    if (this.model && this.model.selectedNodes.length > 0) {
+      return this.model.selectedNodes[0] as any as FSNode;
     }
   }
 
   public get selection(): FSItemNode[] {
-    return this._model ? this._model.selectedNodes as any : [];
+    return this.model ? this.model.selectedNodes as any : [];
   }
 
   public select(node: FSItemNode | FSConnectionNode | FSRestMethodNode | FSUserNode | FSGroupNode) {
     if (!FSNode.isToolbar(node)) {
-      this._model && this._model.selectNode(node);
+      this.model && this.model.selectNode(node);
     }
   }
 
@@ -231,17 +235,17 @@ export class FSCore {
   }
 
   public expand(node: CompositeTreeNode) {
-    this._model && this._model.expandNode(node as any);
+    this.model && this.model.expandNode(node as any);
   }
 
   public getNode(id: string): FSNode | undefined {
-    return this._model ? this._model.getNode(id) as FSNode : undefined;
+    return this.model ? this.model.getNode(id) as FSNode : undefined;
   }
 
   // Fusion nodes detection
 
   public get isSelected(): boolean {
-    return !!this._model && this._model.selectedNodes.length > 0;
+    return !!this.model && this.model.selectedNodes.length > 0;
   }
 
   public get isNew(): boolean {
@@ -444,6 +448,7 @@ export class FSCore {
   }
 
   protected async addConnection(connection: FSServerConnection, parent: CompositeTreeNode, expanded?: boolean): Promise<FSConnectionNode> {
+    const shouldRefresh = this.isEmpty;
     const connectionNode = await this.addNode({
       type: 'connection',
       children: [],
@@ -462,7 +467,11 @@ export class FSCore {
     } as FSConnectionNode, parent) as FSConnectionNode;
     connectionNode.connectionNode = connectionNode;
     this.connectionAdded(connectionNode);
+    this.addNodesToUpdate(connectionNode);
     this.pushNodesToUpdate();
+    if (shouldRefresh) {
+      this.refreshHeights();
+    }
     return connectionNode;
   }
   addNodesToUpdate(...nodes: FSNode[]) {
@@ -1180,7 +1189,7 @@ export class FSCore {
       if (FSNode.isCollection(container)) {
         this.expand(container);
         await asyncForEach(toDelete, (node: FSNode) => this.removeNode(node));
-        await this._model?.refresh(container);
+        await this.model?.refresh(container);
       }
       this.updating = true;
       return result;
@@ -1192,7 +1201,7 @@ export class FSCore {
   // commands
   
   public async newConnection(): Promise<void> {
-    if (!this._model) {
+    if (!this.model) {
       return;
     }
     const dialog = new FSConnectionDialog({
@@ -1204,12 +1213,16 @@ export class FSCore {
     });
     const result = await dialog.open();
     if (result) {
-      this.addConnection(result.connection, this._model.root as CompositeTreeNode, result.autoConnect);  
+      this.addConnection(result.connection, this.model.root as CompositeTreeNode, result.autoConnect);  
     }
   }
 
+  protected get isEmpty(): boolean {
+    return !this.model?.root || (this.model.root as CompositeTreeNode).children.length < 2;
+  }
+
   public async deleteConnection(): Promise<void> {
-    if (!this.isSelected || !this._model) {
+    if (!this.isSelected || !this.model) {
       return;
     }
     if (this.node && FSNode.isConnection(this.node)) {
@@ -1228,9 +1241,12 @@ export class FSCore {
       if (result) {
         this.connectionDeleted(node);
         this.removeNode(node);
-        this._model.refresh();
+        this.model.refresh();
+        if (this.isEmpty) {
+          this.refreshHeights();
+        }
       } else {
-        this._model.selectNode(node);
+        this.model.selectNode(node);
       }
     }
   }
@@ -1377,17 +1393,23 @@ export class FSCore {
     }
   }
 
-  public async refresh(node?: FSCollectionNode) {
-    if (this._model) {
+  public async refresh(node?: CompositeTreeNode) {
+    if (this.model) {
       if (FSNode.isCollection(node)) {
-        this._model.collapseNode(node);
+        this.model.collapseNode(node);
         node.loaded = false;
         this.empty(node);
         this.expand(node);
         return;
       } else {
-        return this._model.refresh(node);
+        return this.model.refresh(node);
       }
+    }
+  }
+  
+  public async refreshHeights(node?: CompositeTreeNode) {
+    if (this.model) {
+      this.tree?.refreshHeights();
     }
   }
   
@@ -1407,7 +1429,7 @@ export class FSCore {
         console.error('caught:', error);
       }
     };
-    if (!this.isSelected || !this._model) {
+    if (!this.isSelected || !this.model) {
       return;
     }
     const collections: any[] = [];
@@ -1439,9 +1461,9 @@ export class FSCore {
       const result = await dialog.open();
       if (result) {
         await Promise.all(nodes.map(node => deleteNode(this, node)));
-        this._model && this._model.refresh();
+        this.model && this.model.refresh();
       } else {
-        this._model.selectNode(node);
+        this.model.selectNode(node);
       }
     }
   }
@@ -1521,7 +1543,7 @@ Server:
   }
 
   public async deleteUser() {
-    if (FSNode.isUser(this.node) && this._model) {
+    if (FSNode.isUser(this.node) && this.model) {
       const dialog = new ConfirmDialog({
         title: 'Delete user',
         msg: 'Are you sure you want to delete the user "' + this.node.user + '"?',
@@ -1579,7 +1601,7 @@ Server:
   }
 
   public async deleteGroup() {
-    if (FSNode.isGroup(this.node) && this._model) {
+    if (FSNode.isGroup(this.node) && this.model) {
       const dialog = new ConfirmDialog({
         title: 'Delete group',
         msg: 'Are you sure you want to delete the group "' + this.node.group + '"?',
