@@ -15,7 +15,8 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 *   [Fusion Studio API](https://github.com/evolvedbinary/fusion-studio-api) installed in a compatible [FusionDB Server](https://www.fusiondb.com) or [eXist-db](https://www.exist-db.org) database.
 
 #### For building
-*   [Node 10](https://nodejs.org/dist/v10.16.3/). `>= 10.16.3` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm))
+*   [Node 12](https://nodejs.org/dist/v12.18.3/). `>= 12.18.3` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm))
+    * Node 10 may work, and Node 14 should work... however we are focused on Node 12 compatibility.
 *   [Yarn](https://yarnpkg.com). `> 1.15.x` (it can easily be installed globally via npm (Node Package Manager), but you should be aware this has a small [security implication](https://classic.yarnpkg.com/en/docs/install/#install-via-npm). npm is installed when you install Node).
 *   [Python](https://www.python.org/) `>= 2.7.12` or `>= 3.7.7.` (if your system does not provide it, consider using [pyenv](https://github.com/pyenv/pyenv)).
         If you are having trouble building and have multiple versions of Python installed via `pyenv` or any other mechanism, see the [Debugging Python Build Issues](#debugging-python-build-issues) section).
@@ -45,6 +46,7 @@ then the following information may be useful.
 The following commands will install the required packages and setup Python 3 via pyenv on Ubuntu 20.04.
 
 ```
+sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install nodejs yarnpkg libx11-dev libxkbfile-dev
 alias yarn=yarnpkg
 
@@ -67,7 +69,7 @@ The following commands will install the required packages on CentOS 7.
 sudo yum update
 sudo yum install -y libX11-devel libxkbfile-devel
 sudo yum install -y gcc-c++ make
-sudo curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+sudo curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash -
 sudo yum install -y nodejs
 curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
 sudo yum install -y yarn
