@@ -7,7 +7,7 @@
   },
   "homepage": "https://github.com/evolvedbinary/fusion-studio-extension#readme",
   "scripts": {
-    "postinstall": "yarn sass",
+    "postinstall": "yarn sass && yarn workspace electron-app electron-rebuild",
     "sass": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css",
     "sass:watch": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css --watch",
     "prepare": "lerna run prepare",
