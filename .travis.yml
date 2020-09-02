@@ -69,6 +69,7 @@ jobs:
       env:
         - IMG=existdb/existdb:latest
         - API_XAR=https://www.fusiondb.com/download/fusion-studio-api-1.1.1.xar
+        - API_PORT=8080
       before_script:
         - docker pull $IMG
         - docker create  --name exist-ci -p 8080:8080 $IMG
@@ -88,6 +89,7 @@ jobs:
       env:
         - IMG=existdb/existdb:5.2.0
         - API_XAR=https://www.fusiondb.com/download/fusion-studio-api-1.1.1.xar
+        - API_PORT=8080
       before_script:
         - docker pull $IMG
         - docker create  --name exist-ci -p 8080:8080 $IMG
