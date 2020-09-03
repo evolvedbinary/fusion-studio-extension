@@ -1,8 +1,6 @@
 /// <reference types="Cypress" />
 import { dialogTitle, dialogBody, dialogMainButton, dialog } from '../support/utils';
 
-const { dialogTitle, dialogBody, dialogMainButton, dialog } = require("../support/utils");
-
 context('Fusion Studio', function () {
   describe('API minimum version', function () {
     it('should connect with newer api', function () {
