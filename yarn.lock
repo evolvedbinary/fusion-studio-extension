@@ -1962,10 +1962,10 @@
     webpack-cli "2.0.12"
     worker-loader "^1.1.1"
 
-"@theia/application-package@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@theia/application-package/-/application-package-1.5.0.tgz#1abff88102afa47e2a900848e4b3507bfed55fe3"
-  integrity sha512-lruaCCnuTQKGesmwo8AOsJGYZMmj5NhLOGgx2ZJSoP72x74BeO/m17xylmTiIUi56UHcgoieJRj7i6/nAap4Dw==
+"@theia/application-package@^1.5.0", "@theia/application-package@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@theia/application-package/-/application-package-1.6.0.tgz#0f908c74922678d818a33643250f7bfedcb049af"
+  integrity sha512-2eZYNrqDZxTonkGyDeqxshxFYsi4sf7sltJrkUdJzsT77YFrYTswUszk9kdCvgXj5R1Stc0KSuod5V4y+glhQA==
   dependencies:
     "@types/fs-extra" "^4.0.2"
     "@types/request" "^2.0.3"
@@ -2018,15 +2018,15 @@
     serialize-javascript "^1.4.0"
     webpack-sources "^1.0.1"
 
-"@theia/core@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.5.0.tgz#54e8f1c239567ab06bea7f7086cc6322e06cb7df"
-  integrity sha512-D9hBYmQaUFcLt0zmXtgdbhbUCUndS44nRi/y6ISdYrUd4NbdkG9MHXGSoTS45sCMPNIxiKMeRPhSvFWjpv19xQ==
+"@theia/core@^1.5.0", "@theia/core@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.6.0.tgz#79abef59b0d19ef3a3dc430e5596aba04a70ad5a"
+  integrity sha512-L7migvIY5OiDB5U8RQX6KxeP3ln2oivBZJkRnmiuvww/rXSbPvrKa1DdF5H1Dc9O8km4PFx7VB/8KblPW7S1wg==
   dependencies:
     "@babel/runtime" "^7.10.0"
     "@phosphor/widgets" "^1.9.3"
     "@primer/octicons-react" "^9.0.0"
-    "@theia/application-package" "^1.5.0"
+    "@theia/application-package" "^1.6.0"
     "@types/body-parser" "^1.16.4"
     "@types/cookie" "^0.3.3"
     "@types/express" "^4.16.0"
@@ -2097,12 +2097,12 @@
     yargs "^11.1.0"
 
 "@theia/filesystem@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@theia/filesystem/-/filesystem-1.5.0.tgz#1bd0684475f402c99dd138988383e069b9b2121e"
-  integrity sha512-UVPX9WGP1H22dFXRfTywh7YyydZojENyzRqQns9T7aJ1DabKjXB1s2qVS2z5tRBgLvDz4u+eBUrra4J1tbifcw==
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@theia/filesystem/-/filesystem-1.6.0.tgz#4d94e4718951042bc88c67e0e088f20733076d6b"
+  integrity sha512-QSlMdnubuaIEBLiTaYcu+rTeZ/OWiar9aSld/iZkRqYfa3sbX8CSflEbKoa4XQ5o420D+xKgJFEdkmhxZA6srg==
   dependencies:
-    "@theia/application-package" "^1.5.0"
-    "@theia/core" "^1.5.0"
+    "@theia/application-package" "^1.6.0"
+    "@theia/core" "^1.6.0"
     "@types/body-parser" "^1.17.0"
     "@types/rimraf" "^2.0.2"
     "@types/tar-fs" "^1.16.1"
