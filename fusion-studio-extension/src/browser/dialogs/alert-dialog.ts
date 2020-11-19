@@ -18,13 +18,13 @@ export class FSAlertDialog extends AbstractDialog<any> {
     
     const message = document.createElement('p');
     message.className = 'fusion-alert-message';
-    message.innerText = this.props.message;
+    message.innerHTML = this.props.message;
     this.containerDiv.appendChild(message);
     
     if (this.props.secondaryMessage) {
       const secondaryMessage = document.createElement('p');
       secondaryMessage.className = 'fusion-alert-secondary-message';
-      secondaryMessage.innerText = this.props.secondaryMessage;
+      secondaryMessage.innerHTML = this.props.secondaryMessage;
       this.containerDiv.appendChild(secondaryMessage);
     }
     
