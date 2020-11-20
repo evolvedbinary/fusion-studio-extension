@@ -309,7 +309,8 @@ export class FSCore {
         if (FSErrorObject.is(error)) {
           FSDialog.alert('New Connection',
             ERROR_MESSAGES[error.code] + ' "' + (error.data?.length && error.data[0]) + '"',
-            'You need to update your API to version "' + API_MINIMUM_VERSION + '" or higher');
+            // TODO: elaborate on the instructions, maybe link to a documentation page
+            'You need to update your API to version "' + API_MINIMUM_VERSION + '" or higher.<br/>Visit <a href="https://fusiondb.com/">Fusion DB website</a> for more information on how to update.');
         } else {
           console.error('not caught:', error);
         }
