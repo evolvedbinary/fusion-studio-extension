@@ -2079,9 +2079,9 @@
     base64-arraybuffer "^0.1.5"
 
 "@theia/electron@^1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@theia/electron/-/electron-1.7.0.tgz#f439deebf282c0bf2c88b54c957bd0464de6f134"
-  integrity sha512-oBlZqctV8xq68xwOtQ6hO2Lai3iH3yOxUfyPnSyMaf7WXDG8z7BfwjFJIg1n0EkumRnC0w5pxZydAMBYA5e+xg==
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@theia/electron/-/electron-1.8.0.tgz#98f3bf6b50a73011f8345f32d25a44fee0c0ac5d"
+  integrity sha512-Z+bPYPyn62jlRXzvXdFtv6wMiqDwVqg06YuorfIANqC64sDTTVW7tOXCfTGxT7HBbwmUXTOXyyYDs+U6d+xEYA==
   dependencies:
     electron "^9.0.2"
     electron-download "^4.1.1"
@@ -2090,7 +2090,7 @@
     native-keymap "^2.1.2"
     node-gyp "^7.0.0"
     unzipper "^0.9.11"
-    yargs "^11.1.0"
+    yargs "^15.3.1"
 
 "@theia/filesystem@^1.7.0":
   version "1.7.0"
