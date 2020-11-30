@@ -992,6 +992,20 @@ export class FSCore {
       throw createError(FSError.unknown);
     }
   }
+  
+  public async tryRename(node: FSNode, name: string): Promise<boolean> {
+    if (node.nodeName === name) {
+      this.setRename(node, false);
+      return false;
+    }
+    if (FSNode.isItem(node)) {
+      const result = await this.rename(node, name);
+      this.setRename(node, false);
+      return result;
+    } else {
+      throw createError(FSError.unknown);
+    }
+  }
 
   public async openDocumentByURI(uri: string, connection: FSServerConnection): Promise<any> {
     const uriObj = new URI(FS_RESOURCE_SCHEME + ':' + this.connectionID(connection) + uri);
@@ -1354,21 +1368,16 @@ export class FSCore {
     return false;
   }
 
+  public setRename(node: FSNode, value = true) {
+    node.renaming = value;
+    this.refresh();
+  }
+
   public async renameItem(): Promise<void> {
     if (FSNode.isItem(this.node)) {      
-      const isCollection = FSNode.isCollection(this.node);
-      const collection = this.node.parent as FSCollectionNode;
-      const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
-      const dialog = new SingleTextInputDialog({
-        initialValue: this.node.nodeName,
-        title: 'Rename ' + (isCollection ? 'collection' : 'document'),
-        confirmButtonLabel: 'Rename',
-        validate: validator,
-      });
-      let name = await dialog.open();
-      if (name && name != this.node.nodeName) {
-        this.rename(this.node, name);
-      }
+      // const collection = this.node.parent as FSCollectionNode;
+      // const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
+      this.setRename(this.node);
     }
   }
 

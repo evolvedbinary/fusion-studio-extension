@@ -7,7 +7,6 @@ import { FSHome } from './home';
 import { FSToolbar } from './toolbar';
 import { DragController } from './drag';
 import { FSTreeModel } from '../../classes/tree';
-import { notEmpty } from '@theia/core';
 
 export type FSViewWidgetFactory = () => FSViewWidget;
 export const FSViewWidgetFactory = Symbol('FSViewWidgetFactory');
@@ -98,46 +97,70 @@ export class FSViewWidget extends TreeWidget {
     return decorations;
   }
 
-  protected superRenderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
-    console.log('rendering node...');
-    console.log('getting decorations...');
-    const tooltip = this.getDecorationData(node, 'tooltip').filter(notEmpty).join(' • ');
-    const classes = [TREE_NODE_SEGMENT_CLASS];
-    console.log('checking suffixes...');
-    if (!this.hasTrailingSuffixes(node)) {
-      classes.push(TREE_NODE_SEGMENT_GROW_CLASS);
+  InputBox(props: {
+    value: string,
+    validate?: (value: string) => string,
+    onAccept: (value: string) => void,
+    onCancel: () => void,
+  }) {
+    const [value, setValue] = React.useState(props.value);
+    const input = React.useRef() as React.MutableRefObject<HTMLInputElement>;
+    const eventListener = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        const newValue = (e.target as HTMLInputElement).value;
+        e.stopPropagation();
+        if (props.validate) {
+          const message = props.validate(newValue);
+          if (message) {
+            return;
+          }
+        }
+        props.onAccept(newValue);
+      } else if (e.key === 'Escape') {
+        e.stopPropagation();
+        props.onCancel();
+      } else if (e.key === 'ArrowUp'
+        || e.key === 'ArrowDown'
+        || e.key === 'ArrowLeft'
+        || e.key === 'ArrowRight') {
+        e.stopPropagation();
+      }
+    };
+    React.useEffect(() => {
+      input.current.addEventListener('keydown', eventListener);
+      input.current.focus();
+      input.current.select();
+    }, []);
+    return <div className={TREE_NODE_SEGMENT_CLASS + ' ' + TREE_NODE_SEGMENT_GROW_CLASS} style={{ position: 'relative' }}>&nbsp;
+      <input
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          padding: 0,
+        }}
+        ref={input}
+        className="theia-input"
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        onClick={e => e.stopPropagation()}
+        onDoubleClick={e => e.stopPropagation()}
+        // onBlur={e => props.onCancel()}
+      />
+    </div>;
+  }
+
+  protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
+    if (FSNode.is(node) && node.renaming) {
+      return <this.InputBox
+        value={node.nodeName}
+        onAccept={newName => this.core.tryRename(node, newName)}
+        onCancel={() => this.core.setRename(node, false)}
+      />;
     }
-    const className = classes.join(' ');
-    console.log('caption...');
-    let attrs = this.decorateCaption(node, {
-      className, id: node.id
-    });
-    if (tooltip.length > 0) {
-      attrs = {
-        ...attrs,
-        title: tooltip
-      };
-    }
-    const children: React.ReactNode[] = [];
-    console.log('nodename...');
-    const caption = this.toNodeName(node);
-    console.log('deco data...');
-    const highlight = this.getDecorationData(node, 'highlight')[0];
-    if (highlight) {
-      console.log('to react node...');
-      children.push(this.toReactNode(caption, highlight));
-    }
-    console.log('search...');
-    const searchHighlight = this.searchHighlights ? this.searchHighlights.get(node.id) : undefined;
-    if (searchHighlight) {
-      console.log('to react node...');
-      children.push(...this.toReactNode(caption, searchHighlight));
-    } else if (!highlight) {
-      console.log('no search...');
-      children.push(caption);
-    }
-    console.log('create...');
-    return React.createElement('div', attrs, ...children);
+    return super.renderCaption(node, props);
   }
 
   protected renderIcon(node: TreeNode, props: NodeProps): React.ReactNode {
