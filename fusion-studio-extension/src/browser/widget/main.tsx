@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, TreeDecoration, TREE_NODE_SEGMENT_CLASS, TREE_NODE_SEGMENT_GROW_CLASS } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
-import { FSNode } from '../../classes/node';
+import { FSItemNode, FSNode } from '../../classes/node';
 import { FSCore } from '../core';
 import { FSHome } from './home';
 import { FSToolbar } from './toolbar';
@@ -105,6 +105,24 @@ export class FSViewWidget extends TreeWidget {
   }) {
     const [value, setValue] = React.useState(props.value);
     const input = React.useRef() as React.MutableRefObject<HTMLInputElement>;
+    const errorEl = React.useRef() as React.MutableRefObject<HTMLDivElement>;
+    const [errorMessage, _setErrorMessage] = React.useState('');
+    const updateErrorElPosition = () => {
+      if (errorEl) {
+        const root = document.querySelector('#fusion-view > div.theia-TreeContainer > div');
+        if (root) {
+          const rootPos = root.getBoundingClientRect();
+          const inputPos = input.current.getBoundingClientRect();
+          errorEl.current.style.left = (inputPos.left - rootPos.left) + 'px';
+          errorEl.current.style.top = (inputPos.top - rootPos.top + inputPos.height) + 'px';
+          errorEl.current.style.width = inputPos.width + 'px';
+        }
+      }
+    }
+    const setErrorMessage = (message: string) => {
+      _setErrorMessage(message);
+      updateErrorElPosition();
+    }
     const eventListener = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         const newValue = (e.target as HTMLInputElement).value;
@@ -112,6 +130,7 @@ export class FSViewWidget extends TreeWidget {
         if (props.validate) {
           const message = props.validate(newValue);
           if (message) {
+            setErrorMessage(message);
             return;
           }
         }
@@ -131,24 +150,22 @@ export class FSViewWidget extends TreeWidget {
       input.current.focus();
       input.current.select();
     }, []);
-    return <div className={TREE_NODE_SEGMENT_CLASS + ' ' + TREE_NODE_SEGMENT_GROW_CLASS} style={{ position: 'relative' }}>&nbsp;
-      <input
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          padding: 0,
-        }}
-        ref={input}
-        className="theia-input"
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        onClick={e => e.stopPropagation()}
-        onDoubleClick={e => e.stopPropagation()}
-        // onBlur={e => props.onCancel()}
-      />
+    return <div className={TREE_NODE_SEGMENT_CLASS + ' ' + TREE_NODE_SEGMENT_GROW_CLASS}>
+      <div className="fs-inline-input">&nbsp;
+        {errorMessage !== '' && <div
+          ref={errorEl}
+        >{errorMessage}</div>}
+        <input
+          ref={input}
+          className="theia-input"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onClick={e => e.stopPropagation()}
+          onContextMenu={e => e.stopPropagation()}
+          onDoubleClick={e => e.stopPropagation()}
+          onBlur={e => props.onCancel()}
+        />
+      </div>
     </div>;
   }
 
@@ -158,6 +175,7 @@ export class FSViewWidget extends TreeWidget {
         value={node.nodeName}
         onAccept={newName => this.core.tryRename(node, newName)}
         onCancel={() => this.core.setRename(node, false)}
+        validate={value => this.core.validateName(node as FSItemNode, value)}
       />;
     }
     return super.renderCaption(node, props);

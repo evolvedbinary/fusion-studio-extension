@@ -1373,6 +1373,22 @@ export class FSCore {
     this.refresh();
   }
 
+  public validateName(node: FSItemNode, input: string): string {
+    input = input.trim();
+    if (!node) {
+      return 'No node to rename';
+    }
+    if (input === '') {
+      return 'Empty name';
+    }
+    // TODO: valid name
+    const collection = node.parent as FSCollectionNode;
+    if (this.fileExists(input, collection)) {
+      return 'Item already exists';
+    }
+    return '';
+  }
+
   public async renameItem(): Promise<void> {
     if (FSNode.isItem(this.node)) {      
       // const collection = this.node.parent as FSCollectionNode;
