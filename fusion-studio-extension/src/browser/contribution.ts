@@ -2,12 +2,10 @@ import { injectable, inject } from "inversify";
 import { AbstractViewContribution, KeybindingRegistry, WidgetManager } from "@theia/core/lib/browser";
 import { FSViewWidget } from "./widget/main";
 import { MenuModelRegistry, CommandRegistry } from "@theia/core";
-import { FSCore } from "./core";
+import { FSCore, FS_CONNECTIONS_WIDGET_FACTORY_ID } from "./core";
 import { registerCommands, registerMenus, registerKeybindings, registerSubMenus } from "../classes/action";
 import { FS_COMMANDS, FS_SUBMENUES } from "./commands";
 import { FrontendApplicationStateService } from "@theia/core/lib/browser/frontend-application-state";
-
-export const FS_CONNECTIONS_WIDGET_FACTORY_ID = 'fusion-view';
 @injectable()
 export class FSContribution extends AbstractViewContribution<FSViewWidget> {
 

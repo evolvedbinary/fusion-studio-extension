@@ -27,6 +27,8 @@ import { FSLabelProviderContribution } from "./label-provider-contribution";
 import { FSDialog } from "./dialogs/basic";
 import { FSViewWidget } from "./widget";
 
+export const FS_CONNECTIONS_WIDGET_FACTORY_ID = 'fusion-view';
+
 function sortText(A: string, B: string, caseSensetive = false): number {
   let a = A;
   let b = B;
@@ -1368,9 +1370,16 @@ export class FSCore {
     return false;
   }
 
-  public setRename(node: FSNode, value = true) {
+  public async setRename(node: FSNode, value = true) {
     node.renaming = value;
-    this.refresh();
+    await this.refresh();
+    if (!value) {
+      console.dir(this.widgetManager);
+      const serversWidget = await this.widgetManager.getWidget(FS_CONNECTIONS_WIDGET_FACTORY_ID);
+      if (serversWidget) {
+        serversWidget.activate();
+      }
+    }
   }
 
   public validateName(node: FSItemNode, input: string): string {
