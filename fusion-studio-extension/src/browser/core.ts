@@ -63,6 +63,7 @@ export class FSCore {
   ) {}
 
   updating = false;
+  renaming = '';
 
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
@@ -1370,8 +1371,12 @@ export class FSCore {
     return false;
   }
 
+  public isRenaming(node?: FSNode) {
+    return node ? node.id === this.renaming : this.renaming !== '';
+  }
+
   public async setRename(node: FSNode, value = true) {
-    node.renaming = value;
+    this.renaming = value ? node.id : '';
     await this.refresh();
     if (!value) {
       console.dir(this.widgetManager);

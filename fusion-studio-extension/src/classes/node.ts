@@ -12,7 +12,6 @@ export interface FSNode extends TreeNode {
   nodeName: string;
   loading?: boolean;
   loaded?: boolean;
-  renaming?: boolean;
 }
 export interface FSContainerNode extends FSNode, CompositeTreeNode, ExpandableTreeNode {}
 

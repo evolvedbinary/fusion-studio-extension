@@ -171,7 +171,7 @@ export class FSViewWidget extends TreeWidget {
   }
 
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
-    if (FSNode.is(node) && node.renaming) {
+    if (FSNode.is(node) && this.core.isRenaming(node)) {
       return <this.InputBox
         value={node.nodeName}
         onAccept={newName => this.core.tryRename(node, newName)}
@@ -191,7 +191,11 @@ export class FSViewWidget extends TreeWidget {
   }
 
   protected createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
-    return [...super.createNodeClassNames(node, props), 'fusion-item'];
+    const classes = [...super.createNodeClassNames(node, props), 'fusion-item'];
+    if (FSNode.is(node) && this.core.isRenaming() && !this.core.isRenaming(node)) {
+      classes.push('fs-shadowed');
+    }
+    return classes;
   }
 
   protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
@@ -201,7 +205,7 @@ export class FSViewWidget extends TreeWidget {
         return this.isEmpty(this.model) ? <FSHome core={this.core} /> : <FSToolbar core={this.core} />;
       } else {
         //return <FSItem tooltip={tooltip} core={this.core} node={node} />;
-        return super.renderNode.apply(this, [node, props]);
+        return super.renderNode.apply(this, [node, { ...props,  }]);
       }
     }
     console.error('unknown node:', node);

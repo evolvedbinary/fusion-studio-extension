@@ -39,3 +39,41 @@
         padding: 0;
     }
 }
+.fusion-item {
+    &.fs-shadowed {
+        opacity: 0.35;
+    }
+    // i {
+    //   margin-right: 6px;
+    //   min-width: 1.28571429em;
+    // }
+    // &.fusion-item-new {
+    //   position: relative;
+    //   &:before {
+    //     content: "";
+    //     display: block;
+    //     background: red;
+    //     width: 8px;
+    //     height: 8px;
+    //     position: absolute;
+    //     z-index: 1;
+    //     border-radius: 4px;
+    //     left: -2px;
+    //     top: 0px;
+    //   }
+    // }
+    // .name {
+    //   flex-grow: 1 !important;
+    //   overflow: hidden;
+    //   text-overflow: ellipsis;
+    //   white-space: nowrap;
+    // }
+    // &.fusion-item-connection {
+    //   display: flex;
+    //   align-items: center;
+    //   max-width: 100%;
+    //   div {
+    //     white-space: nowrap;
+    //   }
+    // }
+}
