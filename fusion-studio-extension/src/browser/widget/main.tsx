@@ -108,14 +108,13 @@ export class FSViewWidget extends TreeWidget {
     const errorEl = React.useRef() as React.MutableRefObject<HTMLDivElement>;
     const [errorMessage, _setErrorMessage] = React.useState('');
     const updateErrorElPosition = () => {
-      if (errorEl) {
+      if (errorEl.current) {
         const root = document.querySelector('#fusion-view > div.theia-TreeContainer > div');
         if (root) {
           const rootPos = root.getBoundingClientRect();
           const inputPos = input.current.getBoundingClientRect();
           errorEl.current.style.left = (inputPos.left - rootPos.left) + 'px';
           errorEl.current.style.top = (inputPos.top - rootPos.top + inputPos.height) + 'px';
-          errorEl.current.style.width = inputPos.width + 'px';
         }
       }
     }
@@ -152,9 +151,10 @@ export class FSViewWidget extends TreeWidget {
     }, []);
     return <div className={TREE_NODE_SEGMENT_CLASS + ' ' + TREE_NODE_SEGMENT_GROW_CLASS}>
       <div className="fs-inline-input">&nbsp;
-        {errorMessage !== '' && <div
+        <div
+          className={errorMessage === '' ? 'hidden' : 'error'}
           ref={errorEl}
-        >{errorMessage}</div>}
+        >{errorMessage}</div>
         <input
           ref={input}
           className="theia-input"

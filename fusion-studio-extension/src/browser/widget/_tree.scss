@@ -9,15 +9,24 @@
 .fs-inline-input {
     position: relative;
     div {
-        position: fixed;
-        z-index: 1;
-        box-sizing: border-box;
-        white-space: initial;
-        background: var(--theia-inputValidation-errorBackground);
-        border: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder);
-        border-top: 0;
-        & + input {
-            outline: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder) !important;
+        &.hidden {
+            display: none;
+        }
+        &.error {
+            padding: 0 4px;
+            overflow: hidden;
+            position: fixed;
+            right: 10px;
+            z-index: 1;
+            box-sizing: border-box;
+            white-space: initial;
+            background: var(--theia-inputValidation-errorBackground);
+            border: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder);
+            border-top: 0;
+            & + input {
+                outline: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder) !important;
+                border: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder) !important;
+            }
         }
     }
     input {
