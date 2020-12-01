@@ -147,7 +147,8 @@ export class FSViewWidget extends TreeWidget {
     React.useEffect(() => {
       input.current.addEventListener('keydown', eventListener);
       input.current.focus();
-      input.current.select();
+      input.current.selectionStart = 0;
+      input.current.selectionEnd = value.lastIndexOf('.');
     }, []);
     return <div className={TREE_NODE_SEGMENT_CLASS + ' ' + TREE_NODE_SEGMENT_GROW_CLASS}>
       <div className="fs-inline-input">&nbsp;
