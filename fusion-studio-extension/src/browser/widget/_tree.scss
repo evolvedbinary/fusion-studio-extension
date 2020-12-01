@@ -43,25 +43,31 @@
     &.fs-shadowed {
         opacity: 0.35;
     }
+    .fa-file:before,
+    .fa-folder:before {
+        margin: 0;
+    }
     // i {
     //   margin-right: 6px;
     //   min-width: 1.28571429em;
     // }
-    // &.fusion-item-new {
-    //   position: relative;
-    //   &:before {
-    //     content: "";
-    //     display: block;
-    //     background: red;
-    //     width: 8px;
-    //     height: 8px;
-    //     position: absolute;
-    //     z-index: 1;
-    //     border-radius: 4px;
-    //     left: -2px;
-    //     top: 0px;
-    //   }
-    // }
+    &.fusion-item-new {
+      .fs-icon {
+        position: relative;
+        &:after {
+          content: "";
+          display: block;
+          background: red;
+          width: 8px;
+          height: 8px;
+          position: absolute;
+          z-index: 1;
+          border-radius: 4px;
+          left: -2px;
+          top: 0px;
+        }
+      }
+    }
     // .name {
     //   flex-grow: 1 !important;
     //   overflow: hidden;

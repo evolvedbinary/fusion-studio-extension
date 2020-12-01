@@ -192,8 +192,13 @@ export class FSViewWidget extends TreeWidget {
 
   protected createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
     const classes = [...super.createNodeClassNames(node, props), 'fusion-item'];
-    if (FSNode.is(node) && this.core.isRenaming() && !this.core.isRenaming(node)) {
-      classes.push('fs-shadowed');
+    if (FSNode.is(node)) {
+      if (this.core.isRenaming() && !this.core.isRenaming(node)) {
+        classes.push('fs-shadowed');
+      }
+      if (FSNode.isDocument(node) && node.isNew) {
+        classes.push('fusion-item-new');
+      }
     }
     return classes;
   }
