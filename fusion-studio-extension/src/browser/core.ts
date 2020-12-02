@@ -64,6 +64,7 @@ export class FSCore {
 
   updating = false;
   renaming = '';
+  isRenamedItemNew = false;
 
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
@@ -995,15 +996,78 @@ export class FSCore {
       throw createError(FSError.unknown);
     }
   }
-  
+
+  public async acceptName(node: FSNode, name: string): Promise<boolean> {
+    return this.isRenamedItemNew
+      ? this.tryCreate(node, name)
+      : this.tryRename(node, name);
+  }
+
+  public async cancelName(node: FSNode): Promise<void> {
+    this.setRename();
+  }
+
+  public validateName(node: FSItemNode, newName: string, failsOnSameName = false): string {
+    newName = newName.trim();
+    if (!node) {
+      return 'No node to rename';
+    }
+    if (newName === '') {
+      return 'Empty name';
+    }
+    // TODO: valid name
+    const collection = node.parent as FSCollectionNode;
+    if (newName === node.nodeName) {
+      if (failsOnSameName) {
+        return 'Same name';
+      } else {
+        return '';
+      }
+    }
+    if (this.fileExists(newName, collection)) {
+      return 'Item already exists';
+    }
+    return '';
+  }
+
+  public async tryCreate(node: FSNode, name: string): Promise<boolean> {
+    if (FSNode.isItem(node)) {
+      try {
+        if (FSNode.isDocument(node)) {
+          // const result = await this.rename(node, name);
+          // this.setRename();
+          // return result;
+        } else if (FSNode.isCollection(node)) {
+          const parent = (node.parent as FSCollectionNode);
+          const uri = parent.uri + TRAILING_SYMBOL + name;
+          const collection = await FSApi.newCollection(node.connectionNode.connection, uri);
+          node.nodeName = name;
+          node.collection = collection;
+          // (node as any)['id'] = this.itemID(parent.connectionNode.connection, collection),
+          node.link = FS_RESOURCE_SCHEME + ':' + collection.name,
+          node.uri = uri;
+          this.isRenamedItemNew = false;
+          this.setRename();
+          return true;
+        }
+      } catch(e) {
+        this.setRename();
+      }
+      return false;
+    } else {
+      this.setRename();
+      throw createError(FSError.unknown);
+    }
+  }
+
   public async tryRename(node: FSNode, name: string): Promise<boolean> {
     if (node.nodeName === name) {
-      this.setRename(node, false);
+      this.setRename();
       return false;
     }
     if (FSNode.isItem(node)) {
       const result = await this.rename(node, name);
-      this.setRename(node, false);
+      this.setRename();
       return result;
     } else {
       throw createError(FSError.unknown);
@@ -1275,26 +1339,45 @@ export class FSCore {
     }
     const collection = this.node as FSCollectionNode;
     const validator = (input: string) => input !== '' && !this.fileExists(input);
-    const dialog = new SingleTextInputDialog({
-      initialValue: this.newName(validator),
-      title: 'New ' + (isCollection ? 'collection' : 'document'),
-      confirmButtonLabel: 'Create',
-      validate: validator,
-    });
-    let name = await dialog.open();
-    if (name) {
-      this.nextName(name);
-      name = collection.uri + '/' + name;
-      if (isCollection) {
-        const result = await FSApi.newCollection(collection.connectionNode.connection, name);
-        if (result) {
-          this.addCollection(collection, result);
-        }
-      } else {
-        this.createDocument(collection, name);
-      }
+    // const dialog = new SingleTextInputDialog({
+    //   initialValue: this.newName(validator),
+    //   title: 'New ' + (isCollection ? 'collection' : 'document'),
+    //   confirmButtonLabel: 'Create',
+    //   validate: validator,
+    // });
+    // let name = await dialog.open();
+    // if (name) {
+    //   this.nextName(name);
+    //   name = collection.uri + '/' + name;
+    //   if (isCollection) {
+    //     const result = await FSApi.newCollection(collection.connectionNode.connection, name);
+    //     if (result) {
+    //       this.addCollection(collection, result);
+    //     }
+    //   } else {
+    //     this.createDocument(collection, name);
+    //   }
+    // }
+    // return false;
+    const initialName = this.newName(validator);
+    this.nextName(initialName);
+    this.isRenamedItemNew = true;
+    let item: FSItemNode;
+    if (isCollection) {
+      item = await this.addCollection(collection, {
+        name: collection.uri + TRAILING_SYMBOL + initialName,
+        owner : 'admin',
+        group : 'dba',
+        acl : [ ],
+        documents : [ ],
+        created : new Date(),
+        collections : [ ]
+      });
+    } else {
+      item = await this.createDocument(collection, name);
     }
-    return false;
+    this.setRename(item);
+    return true;
   }
 
   public async uploadItem(): Promise<boolean> {
@@ -1375,38 +1458,28 @@ export class FSCore {
     return node ? node.id === this.renaming : this.renaming !== '';
   }
 
-  public async setRename(node: FSNode, value = true) {
-    this.renaming = value ? node.id : '';
-    await this.refresh();
-    if (!value) {
-      console.dir(this.widgetManager);
+  public async setRename(node?: FSNode) {
+    this.updating = true;
+    const renamingNode = this.getNode(this.renaming);
+    this.renaming = node ? node.id : '';
+    if (!node) {
+      if (this.isRenamedItemNew && renamingNode) {
+        this.removeNode(renamingNode);
+      }
       const serversWidget = await this.widgetManager.getWidget(FS_CONNECTIONS_WIDGET_FACTORY_ID);
       if (serversWidget) {
         serversWidget.activate();
       }
     }
-  }
-
-  public validateName(node: FSItemNode, input: string): string {
-    input = input.trim();
-    if (!node) {
-      return 'No node to rename';
-    }
-    if (input === '') {
-      return 'Empty name';
-    }
-    // TODO: valid name
-    const collection = node.parent as FSCollectionNode;
-    if (this.fileExists(input, collection)) {
-      return 'Item already exists';
-    }
-    return '';
+    this.updating = false;
+    await this.refresh();
   }
 
   public async renameItem(): Promise<void> {
     if (FSNode.isItem(this.node)) {      
       // const collection = this.node.parent as FSCollectionNode;
       // const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
+      this.isRenamedItemNew = false;
       this.setRename(this.node);
     }
   }

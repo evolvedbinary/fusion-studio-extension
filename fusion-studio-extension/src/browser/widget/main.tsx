@@ -174,8 +174,8 @@ export class FSViewWidget extends TreeWidget {
     if (FSNode.is(node) && this.core.isRenaming(node)) {
       return <this.InputBox
         value={node.nodeName}
-        onAccept={newName => this.core.tryRename(node, newName)}
-        onCancel={() => this.core.setRename(node, false)}
+        onAccept={newName => this.core.acceptName(node, newName)}
+        onCancel={() => this.core.cancelName(node)}
         validate={value => this.core.validateName(node as FSItemNode, value)}
       />;
     }
