@@ -16,7 +16,6 @@ export interface FSNewFromTemplateDialogResult {
 
 export class FSNewFromTemplateDialog extends AbstractDialog<FSNewFromTemplateDialogResult> {
 
-  protected readonly nameField: IDialogField;
   protected readonly containerDiv: HTMLDivElement = document.createElement('div');
   protected readonly fields: IDialogFields = {};
 
@@ -25,10 +24,6 @@ export class FSNewFromTemplateDialog extends AbstractDialog<FSNewFromTemplateDia
   ) {
     super(props);
 
-    this.nameField = createField('Name:', 'name-field');
-    this.nameField.input.value = props.initialValue || '';
-    this.containerDiv.appendChild(this.nameField.container);
-    
     this.containerDiv.className = 'dialog-container vertical-form';
     this.contentNode.appendChild(this.containerDiv);
     
@@ -58,24 +53,24 @@ export class FSNewFromTemplateDialog extends AbstractDialog<FSNewFromTemplateDia
     for (const key in this.fields) {
       params[key] = this.fields[key].input.value;
     }
-    params.name = this.nameField.input.value;
     return { params };
   }
   
-  protected isValid(value: FSNewFromTemplateDialogResult, mode: DialogMode): DialogError {
-    return !this.props.validate || this.props.validate(value.params.name);
-  }
+  // protected isValid(value: FSNewFromTemplateDialogResult, mode: DialogMode): DialogError {
+  //   return !this.props.validate || this.props.validate(value.params.name);
+  // }
 
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
-    this.addUpdateListener(this.nameField.input, 'input');
     for (const key in this.fields) {
       this.addUpdateListener(this.fields[key].input, 'input');
     }
   }
 
   protected onActivateRequest(msg: Message): void {
-    this.nameField.input.focus();
+    if (this.fields?.length) {
+      this.fields[0].input.focus();
+    }
   }
 
 }

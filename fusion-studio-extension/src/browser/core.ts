@@ -11,7 +11,7 @@ import { FSApi, API_MINIMUM_VERSION } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { FSDragOperation } from "./widget/drag";
 import { FSTemplate } from "../classes/template";
-import { FSConnectionDialog, FSNewFromTemplateDialog, FSPropertiesDialog } from "./dialogs";
+import { FSConnectionDialog, FSNewFromTemplateDialog, FSNewFromTemplateDialogResult, FSPropertiesDialog } from "./dialogs";
 import { FSFiles, FSFileList } from "../classes/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
@@ -1339,13 +1339,16 @@ export class FSCore {
     }
   }
 
-  public async newItem(isCollection?: boolean): Promise<boolean> {
+  public async newItem(isCollection?: boolean, content = '', extension = ''): Promise<boolean> {
     if (!this.node) {
       return false;
     }
     const collection = this.node as FSCollectionNode;
     const validator = (input: string) => input !== '' && !this.fileExists(input);
-    const initialName = this.newName(validator);
+    let initialName = this.newName(validator);
+    if (extension) {
+      initialName += '.' + extension;
+    }
     const name = collection.uri + TRAILING_SYMBOL + initialName;
     this.nextName(initialName);
     let item: FSItemNode;
@@ -1361,7 +1364,7 @@ export class FSCore {
       });
     } else {
       item = this.addDocument(collection, {
-        content: '',
+        content,
         name,
         created: new Date(),
         lastModified: new Date(),
@@ -1381,8 +1384,19 @@ export class FSCore {
         await this.setRename(false);
         await this.removeNode(item);
         const documentNode = this.addDocument(collection, { ...(item as FSDocumentNode).document, name }, true);
-        const doc = this.openDocument(documentNode);
+        const doc = await this.openDocument(documentNode);
         this.acceptName = safeAccept;
+        if (content !== '') {
+          doc.editor.document.setDirty(true);
+          doc.editor.document.contentChanges.push({
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 0 }
+            },
+            rangeLength: 0,
+            content,
+          });
+        }
         return !!doc;
       }
     }
@@ -1445,21 +1459,25 @@ export class FSCore {
     if (!this.node) {
       return false;
     }
-    const collection = this.node as FSCollectionNode;
+    // const collection = this.node as FSCollectionNode;
     const validator = (filename: string) => filename !== '' && !this.fileExists(filename);
-    const dialog = new FSNewFromTemplateDialog({
-      title: 'New ' + template.name,
-      initialValue: this.newName(validator, template.ext({})),
-      template,
-      validate: validator,
-    });
-    let result = await dialog.open();
-    if (result) {
-      this.nextName(result.params.name);
-      const name = collection.uri + '/' + result.params.name;
-      const text = template.execute(result.params);
-      await this.createDocument(collection, name, text);
+    // const initialName = this.newName(validator, template.ext({}));
+    let result: FSNewFromTemplateDialogResult | undefined;
+    if (template.fields) {
+      const dialog = new FSNewFromTemplateDialog({
+        title: 'New ' + template.name,
+        template,
+        validate: validator,
+      });
+      result = await dialog.open();
+      if (!result) {
+        return false;
+      }
     }
+    // this.nextName(initialName);
+    // const name = collection.uri + '/' + initialName;
+    const text = template.execute(result?.params);
+    await this.newItem(false, text, template.ext(result?.params));
     return false;
   }
 
