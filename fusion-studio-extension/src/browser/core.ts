@@ -64,7 +64,6 @@ export class FSCore {
 
   updating = false;
   renaming = '';
-  isRenamedItemNew = false;
 
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
@@ -253,7 +252,7 @@ export class FSCore {
   }
 
   public get isNew(): boolean {
-    return FSNode.isDocument(this.node) && this.node.isNew;
+    return FSNode.isDocument(this.node) && !!this.node.isNew;
   }
 
   public get isItem(): boolean {
@@ -998,12 +997,17 @@ export class FSCore {
   }
 
   public async acceptName(node: FSNode, name: string): Promise<boolean> {
-    return this.isRenamedItemNew
+    return FSNode.isItem(node) && node.isNew
       ? this.tryCreate(node, name)
       : this.tryRename(node, name);
   }
 
   public async cancelName(node: FSNode): Promise<void> {
+    if (FSNode.isItem(node) && node.isNew) {
+      this.updating = true;
+      this.removeNode(node);
+      this.updating = false;
+    }
     this.setRename();
   }
 
@@ -1046,15 +1050,17 @@ export class FSCore {
           // (node as any)['id'] = this.itemID(parent.connectionNode.connection, collection),
           node.link = FS_RESOURCE_SCHEME + ':' + collection.name,
           node.uri = uri;
-          this.isRenamedItemNew = false;
           this.setRename();
+          node.isNew = false;
           return true;
         }
       } catch(e) {
+        this.removeNode(node);
         this.setRename();
       }
       return false;
     } else {
+      this.removeNode(node);
       this.setRename();
       throw createError(FSError.unknown);
     }
@@ -1339,33 +1345,13 @@ export class FSCore {
     }
     const collection = this.node as FSCollectionNode;
     const validator = (input: string) => input !== '' && !this.fileExists(input);
-    // const dialog = new SingleTextInputDialog({
-    //   initialValue: this.newName(validator),
-    //   title: 'New ' + (isCollection ? 'collection' : 'document'),
-    //   confirmButtonLabel: 'Create',
-    //   validate: validator,
-    // });
-    // let name = await dialog.open();
-    // if (name) {
-    //   this.nextName(name);
-    //   name = collection.uri + '/' + name;
-    //   if (isCollection) {
-    //     const result = await FSApi.newCollection(collection.connectionNode.connection, name);
-    //     if (result) {
-    //       this.addCollection(collection, result);
-    //     }
-    //   } else {
-    //     this.createDocument(collection, name);
-    //   }
-    // }
-    // return false;
     const initialName = this.newName(validator);
+    const name = collection.uri + TRAILING_SYMBOL + initialName;
     this.nextName(initialName);
-    this.isRenamedItemNew = true;
     let item: FSItemNode;
     if (isCollection) {
       item = await this.addCollection(collection, {
-        name: collection.uri + TRAILING_SYMBOL + initialName,
+        name,
         owner : 'admin',
         group : 'dba',
         acl : [ ],
@@ -1374,9 +1360,32 @@ export class FSCore {
         collections : [ ]
       });
     } else {
-      item = await this.createDocument(collection, name);
+      item = this.addDocument(collection, {
+        content: '',
+        name,
+        created: new Date(),
+        lastModified: new Date(),
+        binaryDoc: false,
+        acl: [],
+        size: 0,
+        mediaType: lookup(name) || 'text/plain',
+        group: 'dba',
+        owner: collection.connectionNode.connection.username,
+      }, true);
     }
+    item.isNew = true;
     this.setRename(item);
+    if (FSNode.isDocument(item)) {
+      const safeAccept = this.acceptName;
+      this.acceptName = async (n, name) => {
+        await this.setRename(false);
+        await this.removeNode(item);
+        const documentNode = this.addDocument(collection, { ...(item as FSDocumentNode).document, name }, true);
+        const doc = this.openDocument(documentNode);
+        this.acceptName = safeAccept;
+        return !!doc;
+      }
+    }
     return true;
   }
 
@@ -1458,17 +1467,13 @@ export class FSCore {
     return node ? node.id === this.renaming : this.renaming !== '';
   }
 
-  public async setRename(node?: FSNode) {
+  public async setRename(node?: FSNode | false, focus = true) {
     this.updating = true;
-    const renamingNode = this.getNode(this.renaming);
     this.renaming = node ? node.id : '';
-    if (!node) {
-      if (this.isRenamedItemNew && renamingNode) {
-        this.removeNode(renamingNode);
-      }
+    if (focus == true || node !== false) {
       const serversWidget = await this.widgetManager.getWidget(FS_CONNECTIONS_WIDGET_FACTORY_ID);
       if (serversWidget) {
-        serversWidget.activate();
+        // serversWidget.activate();
       }
     }
     this.updating = false;
@@ -1479,7 +1484,6 @@ export class FSCore {
     if (FSNode.isItem(this.node)) {      
       // const collection = this.node.parent as FSCollectionNode;
       // const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
-      this.isRenamedItemNew = false;
       this.setRename(this.node);
     }
   }

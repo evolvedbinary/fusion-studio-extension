@@ -30,6 +30,7 @@ export interface FSItemNode extends FSNode, SelectableTreeNode {
   // type: 'item';
   link: string;
   isCollection: boolean;
+  isNew?: boolean;
 }
 export interface FSCollectionNode extends FSItemNode, FSContainerNode {
   collection: FSCollection;
@@ -38,7 +39,6 @@ export interface FSCollectionNode extends FSItemNode, FSContainerNode {
 export interface FSDocumentNode extends FSItemNode {
   document: FSDocument;
   isCollection: false;
-  isNew: boolean;
   editor?: any;
 }
 export interface FSUserNode extends FSNode, SelectableTreeNode {
