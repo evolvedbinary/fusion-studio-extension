@@ -120,7 +120,7 @@ context('Fusion Studio', function() {
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogTitle').should('contain.text', 'Edit User: ' + userName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogContent .pb-body').should('be.visible').find('span + input.theia-input[type=text]').should('have.value', userName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl .theia-button.secondary').should('be.visible').click();
-        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.be.visible');
+        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.exist');
       });
     })
     it('open group information', function() {
@@ -134,7 +134,7 @@ context('Fusion Studio', function() {
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogTitle').should('contain.text', 'Edit Group: ' + groupName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogContent .pb-body').should('be.visible').find('span + input.theia-input[type=text]').should('have.value', groupName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl .theia-button.secondary').should('be.visible').click();
-        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.be.visible');
+        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.exist');
       });
     })
   })
