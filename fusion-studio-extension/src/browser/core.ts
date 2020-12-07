@@ -1045,11 +1045,8 @@ export class FSCore {
           const parent = (node.parent as FSCollectionNode);
           const uri = parent.uri + TRAILING_SYMBOL + name;
           const collection = await FSApi.newCollection(node.connectionNode.connection, uri);
-          node.nodeName = name;
-          node.collection = collection;
-          // (node as any)['id'] = this.itemID(parent.connectionNode.connection, collection),
-          node.link = FS_RESOURCE_SCHEME + ':' + collection.name,
-          node.uri = uri;
+          this.removeNode(node);
+          this.addCollection(parent, collection);
           this.setRename();
           node.isNew = false;
           return true;
