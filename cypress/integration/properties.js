@@ -17,7 +17,7 @@ context('Properties dialog', function () {
     cy.visit('http://localhost:3000')
       .get('#theia-top-panel', { timeout: 30000 })
       .should('be.visible')
-      .get('.theia-preload').should('not.be.visible');
+      .get('.theia-preload').should('not.exist');
     cy.addConnection();
     cy.waitForLoading();
     cy.getTreeNode('admin@http://localhost:8080/db').click();
@@ -78,14 +78,14 @@ context('Properties dialog', function () {
         });
       });
       cy.get(dialogSecondaryButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get(dialog).should('not.exist');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/xml_file.xml').rightclick()
         .getMenuCommand('fusion.properties').should('be.visible').click()
       cy.get(dialogBody).should('be.visible').find('td.label').contains('Binary')
         .find('+ td.value').should('contain.text', 'No')
         .find('button.theia-button').should('contain.text', 'Convert to binary');
       cy.get(dialogSecondaryButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get(dialog).should('not.exist');
     })
     it('Collection properties', function () {
       cy.waitForLoading();
@@ -127,12 +127,12 @@ context('Properties dialog', function () {
           });
         });
         cy.get(dialogSecondaryButton).should('be.visible').click();
-        cy.get(dialog).should('not.be.visible');
+        cy.get(dialog).should('not.exist');
         cy.getTreeNode('admin@http://localhost:8080/db').rightclick()
           .getMenuCommand('fusion.properties').should('be.visible').click()
         cy.get(dialogBody).should('be.visible').find('td.label').should('not.contain.text', 'Collection');
         cy.get(dialogSecondaryButton).should('be.visible').click();
-        cy.get(dialog).should('not.be.visible');
+        cy.get(dialog).should('not.exist');
       });
     })
   })
@@ -146,7 +146,7 @@ context('Properties dialog', function () {
         .find('td.label').contains('Name')
         .find('+ td.value input.theia-input[type=text]').should('contain.value', 'text_file.txt').type('new_name.txt');
       cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get(dialog).should('not.exist');
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/text_file.txt').should('not.exist');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/new_name.txt').should('be.visible');
@@ -160,7 +160,7 @@ context('Properties dialog', function () {
         .find('td.label').contains('Name')
         .find('+ td.value input.theia-input[type=text]').should('contain.value', 'test_col').type('new_test_col');
       cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get(dialog).should('not.exist');
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col').should('not.exist');
       cy.getTreeNode('admin@http://localhost:8080/db/new_test_col').should('be.visible');

@@ -12,7 +12,7 @@ context('Fusion Studio', function () {
       cy.visit('http://localhost:3000')
       .get('#theia-top-panel', { timeout: 30000 })
       .should('be.visible')
-      .get('.theia-preload').should('not.be.visible');
+      .get('.theia-preload').should('not.exist');
       cy.addConnection();
       cy.get('.fusion-item').should('have.length', 5).its('length').then(count => {
         cy.getTreeNode('admin@http://localhost:8080/db').click();
@@ -27,21 +27,7 @@ context('Fusion Studio', function () {
       cy.addCollection('admin@http://localhost:8080/db/test_col', 'col3');
     })
     it('create text document', function () {
-      cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col').rightclick()
-      cy.getSubMenu('New document...').should('be.visible').trigger('mousemove')
-      cy.getMenuCommand('fusion.new-document').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'New document');
-      cy.get(dialogBody).should('be.visible').find('input.theia-input[type=text]').should('contain.value', 'untitled').type('text_file.txt');
-      cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/text_file.txt').should('be.visible');
-      cy.get('.p-Widget.p-TabBar li[title=' + CSS.escape('admin@http://localhost:8080/db/test_col/text_file.txt') + ']')
-      .should('be.visible').click()
-      .should('have.class', 'p-mod-current');
-      cy.get('[role=presentation].editor-scrollable').click().type('Sample text file content');
-      cy.get('#theia-top-panel .p-MenuBar-item').contains('File').click()
-      cy.get('.p-Menu-item[data-type=command][data-command=core\\.save]').click()
+      cy.addDocument('admin@http://localhost:8080/db/test_col', 'text_file.txt');
     })
   })
   describe('Drag and drop', function () {
@@ -85,24 +71,18 @@ context('Fusion Studio', function () {
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/text_file.txt').should('be.visible').rightclick();
       cy.getMenuCommand('fusion.rename').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Rename document');
-      cy.get(dialogBody).should('be.visible').find('input.theia-input[type=text]').should('contain.value', 'text_file.txt').type('new_name.txt');
-      cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'text_file.txt').clear().type('new_name.txt{enter}');
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/text_file.txt').should('not.be.visible');
+      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/text_file.txt').should('not.exist');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/new_name.txt').should('be.visible');
     })
     it('rename a collection', function () {
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/col1').should('be.visible').rightclick();
       cy.getMenuCommand('fusion.rename').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Rename collection');
-      cy.get(dialogBody).should('be.visible').find('input.theia-input[type=text]').should('contain.value', 'col1').type('other_col1');
-      cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'col1').clear().type('other_col1{enter}');
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/col1').should('not.be.visible');
+      cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/col1').should('not.exist');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/other_col1').should('be.visible');
     })
   })
@@ -114,7 +94,7 @@ context('Fusion Studio', function () {
       cy.get(dialogTitle).should('contain.text', 'Delete document');
       cy.get(dialogBody).should('be.visible').find('p').should('contain.text', 'Are you sure you want to delete the document: new_name.txt?');
       cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get(dialog).should('not.exist');
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2/new_name.txt').should('not.exist');
     })
@@ -132,7 +112,7 @@ context('Fusion Studio', function () {
         .should('contain.text', 'col2')
         .should('contain.text', 'col3');
       cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get(dialog).should('not.exist');
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col2').should('not.exist');
       cy.getTreeNode('admin@http://localhost:8080/db/test_col/col3').should('not.exist');
@@ -144,7 +124,7 @@ context('Fusion Studio', function () {
       cy.get(dialogTitle).should('contain.text', 'Delete collection');
       cy.get(dialogBody).should('be.visible').find('p').should('contain.text', 'Are you sure you want to delete the collection: test_col?');
       cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.be.visible');
+      cy.get(dialog).should('not.exist');
       cy.waitForLoading();
       cy.getTreeNode('admin@http://localhost:8080/db/test_col').should('not.exist');
     })

@@ -5,7 +5,7 @@ context('Fusion Studio', function() {
       cy.visit('http://localhost:3000')
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
-        .get('.theia-preload').should('not.be.visible');
+        .get('.theia-preload').should('not.exist');
     })
     it('create a new connection', function(){
       // trigger new connection dialog
@@ -69,7 +69,7 @@ context('Fusion Studio', function() {
       cy.visit('http://localhost:3000')
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
-        .get('.theia-preload').should('not.be.visible');
+        .get('.theia-preload').should('not.exist');
       cy.get(':nth-child(1) > .p-MenuBar-itemLabel')
       .click()
       .then(() => {

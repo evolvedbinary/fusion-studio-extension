@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
-import { DialogProps, AbstractDialog, DialogMode, DialogError, Message } from "@theia/core/lib/browser";
+import { DialogProps, AbstractDialog, Message } from "@theia/core/lib/browser";
 import { FSTemplate } from "../../classes/template";
-import { IDialogField, IDialogFields, createField } from "../../classes/dialog-field";
+import { IDialogFields, createField } from "../../classes/dialog-field";
 
 @injectable()
 export class FSNewFromTemplateDialogProps extends DialogProps {

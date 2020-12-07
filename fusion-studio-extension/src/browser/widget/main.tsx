@@ -158,6 +158,7 @@ export class FSViewWidget extends TreeWidget {
         >{errorMessage}</div>
         <input
           ref={input}
+          type="text"
           className="theia-input"
           value={value}
           onChange={e => setValue(e.target.value)}
