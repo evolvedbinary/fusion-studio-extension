@@ -4,7 +4,7 @@ context('Fusion Studio', function() {
     cy.visit('http://localhost:3000')
       .get('#theia-top-panel', {timeout: 30000})
       .should('be.visible')
-      .get('.theia-preload').should('not.be.visible');
+      .get('.theia-preload').should('not.exist');
   })
 
   describe('Evaluation panel', function() {

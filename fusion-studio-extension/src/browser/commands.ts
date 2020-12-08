@@ -86,6 +86,7 @@ export const actRename: FSAction = {
   order: 'd',
   label: 'Rename',
   contextMenu: CONTEXT_MENU_EDIT,
+  keys: 'f2',
   icon: 'fa fa-i-cursor',
   execute: core => () => core.renameItem(),
   enabled: core => () => !core.isLoading,

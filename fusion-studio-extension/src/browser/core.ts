@@ -11,7 +11,7 @@ import { FSApi, API_MINIMUM_VERSION } from "../common/api";
 import URI from "@theia/core/lib/common/uri";
 import { FSDragOperation } from "./widget/drag";
 import { FSTemplate } from "../classes/template";
-import { FSConnectionDialog, FSNewFromTemplateDialog, FSPropertiesDialog } from "./dialogs";
+import { FSConnectionDialog, FSNewFromTemplateDialog, FSNewFromTemplateDialogResult, FSPropertiesDialog } from "./dialogs";
 import { FSFiles, FSFileList } from "../classes/files";
 import { isArray } from "util";
 import { lookup } from "mime-types";
@@ -26,6 +26,8 @@ import { FS_EVAL_WIDGET_FACTORY_ID, XQ_EXT } from '../classes/eval';
 import { FSLabelProviderContribution } from "./label-provider-contribution";
 import { FSDialog } from "./dialogs/basic";
 import { FSViewWidget } from "./widget";
+
+export const FS_CONNECTIONS_WIDGET_FACTORY_ID = 'fusion-view';
 
 function sortText(A: string, B: string, caseSensetive = false): number {
   let a = A;
@@ -61,6 +63,7 @@ export class FSCore {
   ) {}
 
   updating = false;
+  renaming = '';
 
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
@@ -249,7 +252,7 @@ export class FSCore {
   }
 
   public get isNew(): boolean {
-    return FSNode.isDocument(this.node) && this.node.isNew;
+    return FSNode.isDocument(this.node) && !!this.node.isNew;
   }
 
   public get isItem(): boolean {
@@ -993,6 +996,87 @@ export class FSCore {
     }
   }
 
+  public async acceptName(node: FSNode, name: string): Promise<boolean> {
+    return FSNode.isItem(node) && node.isNew
+      ? this.tryCreate(node, name)
+      : this.tryRename(node, name);
+  }
+
+  public async cancelName(node: FSNode): Promise<void> {
+    if (FSNode.isItem(node) && node.isNew) {
+      this.updating = true;
+      this.removeNode(node);
+      this.updating = false;
+    }
+    this.setRename();
+  }
+
+  public validateName(node: FSItemNode, newName: string, failsOnSameName = false): string {
+    newName = newName.trim();
+    if (!node) {
+      return 'No node to rename';
+    }
+    if (newName === '') {
+      return 'Empty name';
+    }
+    // TODO: valid name
+    const collection = node.parent as FSCollectionNode;
+    if (newName === node.nodeName) {
+      if (failsOnSameName) {
+        return 'Same name';
+      } else {
+        return '';
+      }
+    }
+    if (this.fileExists(newName, collection)) {
+      return 'Item already exists';
+    }
+    return '';
+  }
+
+  public async tryCreate(node: FSNode, name: string): Promise<boolean> {
+    if (FSNode.isItem(node)) {
+      try {
+        if (FSNode.isDocument(node)) {
+          // const result = await this.rename(node, name);
+          // this.setRename();
+          // return result;
+        } else if (FSNode.isCollection(node)) {
+          const parent = (node.parent as FSCollectionNode);
+          const uri = parent.uri + TRAILING_SYMBOL + name;
+          const collection = await FSApi.newCollection(node.connectionNode.connection, uri);
+          this.removeNode(node);
+          this.addCollection(parent, collection);
+          this.setRename();
+          node.isNew = false;
+          return true;
+        }
+      } catch(e) {
+        this.removeNode(node);
+        this.setRename();
+      }
+      return false;
+    } else {
+      this.removeNode(node);
+      this.setRename();
+      throw createError(FSError.unknown);
+    }
+  }
+
+  public async tryRename(node: FSNode, name: string): Promise<boolean> {
+    if (node.nodeName === name) {
+      this.setRename();
+      return false;
+    }
+    if (FSNode.isItem(node)) {
+      const result = await this.rename(node, name);
+      this.setRename();
+      return result;
+    } else {
+      throw createError(FSError.unknown);
+    }
+  }
+
   public async openDocumentByURI(uri: string, connection: FSServerConnection): Promise<any> {
     const uriObj = new URI(FS_RESOURCE_SCHEME + ':' + this.connectionID(connection) + uri);
     const evalWidget = await this.widgetManager.getWidget(FS_EVAL_WIDGET_FACTORY_ID);
@@ -1252,32 +1336,68 @@ export class FSCore {
     }
   }
 
-  public async newItem(isCollection?: boolean): Promise<boolean> {
+  public async newItem(isCollection?: boolean, content = '', extension = ''): Promise<boolean> {
     if (!this.node) {
       return false;
     }
     const collection = this.node as FSCollectionNode;
     const validator = (input: string) => input !== '' && !this.fileExists(input);
-    const dialog = new SingleTextInputDialog({
-      initialValue: this.newName(validator),
-      title: 'New ' + (isCollection ? 'collection' : 'document'),
-      confirmButtonLabel: 'Create',
-      validate: validator,
-    });
-    let name = await dialog.open();
-    if (name) {
-      this.nextName(name);
-      name = collection.uri + '/' + name;
-      if (isCollection) {
-        const result = await FSApi.newCollection(collection.connectionNode.connection, name);
-        if (result) {
-          this.addCollection(collection, result);
+    let initialName = this.newName(validator);
+    if (extension) {
+      initialName += '.' + extension;
+    }
+    const name = collection.uri + TRAILING_SYMBOL + initialName;
+    this.nextName(initialName);
+    let item: FSItemNode;
+    if (isCollection) {
+      item = await this.addCollection(collection, {
+        name,
+        owner : 'admin',
+        group : 'dba',
+        acl : [ ],
+        documents : [ ],
+        created : new Date(),
+        collections : [ ]
+      });
+    } else {
+      item = this.addDocument(collection, {
+        content,
+        name,
+        created: new Date(),
+        lastModified: new Date(),
+        binaryDoc: false,
+        acl: [],
+        size: 0,
+        mediaType: lookup(name) || 'text/plain',
+        group: 'dba',
+        owner: collection.connectionNode.connection.username,
+      }, true);
+    }
+    item.isNew = true;
+    this.setRename(item);
+    if (FSNode.isDocument(item)) {
+      const safeAccept = this.acceptName;
+      this.acceptName = async (n, name) => {
+        await this.setRename(false);
+        await this.removeNode(item);
+        const documentNode = this.addDocument(collection, { ...(item as FSDocumentNode).document, name }, true);
+        const doc = await this.openDocument(documentNode);
+        this.acceptName = safeAccept;
+        if (content !== '') {
+          doc.editor.document.setDirty(true);
+          doc.editor.document.contentChanges.push({
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 0 }
+            },
+            rangeLength: 0,
+            content,
+          });
         }
-      } else {
-        this.createDocument(collection, name);
+        return !!doc;
       }
     }
-    return false;
+    return true;
   }
 
   public async uploadItem(): Promise<boolean> {
@@ -1336,39 +1456,50 @@ export class FSCore {
     if (!this.node) {
       return false;
     }
-    const collection = this.node as FSCollectionNode;
+    // const collection = this.node as FSCollectionNode;
     const validator = (filename: string) => filename !== '' && !this.fileExists(filename);
-    const dialog = new FSNewFromTemplateDialog({
-      title: 'New ' + template.name,
-      initialValue: this.newName(validator, template.ext({})),
-      template,
-      validate: validator,
-    });
-    let result = await dialog.open();
-    if (result) {
-      this.nextName(result.params.name);
-      const name = collection.uri + '/' + result.params.name;
-      const text = template.execute(result.params);
-      await this.createDocument(collection, name, text);
+    // const initialName = this.newName(validator, template.ext({}));
+    let result: FSNewFromTemplateDialogResult | undefined;
+    if (template.fields) {
+      const dialog = new FSNewFromTemplateDialog({
+        title: 'New ' + template.name,
+        template,
+        validate: validator,
+      });
+      result = await dialog.open();
+      if (!result) {
+        return false;
+      }
     }
+    // this.nextName(initialName);
+    // const name = collection.uri + '/' + initialName;
+    const text = template.execute(result?.params);
+    await this.newItem(false, text, template.ext(result?.params));
     return false;
+  }
+
+  public isRenaming(node?: FSNode) {
+    return node ? node.id === this.renaming : this.renaming !== '';
+  }
+
+  public async setRename(node?: FSNode | false, focus = true) {
+    this.updating = true;
+    this.renaming = node ? node.id : '';
+    if (focus == true || node !== false) {
+      const serversWidget = await this.widgetManager.getWidget(FS_CONNECTIONS_WIDGET_FACTORY_ID);
+      if (serversWidget) {
+        // serversWidget.activate();
+      }
+    }
+    this.updating = false;
+    await this.refresh();
   }
 
   public async renameItem(): Promise<void> {
     if (FSNode.isItem(this.node)) {      
-      const isCollection = FSNode.isCollection(this.node);
-      const collection = this.node.parent as FSCollectionNode;
-      const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
-      const dialog = new SingleTextInputDialog({
-        initialValue: this.node.nodeName,
-        title: 'Rename ' + (isCollection ? 'collection' : 'document'),
-        confirmButtonLabel: 'Rename',
-        validate: validator,
-      });
-      let name = await dialog.open();
-      if (name && name != this.node.nodeName) {
-        this.rename(this.node, name);
-      }
+      // const collection = this.node.parent as FSCollectionNode;
+      // const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
+      this.setRename(this.node);
     }
   }
 

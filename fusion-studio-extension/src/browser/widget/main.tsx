@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, TreeDecoration, TREE_NODE_SEGMENT_CLASS, TREE_NODE_SEGMENT_GROW_CLASS } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
-import { FSNode } from '../../classes/node';
+import { FSItemNode, FSNode } from '../../classes/node';
 import { FSCore } from '../core';
 import { FSHome } from './home';
 import { FSToolbar } from './toolbar';
 import { DragController } from './drag';
 import { FSTreeModel } from '../../classes/tree';
-import { notEmpty } from '@theia/core';
 
 export type FSViewWidgetFactory = () => FSViewWidget;
 export const FSViewWidgetFactory = Symbol('FSViewWidgetFactory');
@@ -98,46 +97,90 @@ export class FSViewWidget extends TreeWidget {
     return decorations;
   }
 
-  protected superRenderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
-    console.log('rendering node...');
-    console.log('getting decorations...');
-    const tooltip = this.getDecorationData(node, 'tooltip').filter(notEmpty).join(' • ');
-    const classes = [TREE_NODE_SEGMENT_CLASS];
-    console.log('checking suffixes...');
-    if (!this.hasTrailingSuffixes(node)) {
-      classes.push(TREE_NODE_SEGMENT_GROW_CLASS);
+  InputBox(props: {
+    value: string,
+    validate?: (value: string) => string,
+    onAccept: (value: string) => void,
+    onCancel: () => void,
+  }) {
+    const [value, setValue] = React.useState(props.value);
+    const input = React.useRef() as React.MutableRefObject<HTMLInputElement>;
+    const errorEl = React.useRef() as React.MutableRefObject<HTMLDivElement>;
+    const [errorMessage, _setErrorMessage] = React.useState('');
+    const updateErrorElPosition = () => {
+      if (errorEl.current) {
+        const root = document.querySelector('#fusion-view > div.theia-TreeContainer > div');
+        if (root) {
+          const rootPos = root.getBoundingClientRect();
+          const inputPos = input.current.getBoundingClientRect();
+          errorEl.current.style.left = (inputPos.left - rootPos.left) + 'px';
+          errorEl.current.style.top = (inputPos.top - rootPos.top + inputPos.height) + 'px';
+        }
+      }
     }
-    const className = classes.join(' ');
-    console.log('caption...');
-    let attrs = this.decorateCaption(node, {
-      className, id: node.id
-    });
-    if (tooltip.length > 0) {
-      attrs = {
-        ...attrs,
-        title: tooltip
-      };
+    const setErrorMessage = (message: string) => {
+      _setErrorMessage(message);
+      updateErrorElPosition();
     }
-    const children: React.ReactNode[] = [];
-    console.log('nodename...');
-    const caption = this.toNodeName(node);
-    console.log('deco data...');
-    const highlight = this.getDecorationData(node, 'highlight')[0];
-    if (highlight) {
-      console.log('to react node...');
-      children.push(this.toReactNode(caption, highlight));
+    const eventListener = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        const newValue = (e.target as HTMLInputElement).value;
+        e.stopPropagation();
+        if (props.validate) {
+          const message = props.validate(newValue);
+          if (message) {
+            setErrorMessage(message);
+            return;
+          }
+        }
+        props.onAccept(newValue);
+      } else if (e.key === 'Escape') {
+        e.stopPropagation();
+        props.onCancel();
+      } else if (e.key === 'ArrowUp'
+        || e.key === 'ArrowDown'
+        || e.key === 'ArrowLeft'
+        || e.key === 'ArrowRight') {
+        e.stopPropagation();
+      }
+    };
+    React.useEffect(() => {
+      input.current.addEventListener('keydown', eventListener);
+      input.current.focus();
+      input.current.selectionStart = 0;
+      input.current.selectionEnd = value.lastIndexOf('.');
+    }, []);
+    return <div className={TREE_NODE_SEGMENT_CLASS + ' ' + TREE_NODE_SEGMENT_GROW_CLASS}>
+      <div className="fs-inline-input">&nbsp;
+        <div
+          className={errorMessage === '' ? 'hidden' : 'error'}
+          ref={errorEl}
+        >{errorMessage}</div>
+        <input
+          ref={input}
+          type="text"
+          className="theia-input"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onClick={e => e.stopPropagation()}
+          onContextMenu={e => e.stopPropagation()}
+          onDoubleClick={e => e.stopPropagation()}
+          onBlur={e => props.onCancel()}
+        />
+      </div>
+    </div>;
+  }
+
+  protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
+    if (FSNode.is(node) && this.core.isRenaming(node)) {
+      return <this.InputBox
+        value={node.nodeName}
+        onAccept={newName => this.core.acceptName(node, newName)}
+        onCancel={() => this.core.cancelName(node)}
+        validate={value => this.core.validateName(node as FSItemNode, value)}
+      />;
     }
-    console.log('search...');
-    const searchHighlight = this.searchHighlights ? this.searchHighlights.get(node.id) : undefined;
-    if (searchHighlight) {
-      console.log('to react node...');
-      children.push(...this.toReactNode(caption, searchHighlight));
-    } else if (!highlight) {
-      console.log('no search...');
-      children.push(caption);
-    }
-    console.log('create...');
-    return React.createElement('div', attrs, ...children);
+    return super.renderCaption(node, props);
   }
 
   protected renderIcon(node: TreeNode, props: NodeProps): React.ReactNode {
@@ -149,7 +192,16 @@ export class FSViewWidget extends TreeWidget {
   }
 
   protected createNodeClassNames(node: TreeNode, props: NodeProps): string[] {
-    return [...super.createNodeClassNames(node, props), 'fusion-item'];
+    const classes = [...super.createNodeClassNames(node, props), 'fusion-item'];
+    if (FSNode.is(node)) {
+      if (this.core.isRenaming() && !this.core.isRenaming(node)) {
+        classes.push('fs-shadowed');
+      }
+      if (FSNode.isDocument(node) && node.isNew) {
+        classes.push('fusion-item-new');
+      }
+    }
+    return classes;
   }
 
   protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
@@ -159,7 +211,7 @@ export class FSViewWidget extends TreeWidget {
         return this.isEmpty(this.model) ? <FSHome core={this.core} /> : <FSToolbar core={this.core} />;
       } else {
         //return <FSItem tooltip={tooltip} core={this.core} node={node} />;
-        return super.renderNode.apply(this, [node, props]);
+        return super.renderNode.apply(this, [node, { ...props,  }]);
       }
     }
     console.error('unknown node:', node);

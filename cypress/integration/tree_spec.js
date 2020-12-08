@@ -5,7 +5,7 @@ context('Fusion Studio', function() {
       cy.visit('http://localhost:3000')
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
-        .get('.theia-preload').should('not.be.visible');
+        .get('.theia-preload').should('not.exist');
     })
     it('create a new connection', function(){
       // trigger new connection dialog
@@ -69,7 +69,7 @@ context('Fusion Studio', function() {
       cy.visit('http://localhost:3000')
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
-        .get('.theia-preload').should('not.be.visible');
+        .get('.theia-preload').should('not.exist');
       cy.get(':nth-child(1) > .p-MenuBar-itemLabel')
       .click()
       .then(() => {
@@ -120,7 +120,7 @@ context('Fusion Studio', function() {
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogTitle').should('contain.text', 'Edit User: ' + userName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogContent .pb-body').should('be.visible').find('span + input.theia-input[type=text]').should('have.value', userName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl .theia-button.secondary').should('be.visible').click();
-        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.be.visible');
+        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.exist');
       });
     })
     it('open group information', function() {
@@ -134,7 +134,7 @@ context('Fusion Studio', function() {
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogTitle').should('contain.text', 'Edit Group: ' + groupName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogContent .pb-body').should('be.visible').find('span + input.theia-input[type=text]').should('have.value', groupName);
         cy.get('.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogControl .theia-button.secondary').should('be.visible').click();
-        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.be.visible');
+        cy.get('.p-Widget.dialogOverlay#theia-dialog-shell').should('not.exist');
       });
     })
   })

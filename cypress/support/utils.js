@@ -56,20 +56,17 @@ Cypress.Commands.add('addConnection', (name = 'localhost', server = 'http://loca
 Cypress.Commands.add('addCollection', (id, name) => {
   cy.waitForLoading();
   cy.getTreeNode(id).rightclick()
-  cy.getMenuCommand('fusion.new-collection').should('be.visible').click()
-  cy.get(dialogTitle).should('contain.text', 'New collection');
-  cy.get(dialogBody).should('be.visible').find('input.theia-input[type=text]').should('contain.value', 'untitled').type(name);
-  cy.get(dialogMainButton).should('be.visible').click();
-  cy.get(dialog).should('not.be.visible');
+  cy.getMenuCommand('fusion.new-collection').should('be.visible').click();
+  cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'untitled').type(name + '{enter}').should('not.exist');
+  cy.waitForLoading();
   cy.getTreeNode(id + '/' + name).should('be.visible');
 });
 Cypress.Commands.add('addDocument', (collection, name, type = '') => {
   cy.waitForLoading();
   const command = 'fusion.new-document' + (type ? '-template:' + type : '');
   cy.getTreeNode(collection).rightclick()
-  cy.getSubMenu('New document...').trigger('mousemove').getMenuCommand(command).should('be.visible').click()
-  cy.get(dialogBody).find('input.theia-input[type=text]').clear().type(name);
-  cy.get(dialogMainButton).click();
+  cy.getSubMenu('New document...').trigger('mousemove').getMenuCommand(command).should('be.visible').click();
+  cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'untitled').clear().type(name + '{enter}');
   if (type === '') {
     cy.get('.p-Widget.p-TabBar li[title=' + CSS.escape(collection + '/' + name) + ']').click();
     cy.get('[role=presentation].editor-scrollable').click().type('Sample text file content');
