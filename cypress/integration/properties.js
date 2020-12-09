@@ -1,4 +1,5 @@
 /// <reference types="Cypress" />
+import { mkApiPathUrl, fsUrl } from '../support/config.js';
 import '@4tw/cypress-drag-drop'
 import { dialogTitle, dialogBody, dialogMainButton, dialogSecondaryButton, dialog } from '../support/utils';
 context('Properties dialog', function () {
@@ -9,28 +10,28 @@ context('Properties dialog', function () {
   });
   after(function () {
     cy.waitForLoading();
-    cy.getTreeNode('admin@http://localhost:8080/db/new_test_col').rightclick();
+    cy.getTreeNode(mkApiPathUrl('admin', '/db/new_test_col')).rightclick();
     cy.getMenuCommand('fusion.delete').click()
     cy.get(dialogMainButton).click();
   });
   before(function () {
-    cy.visit('http://localhost:3000')
+    cy.visit(fsUrl)
       .get('#theia-top-panel', { timeout: 30000 })
       .should('be.visible')
       .get('.theia-preload').should('not.exist');
     cy.addConnection();
     cy.waitForLoading();
-    cy.getTreeNode('admin@http://localhost:8080/db').click();
-    cy.addCollection('admin@http://localhost:8080/db', 'test_col');
+    cy.getTreeNode(mkApiPathUrl('admin', '/db')).click();
+    cy.addCollection(mkApiPathUrl('admin', '/db'), 'test_col');
     cy.waitForLoading();
-    cy.getTreeNode('admin@http://localhost:8080/db/test_col').click();
-    cy.addDocument('admin@http://localhost:8080/db/test_col', 'text_file.txt')
-    cy.addDocument('admin@http://localhost:8080/db/test_col', 'xml_file.xml', 'xml')
+    cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();
+    cy.addDocument(mkApiPathUrl('admin', '/db/test_col'), 'text_file.txt')
+    cy.addDocument(mkApiPathUrl('admin', '/db/test_col'), 'xml_file.xml', 'xml')
   })
   describe('Correct information', function () {
     it('Document properties', function () {
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/text_file.txt').rightclick()
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).rightclick()
         .getMenuCommand('fusion.properties').should('be.visible').click()
       cy.get(dialogTitle).should('contain.text', 'Properties');
       cy.get(dialogBody).should('be.visible').then(body => {
@@ -79,7 +80,7 @@ context('Properties dialog', function () {
       });
       cy.get(dialogSecondaryButton).should('be.visible').click();
       cy.get(dialog).should('not.exist');
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/xml_file.xml').rightclick()
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/xml_file.xml')).rightclick()
         .getMenuCommand('fusion.properties').should('be.visible').click()
       cy.get(dialogBody).should('be.visible').find('td.label').contains('Binary')
         .find('+ td.value').should('contain.text', 'No')
@@ -89,7 +90,7 @@ context('Properties dialog', function () {
     })
     it('Collection properties', function () {
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col').rightclick()
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).rightclick()
         .getMenuCommand('fusion.properties').should('be.visible').click()
       cy.get(dialogTitle).should('contain.text', 'Properties');
       cy.get(dialogBody).should('be.visible').then(body => {
@@ -128,7 +129,7 @@ context('Properties dialog', function () {
         });
         cy.get(dialogSecondaryButton).should('be.visible').click();
         cy.get(dialog).should('not.exist');
-        cy.getTreeNode('admin@http://localhost:8080/db').rightclick()
+        cy.getTreeNode(mkApiPathUrl('admin', '/db')).rightclick()
           .getMenuCommand('fusion.properties').should('be.visible').click()
         cy.get(dialogBody).should('be.visible').find('td.label').should('not.contain.text', 'Collection');
         cy.get(dialogSecondaryButton).should('be.visible').click();
@@ -139,7 +140,7 @@ context('Properties dialog', function () {
   describe('Renaming objects', function () {
     it('rename a document', function () {
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/text_file.txt').should('be.visible').rightclick();
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('be.visible').rightclick();
       cy.getMenuCommand('fusion.properties').should('be.visible').click()
       cy.get(dialogTitle).should('contain.text', 'Properties');
       cy.get(dialogBody).should('be.visible')
@@ -148,12 +149,12 @@ context('Properties dialog', function () {
       cy.get(dialogMainButton).should('be.visible').click();
       cy.get(dialog).should('not.exist');
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/text_file.txt').should('not.exist');
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col/new_name.txt').should('be.visible');
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('not.exist');
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/new_name.txt')).should('be.visible');
     })
     it('rename a collection', function () {
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col').should('be.visible').rightclick();
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('be.visible').rightclick();
       cy.getMenuCommand('fusion.properties').should('be.visible').click()
       cy.get(dialogTitle).should('contain.text', 'Properties');
       cy.get(dialogBody).should('be.visible')
@@ -162,8 +163,8 @@ context('Properties dialog', function () {
       cy.get(dialogMainButton).should('be.visible').click();
       cy.get(dialog).should('not.exist');
       cy.waitForLoading();
-      cy.getTreeNode('admin@http://localhost:8080/db/test_col').should('not.exist');
-      cy.getTreeNode('admin@http://localhost:8080/db/new_test_col').should('be.visible');
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('not.exist');
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/new_test_col')).should('be.visible');
     })
   })
 })

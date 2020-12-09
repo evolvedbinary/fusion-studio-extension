@@ -1,12 +1,13 @@
 /// <reference types="Cypress" />
+import { mkApiUrl, mkApiPathUrl, fsUrl } from '../support/config.js';
 import { dialogTitle, dialogBody, dialogMainButton, dialog } from '../support/utils';
 
 context('Fusion Studio', function () {
   describe('API minimum version', function () {
     it('should connect with newer api', function () {
-      cy.visit('http://localhost:3000', {
+      cy.visit(fsUrl, {
         onBeforeLoad(win) {
-          cy.stub(win, 'fetch').callThrough().withArgs('http://localhost:8080/exist/restxq/fusiondb/version').as('version api').resolves({
+          cy.stub(win, 'fetch').callThrough().withArgs(mkApiUrl('/version')).as('version api').resolves({
             status: 200,
             ok: true,
             json: () => ({
@@ -24,12 +25,12 @@ context('Fusion Studio', function () {
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
       cy.addConnection();
-      cy.getTreeNode('admin@http://localhost:8080/db').should('exist');
+      cy.getTreeNode(mkApiPathUrl('admin', '/db')).should('exist');
     })
     it('shouldn\'t connect with older api', function () {
-      cy.visit('http://localhost:3000', {
+      cy.visit(fsUrl, {
         onBeforeLoad(win) {
-          cy.stub(win, 'fetch').callThrough().withArgs('http://localhost:8080/exist/restxq/fusiondb/version').as('version api').resolves({
+          cy.stub(win, 'fetch').callThrough().withArgs(mkApiUrl('/version')).as('version api').resolves({
             status: 200,
             ok: true,
             json: () => ({

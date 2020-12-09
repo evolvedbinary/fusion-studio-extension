@@ -1,8 +1,9 @@
 /// <reference types="Cypress" />
+import { apiScheme, apiHost, apiPort, mkApiPathUrl, fsUrl } from '../support/config.js';
 context('Fusion Studio', function() {
   describe('Connections', function() {
     beforeEach('IDE', function(){
-      cy.visit('http://localhost:3000')
+      cy.visit(fsUrl)
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
@@ -18,8 +19,8 @@ context('Fusion Studio', function() {
             .click()
         })
       // set connection credentials
-      cy.get('div.name-field > input').clear().type('localhost')
-      cy.get('div.server-field > input').clear().type('http://localhost:8080')
+      cy.get('div.name-field > input').clear().type(apiHost)
+      cy.get('div.server-field > input').clear().type(apiScheme + '://' + apiHost + ':' + apiPort)
       cy.get('div.username-field > input').clear().type('admin')
       cy.get('div.password-field > input').clear()
       // open connection
@@ -27,7 +28,7 @@ context('Fusion Studio', function() {
       // see it in action
       cy.get('.ReactVirtualized__Grid')
         .should('be.visible')
-        .should('contain', 'localhost')
+        .should('contain', apiHost)
       cy.get('.fusion-item')
         .click()
         .then(() => {
@@ -53,7 +54,7 @@ context('Fusion Studio', function() {
       // see it in action
       cy.get('.ReactVirtualized__Grid')
         .should('be.visible')
-        .should('contain', 'localhost')
+        .should('contain', apiHost)
       cy.get('.fusion-item')
         .click()
         .then(() => {
@@ -66,7 +67,7 @@ context('Fusion Studio', function() {
 
   describe('Security', function() {
     before('Connect', function () {
-      cy.visit('http://localhost:3000')
+      cy.visit(fsUrl)
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
@@ -79,8 +80,8 @@ context('Fusion Studio', function() {
         .click()
       })
       // set connection credentials
-      cy.get('div.name-field > input').clear().type('localhost')
-      cy.get('div.server-field > input').clear().type('http://localhost:8080')
+      cy.get('div.name-field > input').clear().type(apiHost)
+      cy.get('div.server-field > input').clear().type(apiScheme + '://' + apiHost + ':' + apiPort)
       cy.get('div.username-field > input').clear().type('admin')
       cy.get('div.password-field > input').clear()
       // open connection
@@ -88,7 +89,7 @@ context('Fusion Studio', function() {
       // see it in action
       cy.get('.ReactVirtualized__Grid')
       .should('be.visible')
-      .should('contain', 'localhost')
+      .should('contain', apiHost)
       cy.get('.fusion-item')
       .click()
       .then(() => {
