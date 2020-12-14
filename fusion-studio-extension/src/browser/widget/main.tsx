@@ -172,15 +172,19 @@ export class FSViewWidget extends TreeWidget {
   }
 
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
-    if (FSNode.is(node) && this.core.isRenaming(node)) {
-      return <this.InputBox
-        value={node.nodeName}
-        onAccept={newName => this.core.acceptName(node, newName)}
-        onCancel={() => this.core.cancelName(node)}
-        validate={value => this.core.validateName(node as FSItemNode, value)}
-      />;
+    if (FSNode.is(node)) {
+      if (this.core.isRenaming(node)) {
+        return <this.InputBox
+          value={node.nodeName}
+          onAccept={newName => this.core.acceptName(node, newName)}
+          onCancel={() => this.core.cancelName(node)}
+          validate={value => this.core.validateName(node as FSItemNode, value)}
+        />;
+      }
+      const div = super.renderCaption(node, props) as React.ReactElement;
+      return React.createElement('div', { ...(div?.props || {}), 'node-id': node.nodeId }, ...(div?.props?.children || {}));
     }
-    return super.renderCaption(node, props);
+    return super.renderCaption(node, props) as React.ReactElement;
   }
 
   protected renderIcon(node: TreeNode, props: NodeProps): React.ReactNode {

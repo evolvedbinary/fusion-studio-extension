@@ -20,9 +20,9 @@
     "mime-types": "2.1.27",
     "moment": "2.29.1",
     "ripemd160": "2.0.2",
-    "typescript": "4.0.3"
+    "typescript": "4.0.3",
+    "uuid": "^8.3.2"
   },
-
   "devDependencies": {
     "@types/awesomplete": "1.1.10",
     "@types/filesize": "5.0.0",

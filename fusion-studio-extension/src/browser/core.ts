@@ -1,4 +1,5 @@
 import { injectable, inject } from "inversify";
+import { v4 } from "uuid";
 import { FSNode, FSDocumentNode, FSCollectionNode, FSToolbarNode, FSConnectionNode, FSItemNode, FSSecurityNode, FSUsersNode, FSGroupsNode, FSUserNode, FSGroupNode, FSContainerNode, FSIndexesNode, FSIndexNode, FSRestNode, FSRestURINode, FSRestMethodNode } from "../classes/node";
 import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment, WidgetManager } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
@@ -64,6 +65,7 @@ export class FSCore {
 
   updating = false;
   renaming = '';
+  dict: Record<string, FSNode> = {};
 
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
@@ -159,7 +161,10 @@ export class FSCore {
   }
 
   protected async addNode(child: FSNode, parent: CompositeTreeNode): Promise<FSNode> {
-    CompositeTreeNode.addChild(parent as CompositeTreeNode, child);
+    if (this.dict[child.nodeId]) {
+      throw 'node already exists';
+    }
+    CompositeTreeNode.addChild(parent, child);
     if (FSNode.isCollection(parent)) {
       await this.sort(parent, this.sortItems);
     } else {
@@ -170,13 +175,15 @@ export class FSCore {
     if (child.id !== 'fusion-toolbar') {
       this.addNodesToUpdate(child);
     }
-    return this.getNode(child.id) as FSNode;
+    this.dict[child.nodeId] = this.getNode(child.id) as FSNode;
+    return this.dict[child.nodeId];
   }
 
   protected addToolbar(parent: CompositeTreeNode): void {
     this.addNode({
       type: 'toolbar',
-      id: 'fusion-toolbar',
+      id: v4(),
+      nodeId: 'fusion-toolbar',
       uri: 'toolbar',
       nodeName: 'toolbar',
       parent: parent,
@@ -187,6 +194,7 @@ export class FSCore {
 
   protected removeNode(child: FSNode) {
     const parent = FSNode.isCollection(child.parent) ? child.parent : undefined;
+    delete(this.dict[child.nodeId]);
     this.model && this.model.removeNode(child);
     return this.updating ? Promise.resolve(undefined) : this.refresh(parent);
   }
@@ -242,6 +250,7 @@ export class FSCore {
   }
 
   public getNode(id: string): FSNode | undefined {
+    // return this.dict[id] || (this.model ? this.model.getNode(id) as FSNode : undefined);
     return this.model ? this.model.getNode(id) as FSNode : undefined;
   }
 
@@ -457,7 +466,8 @@ export class FSCore {
       type: 'connection',
       children: [],
       expanded,
-      id: this.connectionID(connection),
+      id: v4(),
+      nodeId: this.connectionID(connection),
       connectionNode: (parent as FSContainerNode).connectionNode,
       connection,
       parent: parent as any,
@@ -524,7 +534,8 @@ export class FSCore {
       type: 'item',
       connectionNode: parent.connectionNode,
       isCollection: false,
-      id: this.itemID(parent.connectionNode.connection, document),
+      id: v4(),
+      nodeId: this.itemID(parent.connectionNode.connection, document),
       parent: parent,
       nodeName: name,
       link: FS_RESOURCE_SCHEME + ':' + document.name,
@@ -548,7 +559,8 @@ export class FSCore {
       isCollection: true,
       children: [],
       nodeName: name,
-      id: this.itemID(parent.connectionNode.connection, collection),
+      id: v4(),
+      nodeId: this.itemID(parent.connectionNode.connection, collection),
       link: FS_RESOURCE_SCHEME + ':' + collection.name,
       parent: parent as CompositeTreeNode,
       selected: false,
@@ -563,7 +575,8 @@ export class FSCore {
     const node: FSUserNode = {
       type: 'user',
       connectionNode: parent.connectionNode,
-      id: this.userID(parent.connectionNode.connection, user),
+      id: v4(),
+      nodeId: this.userID(parent.connectionNode.connection, user),
       description: user,
       nodeName: user,
       user,
@@ -594,7 +607,8 @@ export class FSCore {
       type: 'users',
       connectionNode: parent.connectionNode,
       children: [],
-      id: this.userID(parent.connectionNode.connection),
+      id: v4(),
+      nodeId: this.userID(parent.connectionNode.connection),
       description: 'Users',
       parent,
       nodeName: 'Users',
@@ -611,7 +625,8 @@ export class FSCore {
     const node: FSGroupNode = {
       type: 'group',
       connectionNode: parent.connectionNode,
-      id: this.groupID(parent.connectionNode.connection, group),
+      id: v4(),
+      nodeId: this.groupID(parent.connectionNode.connection, group),
       group,
       nodeName: group,
       description: group,
@@ -642,7 +657,8 @@ export class FSCore {
       type: 'groups',
       connectionNode: parent.connectionNode,
       children: [],
-      id: this.groupID(parent.connectionNode.connection),
+      id: v4(),
+      nodeId: this.groupID(parent.connectionNode.connection),
       description: 'Groups',
       nodeName: 'Groups',
       parent,
@@ -660,7 +676,8 @@ export class FSCore {
       type: 'security',
       connectionNode,
       children: [],
-      id: this.securityID(connectionNode.connection),
+      id: v4(),
+      nodeId: this.securityID(connectionNode.connection),
       description: 'Security',
       nodeName: 'Security',
       parent,
@@ -678,7 +695,8 @@ export class FSCore {
   protected createIndexNode(parent: FSContainerNode, index: string): FSIndexNode {
     return {
       connectionNode: parent.connectionNode,
-      id: this.indexID(parent.connectionNode.connection, index),
+      id: v4(),
+      nodeId: this.indexID(parent.connectionNode.connection, index),
       parent: parent,
       index,
       nodeName: index,
@@ -719,7 +737,8 @@ export class FSCore {
     const indexesNode = await this.addNode({
       connectionNode,
       children: [],
-      id: this.indexID(connectionNode.connection),
+      id: v4(),
+      nodeId: this.indexID(connectionNode.connection),
       parent: connectionNode,
       uri: '/index',
       type: 'indexes',
@@ -736,7 +755,8 @@ export class FSCore {
     const rest = await this.addNode({
       type: 'rest',
       children: [],
-      id: this.restID(connectionNode.connection),
+      id: v4(),
+      nodeId: this.restID(connectionNode.connection),
       uri: 'rest',
       nodeName: 'RestXQ',
       parent: connectionNode,
@@ -749,7 +769,8 @@ export class FSCore {
       const uriNode = await this.addNode({
         type: 'rest-uri',
         children: [],
-        id: this.restID(connectionNode.connection, uri.uri),
+        id: v4(),
+        nodeId: this.restID(connectionNode.connection, uri.uri),
         uri: 'rest',
         restURI: uri,
         parent: rest,
@@ -760,7 +781,8 @@ export class FSCore {
       } as FSRestURINode, rest) as FSRestURINode;
       uri.methods.forEach(method => this.addNode({
         type: 'rest-method',
-        id: this.restID(connectionNode.connection, uri.uri, method.name),
+        id: v4(),
+        nodeId: this.restID(connectionNode.connection, uri.uri, method.name),
         uri: 'rest',
         restMethod: method,
         parent: uriNode,
