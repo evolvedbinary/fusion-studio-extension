@@ -4,7 +4,8 @@
 
 "@4tw/cypress-drag-drop@https://github.com/ccheraa/cypress-drag-drop":
   version "1.4.0"
-  resolved "https://github.com/ccheraa/cypress-drag-drop#6a679344c1f64a1e60f899f1f162ddd74f93e399"
+  uid "67bb574dcb8780eeec53eec329efde38416584e0"
+  resolved "https://github.com/ccheraa/cypress-drag-drop#67bb574dcb8780eeec53eec329efde38416584e0"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4":
   version "7.10.4"
