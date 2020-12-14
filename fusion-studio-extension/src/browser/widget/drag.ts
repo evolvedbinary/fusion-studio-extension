@@ -70,7 +70,7 @@ export class DragController {
     }
     if (nodes.length > 0) {
       this.dragged = nodes;
-      this.draggedIDs = nodes.map(node => node.id);
+      this.draggedIDs = nodes.map(node => node.nodeId);
       event.dataTransfer.setData(DRAG_NODE, JSON.stringify(this.draggedIDs));
     } else {
       this.dragged = [];

@@ -66,11 +66,11 @@ export class FSViewWidget extends TreeWidget {
     if (event.altKey && (FSNode.isConnection(node) || FSNode.isItem(node))) {
       event.stopPropagation();
       this.core.select(node);
-      this.core.showPropertiesDialog(node.id);
+      this.core.showPropertiesDialog(node.nodeId);
     } else if (FSNode.isRestMethod(node)) {
       event.stopPropagation();
       this.core.select(node);
-      this.core.openMethodFunctionDocument(node.id);
+      this.core.openMethodFunctionDocument(node.nodeId);
     } else {
       defaultHandler && defaultHandler(event);
     }

@@ -52,7 +52,7 @@ export class FSPropertiesDialog extends AbstractDialog<FSPropertiesDialogResult>
     if (props.node) {
       const item = FSNode.isCollection(props.node) ? props.node.collection as FSCollection : (props.node as FSDocumentNode).document as FSDocument;
       const slash = item.name.lastIndexOf('/');
-      this.name = this.getName(props.node.id);
+      this.name = this.getName(props.node.nodeId);
       this.nameField.value = this.name;
       this.nameField.type = 'text';
       this.nameField.className = 'theia-input';

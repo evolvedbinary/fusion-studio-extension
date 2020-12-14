@@ -109,14 +109,14 @@ export class FSCore {
   }
 
   protected connectionAdded(connectionNode: FSConnectionNode) {
-    this.connectionsChange.fire({ id: connectionNode.id, action: 'add' })
-    this.connections[connectionNode.id] = connectionNode.connection;
+    this.connectionsChange.fire({ id: connectionNode.nodeId, action: 'add' })
+    this.connections[connectionNode.nodeId] = connectionNode.connection;
     this.saveState();
   }
 
   protected connectionDeleted(connectionNode: FSConnectionNode) {
-    this.connectionsChange.fire({ id: connectionNode.id, action: 'delete' })
-    delete(this.connections[connectionNode.id]);
+    this.connectionsChange.fire({ id: connectionNode.nodeId, action: 'delete' })
+    delete(this.connections[connectionNode.nodeId]);
     this.saveState();
   }
 
@@ -172,7 +172,7 @@ export class FSCore {
         await this.model.refresh();
       }
     }
-    if (child.id !== 'fusion-toolbar') {
+    if (child.nodeId !== 'fusion-toolbar') {
       this.addNodesToUpdate(child);
     }
     this.dict[child.nodeId] = this.getNode(child.id) as FSNode;
@@ -250,8 +250,8 @@ export class FSCore {
   }
 
   public getNode(id: string): FSNode | undefined {
-    // return this.dict[id] || (this.model ? this.model.getNode(id) as FSNode : undefined);
-    return this.model ? this.model.getNode(id) as FSNode : undefined;
+    return this.dict[id] || (this.model ? this.model.getNode(id) as FSNode : undefined);
+    // return this.model ? this.model.getNode(id) as FSNode : undefined;
   }
 
   // Fusion nodes detection
@@ -804,7 +804,7 @@ export class FSCore {
         this.statusEntry.arguments = [];
       } else {
         const node = nodes[0];
-        this.statusEntry.arguments = [node.id];
+        this.statusEntry.arguments = [node.nodeId];
         if (FSNode.isConnection(node)) {
           this.statusEntry.text = `$(toggle-on) "${node.connectionNode.connection.name}" by "${node.connectionNode.connection.username}" to ${node.connectionNode.connection.server}`;
         } else if (FSNode.isCollection(node)) {
@@ -945,7 +945,7 @@ export class FSCore {
   protected fileExists(name: string, node?: FSCollectionNode): boolean {
     node = (node && FSNode.isCollection(node)) ? node : ((this.node && FSNode.isCollection(this.node)) ? this.node : undefined);
     if (node) {
-      return !!node.children.find(file => FSNode.isDocument(file) && file.nodeName === name);
+      return !!node.children.find(file => FSNode.isItem(file) && file.nodeName === name);
     }
     return false;
   }
@@ -956,6 +956,24 @@ export class FSCore {
   
   public generateID(connection: FSServerConnection, text: string, prefix?: string): string {
     return this.connectionID(connection) + (prefix ? prefix + '/' : '') + text;
+  }
+  
+  public ID(node: FSNode): string {
+    if (FSNode.isItem(node)) {
+      return this.itemID(node.connectionNode.connection, FSNode.isCollection(node) ? node.collection : (node as FSDocumentNode).document);
+    }
+    if (FSNode.isConnection(node)) {
+      return this.connectionID(node.connection);
+    }
+    if (FSNode.isSecurity(node)
+    || FSNode.isUser(node)
+    || FSNode.isGroup(node)
+    || FSNode.isIndex(node)
+    || FSNode.isRest(node)) {
+      return this.securityID(node.connectionNode.connection);
+    }
+    console.dir(node);
+    throw 'unknown node type';
   }
   
   public connectionID(connection: FSServerConnection): string {
@@ -1067,8 +1085,7 @@ export class FSCore {
           const parent = (node.parent as FSCollectionNode);
           const uri = parent.uri + TRAILING_SYMBOL + name;
           const collection = await FSApi.newCollection(node.connectionNode.connection, uri);
-          this.removeNode(node);
-          this.addCollection(parent, collection);
+          this.updateNode(node, collection.name);
           this.setRename();
           node.isNew = false;
           return true;
@@ -1257,9 +1274,47 @@ export class FSCore {
     return this.lastName(ext);
   }
 
+  public updateNode<T extends FSNode>(node: T, name: string): T {
+    const item = FSNode.isCollection(node) ? node.collection : FSNode.isDocument(node) ? node.document : null;
+    if (item) {
+      item.name = name;
+      node.uri = item.name;
+    } else if (FSNode.isConnection(node)) {
+      node.connection.server = name;
+      node.uri = node.connection.server;
+    } else if (FSNode.isUser(node)) {
+      node.user = name;
+      node.uri = '/users/' + name;
+    } else if (FSNode.isGroup(node)) {
+      node.group = name;
+      node.uri = '/groups/' + name;
+    } else if (FSNode.isIndex(node)) {
+      node.index = name;
+      node.uri = name;
+    }
+    node.nodeName = this.getName(name);;
+    node.nodeId = this.ID(node);
+    return node;
+  }
+
+  public sameParent(uri1: string, uri2: string): boolean {
+    const ids1 = uri1.split('/');
+    const ids2 = uri2.split('/');
+    if (ids1.length !== ids2.length) {
+      return false;
+    }
+    for (let i = 0; i < ids2.length - 1; i++) {
+      if (ids1[i] !== ids2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public async move(operation: FSDragOperation): Promise<FSItemNode[]> {
-    const id = operation.destinationContainer.id;
+    const id = operation.destinationContainer.nodeId;
     const toDelete: FSNode[] = [];
+    // const toDelete: FSNode[] = [];
     if (operation.source.length) {
       this.updating = true;
       let result = (await asyncForEach(operation.source, async (source: FSItemNode, i) => {
@@ -1272,32 +1327,36 @@ export class FSCore {
           operation.copy
         );
         if (result) {
-          let resultNode: FSItemNode;
-          if (isCollection) {
-            resultNode = await this.addCollection(operation.destinationContainer, {
-              ...(source as FSCollectionNode).collection,
-              name: operation.destination[i],
-            });
+          if (this.sameParent(source.uri, operation.destination[i])) {
+            return this.updateNode(source, operation.destination[i]);
           } else {
-            resultNode = this.addDocument(operation.destinationContainer, {
-              ...(source as FSDocumentNode).document,
-              name: operation.destination[i],
-            });
+            let resultNode: FSItemNode;
+            if (isCollection) {
+              resultNode = await this.addCollection(operation.destinationContainer, {
+                ...(source as FSCollectionNode).collection,
+                name: operation.destination[i],
+              });
+            } else {
+              resultNode = this.addDocument(operation.destinationContainer, {
+                ...(source as FSDocumentNode).document,
+                name: operation.destination[i],
+              });
+            }  
+            if (!operation.copy) {
+              toDelete.push(source);
+            }
+            return resultNode;
           }
-          if (!operation.copy) {
-            toDelete.push(source);
-          }
-          return resultNode as FSItemNode;
         }
       })).filter(node => !!node) as FSItemNode[];
       // TODO: implement softRefresh method
-      let container: FSNode | undefined;
-      container = this.getNode(id);
-      if (FSNode.isCollection(container)) {
-        this.expand(container);
+      // let container: FSNode | undefined;
+      // container = this.getNode(id);
+      if (toDelete.length > 0) {
+        this.expand(operation.destinationContainer);
         await asyncForEach(toDelete, (node: FSNode) => this.removeNode(node));
-        await this.model?.refresh(container);
       }
+      await this.model?.refresh();
       this.updating = true;
       return result;
     } else {
@@ -1501,12 +1560,12 @@ export class FSCore {
   }
 
   public isRenaming(node?: FSNode) {
-    return node ? node.id === this.renaming : this.renaming !== '';
+    return node ? node.nodeId === this.renaming : this.renaming !== '';
   }
 
   public async setRename(node?: FSNode | false, focus = true) {
     this.updating = true;
-    this.renaming = node ? node.id : '';
+    this.renaming = node ? node.nodeId : '';
     if (focus == true || node !== false) {
       const serversWidget = await this.widgetManager.getWidget(FS_CONNECTIONS_WIDGET_FACTORY_ID);
       if (serversWidget) {
@@ -1623,7 +1682,7 @@ export class FSCore {
   }
 
   public openMethodFunctionDocument(nodeId = '') {
-    const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
+    const node = !nodeId || (this.node && this.node.nodeId !== nodeId) ? this.node : this.getNode(nodeId);
     if (FSNode.isRestMethod(node)) {
       this.openDocumentByURI(node.restMethod.function.src, node.connectionNode.connection);
     }
@@ -1648,7 +1707,7 @@ Server:
   }
 
   public showPropertiesDialog(nodeId = '') {
-    const node = !nodeId || (this.node && this.node.id !== nodeId) ? this.node : this.getNode(nodeId);
+    const node = !nodeId || (this.node && this.node.nodeId !== nodeId) ? this.node : this.getNode(nodeId);
     if (node) {
       if (FSNode.isConnection(node)) {
         const dialog = new FSConnectionDialog({
@@ -1662,8 +1721,8 @@ Server:
             node.expanded = false;
             node.loading = false;
             node.loaded = false;
-            (node as any).id = this.connectionID(result.connection);
-            (node as any).name = result.connection.name;
+            node.nodeId = this.connectionID(result.connection);
+            node.nodeName = result.connection.name;
             node.connectionNode.connection = result.connection;
             node.selected = false;
             node.uri = result.connection.server;
