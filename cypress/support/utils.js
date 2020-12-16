@@ -1,7 +1,7 @@
 import { apiScheme, apiHost, apiPort } from '../support/config.js';
 
 export function treenode(id) {
-  return '[id=' + CSS.escape(id) + ']';
+  return '[node-id=' + CSS.escape(id) + ']';
 }
 export function checkbox() {
   return 'span.checkbox';
@@ -59,7 +59,8 @@ Cypress.Commands.add('addCollection', (id, name) => {
   cy.waitForLoading();
   cy.getTreeNode(id).rightclick()
   cy.getMenuCommand('fusion.new-collection').should('be.visible').click();
-  cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'untitled').type(name + '{enter}').should('not.exist');
+  cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'untitled').type(name + '{enter}');
+  cy.get('.fs-inline-input').should('not.exist');
   cy.waitForLoading();
   cy.getTreeNode(id + '/' + name).should('be.visible');
 });

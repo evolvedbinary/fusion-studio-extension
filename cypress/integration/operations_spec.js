@@ -35,7 +35,7 @@ context('Fusion Studio', function () {
     it('drag move document', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('be.visible')
-        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col1')));
+        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col1')), { hoverTime: 1000 });
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('not.exist');
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col1/text_file.txt')).should('be.visible');
@@ -43,7 +43,7 @@ context('Fusion Studio', function () {
     it('drag copy document', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col1/text_file.txt'))
-        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col2')), { ctrlKey: true });
+        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col2')), { ctrlKey: true, hoverTime: 1000 });
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col1/text_file.txt')).should('be.visible');
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/text_file.txt')).should('be.visible');
@@ -51,7 +51,7 @@ context('Fusion Studio', function () {
     it('drag copy collection', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col1')).should('be.visible')
-        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col2')), { ctrlKey: true });
+        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col2')), { ctrlKey: true, hoverTime: 1000 });
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col1')).should('be.visible');
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/col1')).should('be.visible').click();
@@ -61,7 +61,7 @@ context('Fusion Studio', function () {
     it('drag move collection', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col1')).should('be.visible')
-        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col3')));
+        .drag(treenode(mkApiPathUrl('admin', '/db/test_col/col3')), { hoverTime: 1000 });
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col3/col1')).should('be.visible');
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col1')).should('not.exist');
