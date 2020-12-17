@@ -1955,10 +1955,10 @@
     webpack-cli "2.0.12"
     worker-loader "^1.1.1"
 
-"@theia/application-package@^1.8.1":
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/@theia/application-package/-/application-package-1.8.1.tgz#83766017c3b2b27715a779bca16edcc557be234f"
-  integrity sha512-ELaBw1D3YAnomLZdTlz/F3MkAovDR1paWHpi1/0VmKn3Jas4wKZ4SGtzf4q14KiLoa9Qrg0f/WJiwYDD2JMcUQ==
+"@theia/application-package@^1.8.1", "@theia/application-package@^1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@theia/application-package/-/application-package-1.9.0.tgz#4abb831e125492f279f895775947cb2f76c0a547"
+  integrity sha512-QQGKLlFpfKFzD57LoajiTYze0x2Uk2bY4yALMgu6igz7vOKt6VDgahDKjtHT5jApM1hmZxuEIG4mQ2DT0pWa6A==
   dependencies:
     "@types/fs-extra" "^4.0.2"
     "@types/request" "^2.0.3"
@@ -2011,15 +2011,15 @@
     serialize-javascript "^1.4.0"
     webpack-sources "^1.0.1"
 
-"@theia/core@^1.8.1":
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.8.1.tgz#2c1bdba3cff21c89b0faa3702c1281fb934a0e3f"
-  integrity sha512-IDVN3NN+lMwUT+mRHZTkykK1M368mouKe2stR1xTcwlqTiTVaRkotyXBvow+8deLqOoTFVjG3T+9B5ZkkU6wHQ==
+"@theia/core@^1.8.1", "@theia/core@^1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.9.0.tgz#cd5264c7599f2d3b2f718aebca09df9e65234ced"
+  integrity sha512-spmD91IClwwwuBrvpxmAl5xzo6/S2c8L4/02JnQ+/pOdCw02QBy6ZLa9aZD3vo0N0ggUiIF2suima/JFqpdL0g==
   dependencies:
     "@babel/runtime" "^7.10.0"
     "@phosphor/widgets" "^1.9.3"
     "@primer/octicons-react" "^9.0.0"
-    "@theia/application-package" "^1.8.1"
+    "@theia/application-package" "^1.9.0"
     "@types/body-parser" "^1.16.4"
     "@types/cookie" "^0.3.3"
     "@types/express" "^4.16.0"
@@ -2039,7 +2039,7 @@
     drivelist "^9.0.2"
     es6-promise "^4.2.4"
     express "^4.16.3"
-    file-icons-js "^1.0.3"
+    file-icons-js "~1.0.3"
     font-awesome "^4.7.0"
     fs-extra "^4.0.2"
     fuzzy "^0.1.3"
@@ -2058,7 +2058,7 @@
     reflect-metadata "^0.1.10"
     route-parser "^0.0.5"
     safer-buffer "^2.1.2"
-    vscode-languageserver-protocol "^3.15.3"
+    vscode-languageserver-protocol "~3.15.3"
     vscode-languageserver-types "^3.15.1"
     vscode-uri "^2.1.1"
     vscode-ws-jsonrpc "^0.2.0"
@@ -2090,12 +2090,12 @@
     yargs "^15.3.1"
 
 "@theia/filesystem@^1.8.1":
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/@theia/filesystem/-/filesystem-1.8.1.tgz#3f8f7dbb1cddc670f73eb709315ddfd359a44e6a"
-  integrity sha512-ZONw9pK6aSqmKfSFLjkfRMGQC5JzEXvcYYs9uJnP2S9k9OoxkW3YCirZr6WXLZps9Tlp66PDgpl8F+pJBdbfRQ==
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@theia/filesystem/-/filesystem-1.9.0.tgz#929b7cd7645b0122ebbe06c1eac3f7157cb886f3"
+  integrity sha512-130ciz34LIQTqG0Cc9Hi/s2iaMCYNZ2HvZV9BxVhdPp8UXuo4rO4EAq0AhvRoBdUTvEFtZNY3++GKnM7WNBy1w==
   dependencies:
-    "@theia/application-package" "^1.8.1"
-    "@theia/core" "^1.8.1"
+    "@theia/application-package" "^1.9.0"
+    "@theia/core" "^1.9.0"
     "@types/body-parser" "^1.17.0"
     "@types/rimraf" "^2.0.2"
     "@types/tar-fs" "^1.16.1"
@@ -6557,10 +6557,10 @@ figures@^3.0.0:
   dependencies:
     escape-string-regexp "^1.0.5"
 
-file-icons-js@^1.0.3:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/file-icons-js/-/file-icons-js-1.1.0.tgz#da5e0679a58ab661abf9ec6c2a47c5f14f638ab6"
-  integrity sha512-EwR5RJoNIp5Wnzc+AF1oyBYZhOqPuPm0QHzfCaeh5KJpLB5lWIsxswiAwj3m8lIj7ddBzYBJDDnIr6IVrRCy8Q==
+file-icons-js@~1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/file-icons-js/-/file-icons-js-1.0.3.tgz#d0765dc1d86aba4b2d7664a39e4ef7af9f12c5af"
+  integrity sha512-n4zoKEpMaAxBTUB7wtgrFBa4dM3b7mBLLA1VI/Q5Cdk/k2UA8S8oaxvnECp3QOzg0Dn+KKRzfIHF7qSdRkA65Q==
 
 file-loader@^1.1.11:
   version "1.1.11"
@@ -13753,7 +13753,7 @@ vscode-jsonrpc@^5.0.0, vscode-jsonrpc@^5.0.1:
   resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-5.0.1.tgz#9bab9c330d89f43fc8c1e8702b5c36e058a01794"
   integrity sha512-JvONPptw3GAQGXlVV2utDcHx0BiY34FupW/kI6mZ5x06ER5DdPG/tXWMVHjTNULF5uKPOUUD0SaXg5QaubJL0A==
 
-vscode-languageserver-protocol@^3.15.3:
+vscode-languageserver-protocol@~3.15.3:
   version "3.15.3"
   resolved "https://registry.yarnpkg.com/vscode-languageserver-protocol/-/vscode-languageserver-protocol-3.15.3.tgz#3fa9a0702d742cf7883cb6182a6212fcd0a1d8bb"
   integrity sha512-zrMuwHOAQRhjDSnflWdJG+O2ztMWss8GqUUB8dXLR/FPenwkiBNkMIJJYfSN6sgskvsF0rHAoBowNQfbyZnnvw==
