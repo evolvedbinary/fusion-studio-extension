@@ -1,5 +1,5 @@
 /// <reference types="Cypress" />
-import { mkApiPathUrl, fsUrl } from '../support/config.js';
+import { mkApiPathUrl, fsUrl, apiHost, apiPort, apiScheme } from '../support/config.js';
 import '@4tw/cypress-drag-drop'
 import { dialogTitle, dialogBody, dialogMainButton, dialogSecondaryButton, dialog } from '../support/utils';
 context('Properties dialog', function () {
@@ -136,8 +136,43 @@ context('Properties dialog', function () {
         cy.get(dialog).should('not.exist');
       });
     })
+    it('Connection properties', function () {
+      cy.waitForLoading();
+      cy.getTreeNode(mkApiPathUrl('admin')).rightclick()
+        .getMenuCommand('fusion.properties').should('be.visible').click()
+      cy.get(dialogTitle).should('contain.text', 'Edit Connection');
+      cy.get(dialogBody).should('be.visible').then(body => {
+        cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
+          .find('+ input.theia-input[type=text]').should('have.value', apiHost);
+          cy.wrap(body).find('.vertical-form .server-field span').contains('Server URI:')
+          .find('+ input.theia-input[type=text]').should('have.value', apiScheme + '://' + apiHost +  ':' + apiPort);
+          cy.wrap(body).find('.vertical-form .username-field span').contains('Username:')
+          .find('+ input.theia-input[type=text]').should('have.value', 'admin');
+        cy.wrap(body).find('.vertical-form .password-field span').contains('Password')
+          .find('+ input.theia-input[type=password]').should('have.value', '');
+        cy.get(dialogSecondaryButton).should('be.visible').click();
+        cy.get(dialog).should('not.exist');
+      });
+    })
   })
   describe('Renaming objects', function () {
+    it('Rename a connection', function () {
+      cy.waitForLoading();
+      cy.getTreeNode(mkApiPathUrl('admin')).rightclick()
+      .getMenuCommand('fusion.properties').should('be.visible').click()
+      cy.get(dialogTitle).should('contain.text', 'Edit Connection');
+      cy.get(dialogBody).should('be.visible').then(body => {
+        cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
+        .find('+ input.theia-input[type=text]').should('have.value', apiHost).clear().type('new_name');
+        cy.get(dialogMainButton).should('be.visible').click();
+        cy.get(dialog).should('not.exist');
+      });
+      cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
+      cy.waitForLoading();
+      cy.getTreeNode(mkApiPathUrl('admin', '/db')).click();
+      cy.waitForLoading();
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();
+    })
     it('rename a document', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('be.visible').rightclick();
