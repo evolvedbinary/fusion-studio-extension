@@ -1330,7 +1330,6 @@ export class FSCore {
   }
 
   public async move(operation: FSDragOperation): Promise<FSItemNode[]> {
-    const id = operation.destinationContainer.nodeId;
     const toDelete: FSNode[] = [];
     // const toDelete: FSNode[] = [];
     if (operation.source.length) {
@@ -1736,15 +1735,16 @@ Server:
         dialog.open().then(result => {
           if (result) {
             this.empty(node);
-            node.expanded = false;
-            node.loading = false;
-            node.loaded = false;
-            node.nodeId = this.connectionID(result.connection);
-            node.nodeName = result.connection.name;
-            node.connectionNode.connection = result.connection;
-            node.selected = false;
             node.uri = result.connection.server;
-            this.expand(node);
+            node.connection = result.connection;
+            this.connectionDeleted(node);
+            const newNode = this.updateNode(node, result.connection.name);
+            this.connectionAdded(newNode);
+            newNode.expanded = false;
+            newNode.loading = false;
+            newNode.loaded = false;
+            newNode.selected = false;
+            this.expand(newNode);
           }
         });
       } else if (FSNode.isItem(node)) {

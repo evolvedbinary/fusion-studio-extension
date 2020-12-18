@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, TreeDecoration, TREE_NODE_SEGMENT_CLASS, TREE_NODE_SEGMENT_GROW_CLASS } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
-import { FSItemNode, FSNode } from '../../classes/node';
+import { FSNode } from '../../classes/node';
 import { FSCore } from '../core';
 import { FSHome } from './home';
 import { FSToolbar } from './toolbar';
