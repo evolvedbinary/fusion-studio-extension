@@ -1421,7 +1421,7 @@ export class FSCore {
     if (this.node && FSNode.isConnection(this.node)) {
       const node = this.node as FSConnectionNode;
       const msg = document.createElement('p');
-      msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connectionNode.name + '</strong>?<br/>' +
+      msg.innerHTML = 'Are you sure you want to remove the connection: <strong>' + node.connectionNode.nodeName + '</strong>?<br/>' +
       'Server URI: <strong>' + node.connectionNode.connection.server + '</strong><br/>' +
       'Username: <strong>' + node.connectionNode.connection.username + '</strong>';
       const dialog = new ConfirmDialog({
