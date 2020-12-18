@@ -193,8 +193,18 @@ export class FSCore {
   }
 
   protected removeNode(child: FSNode) {
+    const removeNodeId = (node: FSNode) => {
+      delete(this.dict[node.nodeId]);
+      if (CompositeTreeNode.is(node)) {
+        node.children.forEach(childNode => {
+          if (FSNode.is(childNode)) {
+            removeNodeId(childNode);
+          }
+        });
+      }
+    };
     const parent = FSNode.isCollection(child.parent) ? child.parent : undefined;
-    delete(this.dict[child.nodeId]);
+    removeNodeId(child);
     this.model && this.model.removeNode(child);
     return this.updating ? Promise.resolve(undefined) : this.refresh(parent);
   }
