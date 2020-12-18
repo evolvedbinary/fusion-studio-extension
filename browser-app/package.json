@@ -3,21 +3,21 @@
   "name": "browser-app",
   "version": "1.0.3",
   "dependencies": {
-    "@theia/core": "^1.8.1",
-    "@theia/filesystem": "^1.8.1",
-    "@theia/workspace": "^1.8.1",
-    "@theia/preferences": "^1.8.1",
-    "@theia/navigator": "^1.8.1",
-    "@theia/process": "^1.8.1",
-    "@theia/terminal": "^1.8.1",
-    "@theia/editor": "^1.8.1",
-    "@theia/markers": "^1.8.1",
-    "@theia/monaco": "^1.8.1",
-    "@theia/messages": "^1.8.1",
+    "@theia/core": "^1.9.0",
+    "@theia/filesystem": "^1.9.0",
+    "@theia/workspace": "^1.9.0",
+    "@theia/preferences": "^1.9.0",
+    "@theia/navigator": "^1.9.0",
+    "@theia/process": "^1.9.0",
+    "@theia/terminal": "^1.9.0",
+    "@theia/editor": "^1.9.0",
+    "@theia/markers": "^1.9.0",
+    "@theia/monaco": "^1.9.0",
+    "@theia/messages": "^1.9.0",
     "fusion-studio-extension": "file:../fusion-studio-extension"
   },
   "devDependencies": {
-    "@theia/cli": "^1.8.1"
+    "@theia/cli": "^1.9.0"
   },
   "scripts": {
     "prepare": "theia build --mode development",    
