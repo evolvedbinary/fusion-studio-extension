@@ -178,7 +178,7 @@ export class FSViewWidget extends TreeWidget {
           value={node.nodeName}
           onAccept={newName => this.core.acceptName(node, newName)}
           onCancel={() => this.core.cancelName(node)}
-          validate={value => this.core.validateName(node as FSItemNode, value)}
+          validate={value => this.core.validateName(node, value)}
         />;
       }
       const div = super.renderCaption(node, props) as React.ReactElement;

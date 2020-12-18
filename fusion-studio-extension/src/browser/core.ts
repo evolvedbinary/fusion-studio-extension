@@ -1051,7 +1051,7 @@ export class FSCore {
     this.setRename();
   }
 
-  public validateName(node: FSItemNode, newName: string, failsOnSameName = false): string {
+  public validateName(node: FSNode, newName: string, failsOnSameName = false): string {
     newName = newName.trim();
     if (!node) {
       return 'No node to rename';
@@ -1060,16 +1060,29 @@ export class FSCore {
       return 'Empty name';
     }
     // TODO: valid name
-    const collection = node.parent as FSCollectionNode;
-    if (newName === node.nodeName) {
-      if (failsOnSameName) {
-        return 'Same name';
-      } else {
-        return '';
+    if (FSNode.isItem(node)) {
+      const collection = node.parent as FSCollectionNode;
+      if (newName === node.nodeName) {
+        if (failsOnSameName) {
+          return 'Same name';
+        } else {
+          return '';
+        }
       }
-    }
-    if (this.fileExists(newName, collection)) {
-      return 'Item already exists';
+      if (this.fileExists(newName, collection)) {
+        return 'Item already exists';
+      }
+    } else if (FSNode.isConnection(node)) {
+      if (newName === node.nodeName) {
+        if (failsOnSameName) {
+          return 'Same name';
+        } else {
+          return '';
+        }
+      }
+      if (Object.keys(this.connections).find(nodeId => this.connections[nodeId].name === newName)) {
+        return 'A connection with this name already exists.';
+      }
     }
     return '';
   }
@@ -1101,7 +1114,7 @@ export class FSCore {
       throw createError(FSError.unknown);
     }
   }
-
+  
   public async tryRename(node: FSNode, name: string): Promise<boolean> {
     if (node.nodeName === name) {
       this.setRename();
@@ -1111,6 +1124,12 @@ export class FSCore {
       const result = await this.rename(node, name);
       this.setRename();
       return result;
+    } else if (FSNode.isConnection(node)) {
+      this.connectionDeleted(node);
+      const updatedNode = this.updateNode(node, name);
+      this.connectionAdded(updatedNode);
+      this.setRename();
+      return !!updatedNode;
     } else {
       throw createError(FSError.unknown);
     }
@@ -1280,8 +1299,7 @@ export class FSCore {
       item.name = name;
       node.uri = item.name;
     } else if (FSNode.isConnection(node)) {
-      node.connection.server = name;
-      node.uri = node.connection.server;
+      node.connection.name = name;
     } else if (FSNode.isUser(node)) {
       node.user = name;
       node.uri = '/users/' + name;
@@ -1577,7 +1595,7 @@ export class FSCore {
   }
 
   public async renameItem(): Promise<void> {
-    if (FSNode.isItem(this.node)) {      
+    if (FSNode.isItem(this.node) || FSNode.isConnection(this.node)) {      
       // const collection = this.node.parent as FSCollectionNode;
       // const validator = (input: string) => input === (this.node && this.node.nodeName) || input !== '' && !this.fileExists(input, collection);
       this.setRename(this.node);
