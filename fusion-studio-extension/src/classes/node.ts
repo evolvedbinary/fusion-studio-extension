@@ -10,6 +10,7 @@ export interface FSNode extends TreeNode {
   connectionNode: FSConnectionNode;
   uri: string;
   nodeName: string;
+  nodeId: string;
   loading?: boolean;
   loaded?: boolean;
 }

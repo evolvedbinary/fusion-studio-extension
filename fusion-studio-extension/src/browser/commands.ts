@@ -90,7 +90,7 @@ export const actRename: FSAction = {
   icon: 'fa fa-i-cursor',
   execute: core => () => core.renameItem(),
   enabled: core => () => !core.isLoading,
-  visible: core => () => core.isItem,
+  visible: core => () => core.isItem || core.isConnection,
 };
 export const actCut: FSAction = {
   id: 'cut',

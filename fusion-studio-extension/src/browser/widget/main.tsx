@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, CompositeTreeNode, TreeNode, NodeProps, TreeDecoration, TREE_NODE_SEGMENT_CLASS, TREE_NODE_SEGMENT_GROW_CLASS } from "@theia/core/lib/browser";
 import { inject, postConstruct } from "inversify";
-import { FSItemNode, FSNode } from '../../classes/node';
+import { FSNode } from '../../classes/node';
 import { FSCore } from '../core';
 import { FSHome } from './home';
 import { FSToolbar } from './toolbar';
@@ -66,11 +66,11 @@ export class FSViewWidget extends TreeWidget {
     if (event.altKey && (FSNode.isConnection(node) || FSNode.isItem(node))) {
       event.stopPropagation();
       this.core.select(node);
-      this.core.showPropertiesDialog(node.id);
+      this.core.showPropertiesDialog(node.nodeId);
     } else if (FSNode.isRestMethod(node)) {
       event.stopPropagation();
       this.core.select(node);
-      this.core.openMethodFunctionDocument(node.id);
+      this.core.openMethodFunctionDocument(node.nodeId);
     } else {
       defaultHandler && defaultHandler(event);
     }
@@ -172,15 +172,19 @@ export class FSViewWidget extends TreeWidget {
   }
 
   protected renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
-    if (FSNode.is(node) && this.core.isRenaming(node)) {
-      return <this.InputBox
-        value={node.nodeName}
-        onAccept={newName => this.core.acceptName(node, newName)}
-        onCancel={() => this.core.cancelName(node)}
-        validate={value => this.core.validateName(node as FSItemNode, value)}
-      />;
+    if (FSNode.is(node)) {
+      if (this.core.isRenaming(node)) {
+        return <this.InputBox
+          value={node.nodeName}
+          onAccept={newName => this.core.acceptName(node, newName)}
+          onCancel={() => this.core.cancelName(node)}
+          validate={value => this.core.validateName(node, value)}
+        />;
+      }
+      const div = super.renderCaption(node, props) as React.ReactElement;
+      return React.createElement('div', { ...(div?.props || {}), 'node-id': node.nodeId }, ...(div?.props?.children || {}));
     }
-    return super.renderCaption(node, props);
+    return super.renderCaption(node, props) as React.ReactElement;
   }
 
   protected renderIcon(node: TreeNode, props: NodeProps): React.ReactNode {

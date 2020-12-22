@@ -6,7 +6,7 @@ export const apiUrl = apiScheme + "://" + apiHost +  ":" + apiPort + "/exist/res
 export function mkApiUrl(apiService) {
   return apiUrl + apiService;
 };
-export function mkApiPathUrl(username, dbPath) {
+export function mkApiPathUrl(username, dbPath = '') {
   return username + '@' + apiScheme + '://' + apiHost + ':' + apiPort + dbPath;
 };
 

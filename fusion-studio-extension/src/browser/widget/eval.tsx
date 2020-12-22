@@ -178,7 +178,7 @@ export class FSEvalWidget extends ReactWidget implements StatefulWidget {
     const editor = !!this.editorWidget;
     const title = this.editorWidget ? this.editorWidget.title.label : 'Open a document to evaluate.';
     const connectionsAvailable = Object.keys(this.core.connections).length > 0;
-    const connection = this.documentNode ? this.documentNode.connectionNode.id : this.connection;
+    const connection = this.documentNode ? this.documentNode.connectionNode.nodeId : this.connection;
     return <React.Fragment>
       <div className='x-header'>
         <span className="x-document">{title}</span>
