@@ -19,7 +19,7 @@ export const actConnect: FSAction = {
   menu: MENU,
   menuLabel: 'New Server...',
   keys: 'ctrlcmd+shift+n',
-  icon: 'fa fa-plug',
+  icon: 'fa fusion-menu-icon',
   execute: (core, prepare) => () => prepare && prepare().then(() => core.newConnection()),
 };
 export const actDisconnect: FSAction = {

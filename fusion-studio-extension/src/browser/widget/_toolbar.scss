@@ -6,6 +6,9 @@
   flex: 1;
   margin-bottom: 4px;
   height: 23px;
+  >.title {
+    display: flex;
+  }
   > span:first-child {
     flex: 1;
     i {

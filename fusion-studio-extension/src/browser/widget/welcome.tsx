@@ -33,7 +33,7 @@ export class FSWelcomeWidget extends ReactWidget {
 
   protected render(): React.ReactNode {
     return <React.Fragment>
-      <h1><i className="fa fa-plug fa-fw" /> Fusion Studio</h1>
+      <h1 className="fusion-header"> <i className="fusion-logo"></i> Fusion Studio</h1>
       <p>Welcome to Fusion Studio, an IDE and Management Tool for FusionDB Server.</p>
       <br/>
       <ul>
@@ -43,7 +43,7 @@ export class FSWelcomeWidget extends ReactWidget {
       <span className="checkbox" onClick={e => this.store(!this.checked)}>
         <span className={'checkbox-box' + (this.checked ? ' checked' : '')}>
           <span></span>
-        </span>
+        </span>ls
         <span className="checkbox-label">Show at startup</span>
       </span>
     </React.Fragment>

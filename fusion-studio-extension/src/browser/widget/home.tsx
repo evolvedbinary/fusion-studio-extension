@@ -10,7 +10,7 @@ export class FSHome extends React.Component<FSHomeProps, any> {
     return (
       <div id="fusion-home" className='theia-navigator-container'>
         <div className="title">
-          <p><i className="fa fa-plug fa-fw fa-5x" /></p>
+          <i className="fusion-logo" />
           <p>Fusion Studio</p>
         </div>
         <div className="description">
