@@ -29,6 +29,8 @@
     
     &-full {
       background: url(fusion-full.svg);
+      margin-left: 1rem;
+      margin-right: 1rem;
     }
   }
 
@@ -77,3 +79,10 @@
   
 }
 
+.theia-icon {
+  background: url(fusion.svg);
+  display: inline-block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
