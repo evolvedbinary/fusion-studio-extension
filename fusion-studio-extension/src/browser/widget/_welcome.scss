@@ -26,6 +26,10 @@
     width: 4rem;
     padding-top: 3rem;
     background: url(fusion.svg);
+    
+    &-full {
+      background: url(fusion-full.svg);
+    }
   }
 
   &-menu-icon{
@@ -56,6 +60,7 @@
       background: url(fusion.svg);
       width: 2rem;
       height: 1.95rem;
+      background-position: center;
       background-size: contain;
       background-repeat: no-repeat;
     }
