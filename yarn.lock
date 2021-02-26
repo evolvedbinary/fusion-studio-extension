@@ -1953,10 +1953,10 @@
     webpack-cli "2.0.12"
     worker-loader "^1.1.1"
 
-"@theia/application-package@^1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@theia/application-package/-/application-package-1.9.0.tgz#4abb831e125492f279f895775947cb2f76c0a547"
-  integrity sha512-QQGKLlFpfKFzD57LoajiTYze0x2Uk2bY4yALMgu6igz7vOKt6VDgahDKjtHT5jApM1hmZxuEIG4mQ2DT0pWa6A==
+"@theia/application-package@1.11.0", "@theia/application-package@^1.9.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@theia/application-package/-/application-package-1.11.0.tgz#7e1075c3c1741ee008e68a42b7c9cab519618f9d"
+  integrity sha512-0PlKPd/5wcXOhJFYNFAkAuqMGX64FAjqkOtOdP4LW2d6/OWFnpQcCYxJTiU3BaGQSkPxkP9nQGaTIroJziYzyQ==
   dependencies:
     "@types/fs-extra" "^4.0.2"
     "@types/request" "^2.0.3"
@@ -2010,14 +2010,14 @@
     webpack-sources "^1.0.1"
 
 "@theia/core@^1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.9.0.tgz#cd5264c7599f2d3b2f718aebca09df9e65234ced"
-  integrity sha512-spmD91IClwwwuBrvpxmAl5xzo6/S2c8L4/02JnQ+/pOdCw02QBy6ZLa9aZD3vo0N0ggUiIF2suima/JFqpdL0g==
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.11.0.tgz#0f1316652b8e513c1fe134089277921d1c161c3c"
+  integrity sha512-G7ZJ7akYYCGjeG5d10vDEI54XtMWtINGdSpEnx1cK3a8iz7mPGkyDooYLvBU97L5Snxtvl1pBBwGtz9aMPq7JA==
   dependencies:
     "@babel/runtime" "^7.10.0"
     "@phosphor/widgets" "^1.9.3"
     "@primer/octicons-react" "^9.0.0"
-    "@theia/application-package" "^1.9.0"
+    "@theia/application-package" "1.11.0"
     "@types/body-parser" "^1.16.4"
     "@types/cookie" "^0.3.3"
     "@types/express" "^4.16.0"
