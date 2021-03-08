@@ -18,7 +18,7 @@
     display: flex;
   }
   &-logo {
-    // i feel bad for this monstrosity but without it, it doesnt work 
+    // NOTE(YB): i feel bad for this monstrosity but without it, it doesnt work 
     background-repeat: no-repeat !important; //
     background-size: contain !important; // theia has forced my hand
     margin-right: 8px;

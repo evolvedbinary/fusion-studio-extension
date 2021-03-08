@@ -43,7 +43,7 @@ export class FSWelcomeWidget extends ReactWidget {
       <span className="checkbox" onClick={e => this.store(!this.checked)}>
         <span className={'checkbox-box' + (this.checked ? ' checked' : '')}>
           <span></span>
-        </span>ls
+        </span>
         <span className="checkbox-label">Show at startup</span>
       </span>
     </React.Fragment>
