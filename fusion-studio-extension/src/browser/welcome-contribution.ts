@@ -35,7 +35,7 @@ export class FSWelcomeContribution extends AbstractViewContribution<FSWelcomeWid
     menus.registerMenuAction(CommonMenus.HELP, {
       commandId: 'FusionEval:welcome',
       label: 'Fusion Studio',
-      icon: 'fa fa-plug',
+      icon: 'fa fusion-menu-icon',
       order: '0',
     });
   }

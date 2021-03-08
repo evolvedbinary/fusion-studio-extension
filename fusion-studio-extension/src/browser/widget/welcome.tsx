@@ -33,7 +33,7 @@ export class FSWelcomeWidget extends ReactWidget {
 
   protected render(): React.ReactNode {
     return <React.Fragment>
-      <h1><i className="fa fa-plug fa-fw" /> Fusion Studio</h1>
+      <h1 className="fusion-header"> <i className="fusion-logo"></i> Fusion Studio</h1>
       <p>Welcome to Fusion Studio, an IDE and Management Tool for FusionDB Server.</p>
       <br/>
       <ul>

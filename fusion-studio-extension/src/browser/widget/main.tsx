@@ -24,7 +24,7 @@ export class FSViewWidget extends TreeWidget {
     this.id = 'fusion-view';
     this.title.label = 'Servers';
     this.title.caption = 'Servers';
-    this.title.iconClass = 'fa fa-plug';
+    this.title.iconClass = 'fa fusion-tabBar-icon';
     this.title.closable = true;
     this.addClass('fusion-view');
   }

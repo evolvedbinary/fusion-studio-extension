@@ -10,3 +10,79 @@
     }
   }
 }
+
+// fusion-logo style
+.fusion {
+  &-header {
+    align-items: center;
+    display: flex;
+  }
+  &-logo {
+    // NOTE(YB): i feel bad for this monstrosity but without it, it doesnt work 
+    background-repeat: no-repeat !important; //
+    background-size: contain !important; // theia has forced my hand
+    margin-right: 8px;
+    display: inline-block;
+    width: 4rem;
+    padding-top: 3rem;
+    background: url(fusion.svg);
+    
+    &-full {
+      background: url(fusion-full.svg);
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+  }
+
+  &-menu-icon{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &::before {
+      display: inline-block;
+      content: "";
+      background: url(fusion.svg);      
+      width: 100%;
+      background-position-x: center;
+      height: 0.7rem;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+  }
+
+  &-tabBar-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &::before {
+      display: inline-block;
+      content: "";
+      background: url(fusion.svg);
+      width: 2rem;
+      height: 1.95rem;
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+  }
+
+  &-toolbar-icon {
+    background: url(fusion.svg);
+    padding-top: 5%;
+    width: 10%;
+    background-position-x: right;
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+}
+
+.theia-icon {
+  background: url(fusion.svg);
+  display: inline-block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}

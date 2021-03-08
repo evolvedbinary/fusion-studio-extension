@@ -30,7 +30,7 @@ export class FSToolbar extends React.Component<FSToolbarProps, any> {
   public render() {
     return (
       <div id='fusion-toolbar'>
-        <span className="title"><i className="fa fa-plug fa-fw"></i>Servers</span>
+        <span className="title"><i className="fa fusion-toolbar-icon"></i>Servers</span>
         {this.button('fusion-toolbar-button-add', { ...actConnect, icon: 'fa fa-plus'})}
         {/* {this.button('fusion-toolbar-button-delete', 'Remove connection', 'minus', this.deleteConnection, 'red')} */}
       </div>
