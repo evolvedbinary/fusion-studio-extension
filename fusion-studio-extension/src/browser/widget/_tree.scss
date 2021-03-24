@@ -12,7 +12,7 @@
         &.hidden {
             display: none;
         }
-        &.error {
+        &.error, &.warning {
             padding: 0 4px;
             overflow: hidden;
             position: fixed;
@@ -20,12 +20,22 @@
             z-index: 1;
             box-sizing: border-box;
             white-space: initial;
-            background: var(--theia-inputValidation-errorBackground);
-            border: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder);
             border-top: 0;
-            & + input {
-                outline: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder) !important;
-                border: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder) !important;
+            &.error {
+                background: var(--theia-inputValidation-errorBackground);
+                border: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder);
+                & + input {
+                    outline: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder) !important;
+                    border: var(--theia-border-width) solid var(--theia-inputValidation-errorBorder) !important;
+                }
+            }
+            &.warning {
+                background: var(--theia-inputValidation-warningBackground);
+                border: var(--theia-border-width) solid var(--theia-inputValidation-warningBorder);
+                & + input {
+                    outline: var(--theia-border-width) solid var(--theia-inputValidation-warningBorder) !important;
+                    border: var(--theia-border-width) solid var(--theia-inputValidation-warningBorder) !important;
+                }
             }
         }
     }

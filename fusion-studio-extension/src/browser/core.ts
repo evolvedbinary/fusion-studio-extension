@@ -1061,40 +1061,35 @@ export class FSCore {
     this.setRename();
   }
 
-  public validateName(node: FSNode, newName: string, failsOnSameName = false): string {
-    newName = newName.trim();
+  public validateName(node: FSNode, newName: string, failsOnSameName = false): [string, boolean] | undefined {
     if (!node) {
-      return 'No node to rename';
+      return ['No node to rename', false];
     }
+    newName = newName.trim();
     if (newName === '') {
-      return 'Empty name';
+      return ['Empty name', false];
     }
     // TODO: valid name
-    if (FSNode.isItem(node)) {
-      const collection = node.parent as FSCollectionNode;
-      if (newName === node.nodeName) {
-        if (failsOnSameName) {
-          return 'Same name';
-        } else {
-          return '';
-        }
-      }
-      if (this.fileExists(newName, collection)) {
-        return 'Item already exists';
-      }
-    } else if (FSNode.isConnection(node)) {
-      if (newName === node.nodeName) {
-        if (failsOnSameName) {
-          return 'Same name';
-        } else {
-          return '';
-        }
-      }
-      if (Object.keys(this.connections).find(nodeId => this.connections[nodeId].name === newName)) {
-        return 'A connection with this name already exists.';
+    if (newName === node.nodeName) {
+      if (failsOnSameName) {
+        return ['Same name', false];
+      } else {
+        return;
       }
     }
-    return '';
+    if (FSNode.isItem(node)) {
+      const collection = node.parent as FSCollectionNode;
+      if (node.uri === '/db/system') {
+        return ['You shouldn\'t rename "system" collection', true];
+      }
+      if (this.fileExists(newName, collection)) {
+        return ['Item already exists', false];
+      }
+    } else if (FSNode.isConnection(node)) {
+      if (Object.keys(this.connections).find(nodeId => this.connections[nodeId].name === newName)) {
+        return ['A connection with this name already exists.', false];
+      }
+    }
   }
 
   public async tryCreate(node: FSNode, name: string): Promise<boolean> {

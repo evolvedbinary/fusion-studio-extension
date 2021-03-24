@@ -99,14 +99,14 @@ export class FSViewWidget extends TreeWidget {
 
   InputBox(props: {
     value: string,
-    validate?: (value: string) => string,
+    validate?: (value: string) => [string, boolean] | undefined,
     onAccept: (value: string) => void,
     onCancel: () => void,
   }) {
     const [value, setValue] = React.useState(props.value);
     const input = React.useRef() as React.MutableRefObject<HTMLInputElement>;
     const errorEl = React.useRef() as React.MutableRefObject<HTMLDivElement>;
-    const [errorMessage, _setErrorMessage] = React.useState('');
+    const [[errorMessage, isWarning], _setErrorMessage] = React.useState(['', false]);
     const updateErrorElPosition = () => {
       if (errorEl.current) {
         const root = document.querySelector('#fusion-view > div.theia-TreeContainer > div');
@@ -118,11 +118,11 @@ export class FSViewWidget extends TreeWidget {
         }
       }
     }
-    const setErrorMessage = (message: string) => {
+    const setErrorMessage = (message: [string, boolean]) => {
       _setErrorMessage(message);
       updateErrorElPosition();
     }
-    const eventListener = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         const newValue = (e.target as HTMLInputElement).value;
         e.stopPropagation();
@@ -145,7 +145,7 @@ export class FSViewWidget extends TreeWidget {
       }
     };
     React.useEffect(() => {
-      input.current.addEventListener('keydown', eventListener);
+      input.current.addEventListener('keydown', onKeyDown);
       input.current.focus();
       input.current.selectionStart = 0;
       input.current.selectionEnd = value.lastIndexOf('.');
@@ -153,7 +153,7 @@ export class FSViewWidget extends TreeWidget {
     return <div className={TREE_NODE_SEGMENT_CLASS + ' ' + TREE_NODE_SEGMENT_GROW_CLASS}>
       <div className="fs-inline-input">&nbsp;
         <div
-          className={errorMessage === '' ? 'hidden' : 'error'}
+          className={errorMessage === '' ? 'hidden' : isWarning ? 'warning' : 'error'}
           ref={errorEl}
         >{errorMessage}</div>
         <input
@@ -161,7 +161,17 @@ export class FSViewWidget extends TreeWidget {
           type="text"
           className="theia-input"
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={e => {
+            setValue(e.target.value);
+            if (props.validate) {
+              const message = props.validate(e.target.value);
+              if (message && message[1]) {
+                setErrorMessage(message || ['', false]);
+              } else if (isWarning) {
+                setErrorMessage(['', false]);
+              }
+            }
+          }}
           onClick={e => e.stopPropagation()}
           onContextMenu={e => e.stopPropagation()}
           onDoubleClick={e => e.stopPropagation()}
