@@ -94,6 +94,20 @@ context('Fusion Studio', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
     })
+    it('fail to use an existing name', function () {
+      cy.waitForLoading();
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2')).should('be.visible').rightclick();
+      cy.getMenuCommand('fusion.rename').should('be.visible').click()
+      cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'col2').clear().type('col3{enter}');
+      cy.get('.fs-inline-input .error').should('exist').should('contain.text', 'Item already exists');
+    })
+    it('warn the user before renaming', function () {
+      cy.waitForLoading();
+      cy.getTreeNode(mkApiPathUrl('admin', '/db/system')).should('be.visible').rightclick();
+      cy.getMenuCommand('fusion.rename').should('be.visible').click()
+      cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'system').clear().type('collection');
+      cy.get('.fs-inline-input .warning').should('exist').should('contain.text', 'You shouldn\'t rename "system" collection');
+    })
   })
   describe('Deleting', function () {
     it('delete a document', function () {
