@@ -1,16 +1,22 @@
 version: 2.1
 
+executors:
+  node12:
+    docker:
+      - image: cimg/python:3.8-browser
+        auth:
+          username: duncdrum
+          password: $DOCKER_TMP_PW
+
 # see https://circleci.com/developer/orbs/orb/circleci/node
 # inline orbing it:
 # see https://circleci.com/docs/2.0/reusing-config/#writing-inline-orbs
 orbs:
   node: circleci/node@4.2.1
 
-jobs:
+jobs:  
   test:
-    executor:
-      name: node/default
-      tag: '12.22'
+    executor: 'node12'
     steps:
       - checkout
       - node/install-packages:
