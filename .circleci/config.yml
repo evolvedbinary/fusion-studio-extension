@@ -1,9 +1,11 @@
 version: 2.1
 
 executors:
-  node12:
+  context:  FusionDB_images
+# TODO(DP): check logs the versions reported on Circle do not match whats in the cimge build logs / description
+  node14:
     docker:
-      - image: cimg/python:3.8-browser
+      - image: circleci/python:3.9-browsers
         auth:
           username: duncdrum
           password: $DOCKER_TMP_PW
@@ -16,13 +18,13 @@ orbs:
 
 jobs:  
   test:
-    executor: 'node12'
+    executor: 'node14'
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
       - run:
-          command: yarn run test
+          command: yarn test
           name: Run YARN tests
 
 workflows:
