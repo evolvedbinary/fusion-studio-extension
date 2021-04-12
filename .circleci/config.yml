@@ -1,14 +1,5 @@
 version: 2.1
 
-executors:
-  context:  FusionDB_images
-# TODO(DP): check logs the versions reported on Circle do not match whats in the cimge build logs / description
-  node14:
-    docker:
-      - image: circleci/python:3.9-browsers
-        auth:
-          username: duncdrum
-          password: $DOCKER_TMP_PW
 
 # see https://circleci.com/developer/orbs/orb/circleci/node
 # inline orbing it:
@@ -16,15 +7,26 @@ executors:
 orbs:
   node: circleci/node@4.2.1
 
+
+# TODO: get the preconfigured setup step to execute `apt install libx11-dev libxkbfile-dev`
+# see https://circleci.com/docs/2.0/reusing-config/#steps
+# else do this: https://circleci.com/docs/2.0/sample-config/
+
 jobs:  
   test:
-    executor: 'node14'
+    executor:
+      name: node/default
+      tag: '12.22' 
+    parameters:
+      setup: 
+        default: [apt install libx11-dev libxkbfile-dev]
+        type: steps  
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
       - run:
-          command: yarn test
+          command: yarn run test
           name: Run YARN tests
 
 workflows:
