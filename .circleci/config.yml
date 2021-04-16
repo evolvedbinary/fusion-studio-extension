@@ -17,16 +17,21 @@ jobs:
     executor:
       name: node/default
       tag: '12.22' 
-    parameters:
-      setup: 
-        default: [apt install libx11-dev libxkbfile-dev]
-        type: steps  
+    # parameters:
+    #   setup: 
+    #     default: [sudo apt-get install libx11-dev libxkbfile-dev]
+    #     type: steps  
     steps:
       - checkout
+      - run:
+          command: |
+            sudo apt-get update 
+            sudo apt-get install libx11-dev libxkbfile-dev
+          name: Install Electron dependencies 
       - node/install-packages:
           pkg-manager: yarn
       - run:
-          command: yarn run test
+          command: yarn test
           name: Run YARN tests
 
 workflows:
