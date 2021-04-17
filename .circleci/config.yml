@@ -1,5 +1,6 @@
 version: 2.1
 
+context: FusionDB_images
 # docker:
 #   - image: cimg/node:12.22-browsers
 #     auth:
@@ -21,8 +22,10 @@ version: 2.1
 
 # see https://circleci.com/developer/orbs/orb/circleci/node
 # see https://circleci.com/developer/orbs/orb/cypress-io/cypress
-# inline orbing it:
+# TODO(DP): inline orbing it:
 # see https://circleci.com/docs/2.0/reusing-config/#writing-inline-orbs
+# TODO(DO): check if we can do with just the cypress orb
+
 orbs:
   node: circleci/node@4.2.1
   cypress: cypress-io/cypress@1.27.0
@@ -41,6 +44,7 @@ jobs:
       - setup_remote_docker:
           version: 20.10.2
           docker_layer_caching: false
+          # TODO: get run steps to execute properly might have to move that to cypress
       - run:
           command: |
             sudo apt-get update 
