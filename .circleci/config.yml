@@ -1,14 +1,14 @@
 version: 2.1
 
-docker:
-  - image: cimg/node:12.22-browsers
-    auth:
-      username: duncdrum
-      password: $DOCKER_TMP_PW
-  - image: 'existdb/existdb:latest'
-    auth:
-      username: duncdrum
-      password: $DOCKER_TMP_PW
+# docker:
+#   - image: cimg/node:12.22-browsers
+#     auth:
+#       username: duncdrum
+#       password: $DOCKER_TMP_PW
+#   - image: 'existdb/existdb:latest'
+#     auth:
+#       username: duncdrum
+#       password: $DOCKER_TMP_PW
   # - image: 'existdb/existdb:5.0.0'
   #   auth:
   #     username: duncdrum
@@ -20,11 +20,12 @@ docker:
 
 
 # see https://circleci.com/developer/orbs/orb/circleci/node
+# see https://circleci.com/developer/orbs/orb/cypress-io/cypress
 # inline orbing it:
 # see https://circleci.com/docs/2.0/reusing-config/#writing-inline-orbs
 orbs:
   node: circleci/node@4.2.1
-
+  cypress: cypress-io/cypress@1.27.0
 
 # TODO: get the preconfigured setup step to execute `apt install libx11-dev libxkbfile-dev`
 # see https://circleci.com/docs/2.0/reusing-config/#steps
@@ -34,7 +35,7 @@ jobs:
   test:
     executor:
       name: node/default
-      tag: '12.22'   
+      tag: '12.22-browsers'   
     steps:
       - checkout
       - setup_remote_docker:
