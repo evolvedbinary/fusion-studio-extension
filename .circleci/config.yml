@@ -1,5 +1,23 @@
 version: 2.1
 
+docker:
+  - image: cimg/node:12.22-browsers
+    auth:
+      username: duncdrum
+      password: $DOCKER_TMP_PW
+  - image: 'existdb/existdb:latest'
+    auth:
+      username: duncdrum
+      password: $DOCKER_TMP_PW
+  # - image: 'existdb/existdb:5.0.0'
+  #   auth:
+  #     username: duncdrum
+  #     password: $DOCKER_TMP_PW
+  # - image: 'existdb/existdb:5.2.0'
+  #   auth:
+  #     username: duncdrum
+  #     password: $DOCKER_TMP_PW   
+
 
 # see https://circleci.com/developer/orbs/orb/circleci/node
 # inline orbing it:
@@ -16,13 +34,12 @@ jobs:
   test:
     executor:
       name: node/default
-      tag: '12.22' 
-    # parameters:
-    #   setup: 
-    #     default: [sudo apt-get install libx11-dev libxkbfile-dev]
-    #     type: steps  
+      tag: '12.22'   
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.2
+          docker_layer_caching: false
       - run:
           command: |
             sudo apt-get update 
