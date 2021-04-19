@@ -1,63 +1,82 @@
 version: 2.1
 
+# TODO(DP): the following context declaration does not appear to be working
 context: FusionDB_images
-# docker:
-#   - image: cimg/node:12.22-browsers
-#     auth:
-#       username: duncdrum
-#       password: $DOCKER_TMP_PW
-#   - image: 'existdb/existdb:latest'
-#     auth:
-#       username: duncdrum
-#       password: $DOCKER_TMP_PW
-  # - image: 'existdb/existdb:5.0.0'
-  #   auth:
-  #     username: duncdrum
-  #     password: $DOCKER_TMP_PW
-  # - image: 'existdb/existdb:5.2.0'
-  #   auth:
-  #     username: duncdrum
-  #     password: $DOCKER_TMP_PW   
+docker:
+  - image: 'existdb/existdb:latest'
+    auth:
+      username: duncdrum
+      password: $DOCKER_TMP_PW  
 
 
-# see https://circleci.com/developer/orbs/orb/circleci/node
 # see https://circleci.com/developer/orbs/orb/cypress-io/cypress
-# TODO(DP): inline orbing it:
+# TODO(DP): inline orbing remote docker:
 # see https://circleci.com/docs/2.0/reusing-config/#writing-inline-orbs
-# TODO(DO): check if we can do with just the cypress orb
+          # post-install:
+          #   - setup_remote_docker:
+          #       version: 20.10.2
+          #       docker_layer_caching: false
+          #   - run:  |
+          #       docker login -u duncdrum -p $DOCKER_TMP_PW 
+          #       docker pull existdb/existdb:latest
+          #       docker create  --name exist-ci -p 8080:8080 existdb/existdb:latest
+          #       wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
+          #       docker cp ./*.xar exist-ci:exist/autodeploy
+          #       docker start exist-ci  
 
 orbs:
-  node: circleci/node@4.2.1
   cypress: cypress-io/cypress@1.27.0
+# TODO(DP): bugged see https://github.com/cypress-io/circleci-orb/issues/317
+# executors:
+#   node12:
+#     docker:
+#       - image: cypress/base-12
+#         auth:
+#           username: duncdrum
+#           password: $DOCKER_TMP_PW 
+  
+  
 
-# TODO: get the preconfigured setup step to execute `apt install libx11-dev libxkbfile-dev`
 # see https://circleci.com/docs/2.0/reusing-config/#steps
 # else do this: https://circleci.com/docs/2.0/sample-config/
 
-jobs:  
-  test:
-    executor:
-      name: node/default
-      tag: '12.22-browsers'   
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.2
-          docker_layer_caching: false
-          # TODO: get run steps to execute properly might have to move that to cypress
-      - run:
-          command: |
-            sudo apt-get update 
-            sudo apt-get install libx11-dev libxkbfile-dev
-          name: Install Electron dependencies 
-      - node/install-packages:
-          pkg-manager: yarn
-      - run:
-          command: yarn test
-          name: Run YARN tests
+# jobs:  
+#   test:
+#     executor:
+#       name: node/default
+#       tag: '12.22-browsers'   
+#     steps:
+#       - checkout
+#       - setup_remote_docker:
+#           version: 20.10.2
+#           docker_layer_caching: false
 
 workflows:
-  test_my_app:
+  build:
     jobs:
-      - test
-        # context: FusionDB_images
+      - cypress/run:
+          executor: cypress/base-12
+          context: FusionDB_images
+          yarn: true
+          post-checkout:
+            - run:  |
+                apt-get update 
+                apt-get --yes install libx11-dev libxkbfile-dev
+                apt-get --yes install apt-transport-https ca-certificates curl gnupg lsb-release
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+                echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+                apt-get install docker-ce docker-ce-cli containerd.io
+          start: cd browser-app && yarn start 
+          post-install:
+            - setup_remote_docker:
+                version: 20.10.2
+                docker_layer_caching: false
+            - run:  |
+                wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
+                docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
+                docker cp *.xar pkg:/exist/autodeploy
+                docker run -dit -p 8080:8080 --rm --volumes-from pkg existdb/existdb:latest               
+          # record: true
+          # store_artifacts: true
+          # tags: 'eXist-db,latest'
+
