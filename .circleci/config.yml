@@ -12,6 +12,8 @@ docker:
 # see https://circleci.com/developer/orbs/orb/cypress-io/cypress
 orbs:
   cypress: cypress-io/cypress@1.27.0
+  environment:
+    API_PORT: 8080
 
 workflows:
   build:
