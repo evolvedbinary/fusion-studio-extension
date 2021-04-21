@@ -12,21 +12,22 @@ docker:
 # see https://circleci.com/developer/orbs/orb/cypress-io/cypress
 orbs:
   cypress: cypress-io/cypress@1.27.0
-  executors:
-    node12-exist:
-      docker:
-        - image: 'cypress/base-12'
-          auth:
-            username: duncdrum
-            password: $DOCKER_TMP_PW   
-      environment:
-        API_PORT: 8080
+# TODO(DP): There is a bug here somewhere
+# executors:
+#   node12-exist:
+#     docker:
+#       - image: 'cypress/base-12'
+#         auth:
+#           username: duncdrum
+#           password: $DOCKER_TMP_PW   
+#     environment:
+#       API_PORT: 8080
 
 workflows:
   build:
     jobs:
       - cypress/run:
-          executor: node12-exist
+          executor: cypress/base-12
           context: FusionDB_images
           yarn: true
           post-checkout:
@@ -44,7 +45,9 @@ workflows:
                 wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
                 docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
                 docker cp *.xar pkg:/exist/autodeploy
-                docker run -dit -p 8080:8080 --rm --volumes-from pkg existdb/existdb:latest               
+                docker run -dit -p 8080:8080 --rm --volumes-from pkg existdb/existdb:latest
+          command: npx cypress run -e API_PORT=8080
+          no-workspace: true                     
           # record: true
           # store_artifacts: true
           # tags: 'eXist-db,latest'
