@@ -15,6 +15,8 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
 
+  // TODO(DP): see #379 this needs to be made flexible
+
   config.env.API_PORT = process.env.API_PORT ? process.env.API_PORT : 4059;
   config.env.FS_PORT = process.env.FS_PORT ? process.env.FS_PORT : 3000;
   return config;
