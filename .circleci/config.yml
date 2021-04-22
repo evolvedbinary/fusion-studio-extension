@@ -46,6 +46,7 @@ workflows:
                 docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
                 docker cp *.xar pkg:/exist/autodeploy
                 docker run -dit -p 8080:8080 --rm --volumes-from pkg existdb/existdb:latest
+          # TODO(DP): see #379 use e.g. -e API_PORT=8080, or context/executor declaration to set working (!) env variables
           command: npx cypress run -e API_PORT=8080
           no-workspace: true                     
           # record: true
