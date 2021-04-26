@@ -1,5 +1,5 @@
 /// <reference types="Cypress" />
-import { mkApiPathUrl, fsUrl, apiHost, apiPort, apiScheme } from '../support/config.js';
+import { mkApiPathUrl, apiHost, apiPort } from '../support/config.js';
 import '@4tw/cypress-drag-drop'
 import { dialogTitle, dialogBody, dialogMainButton, dialogSecondaryButton, dialog } from '../support/utils';
 context('Properties dialog', function () {
@@ -15,7 +15,7 @@ context('Properties dialog', function () {
     cy.get(dialogMainButton).click();
   });
   before(function () {
-    cy.visit(fsUrl)
+    cy.visit('/')
       .get('#theia-top-panel', { timeout: 30000 })
       .should('be.visible')
       .get('.theia-preload').should('not.exist');
@@ -143,9 +143,9 @@ context('Properties dialog', function () {
       cy.get(dialogTitle).should('contain.text', 'Edit Connection');
       cy.get(dialogBody).should('be.visible').then(body => {
         cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
-          .find('+ input.theia-input[type=text]').should('have.value', apiHost);
+          .find('+ input.theia-input[type=text]').should('have.value', 'locahost');
           cy.wrap(body).find('.vertical-form .server-field span').contains('Server URI:')
-          .find('+ input.theia-input[type=text]').should('have.value', apiScheme + '://' + apiHost +  ':' + apiPort);
+          .find('+ input.theia-input[type=text]').should('have.value', apiHost +  apiPort);
           cy.wrap(body).find('.vertical-form .username-field span').contains('Username:')
           .find('+ input.theia-input[type=text]').should('have.value', 'admin');
         cy.wrap(body).find('.vertical-form .password-field span').contains('Password')

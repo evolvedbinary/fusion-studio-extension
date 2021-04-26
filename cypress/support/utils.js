@@ -1,4 +1,4 @@
-import { apiScheme, apiHost, apiPort } from '../support/config.js';
+import { apiHost, apiPort } from '../support/config.js';
 
 export function treenode(id) {
   return '[node-id=' + CSS.escape(id) + ']';
@@ -34,7 +34,7 @@ Cypress.Commands.add('findCheckbox', { prevSubject: true }, (subject, label, opt
 });
 Cypress.Commands.add('checked', { prevSubject: true }, subject => cy.wrap(subject).find('.checkbox-box').should('have.class', 'checked'));
 Cypress.Commands.add('notChecked', { prevSubject: true }, subject => cy.wrap(subject).find('.checkbox-box').should('not.have.class', 'checked'));
-Cypress.Commands.add('addConnection', (name = apiHost, server = apiScheme + "://" + apiHost + ":" + apiPort, username = 'admin', password = '') => {
+Cypress.Commands.add('addConnection', (name = 'localhost', server = apiHost + apiPort, username = 'admin', password = '') => {
   cy.get('#theia-top-panel .p-MenuBar-item').contains('File')
     .click()
     .then(() => {

@@ -45,7 +45,7 @@ workflows:
                 wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
                 docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
                 docker cp *.xar pkg:/exist/autodeploy                
-                docker run -dit -p 4059:8080 --rm --volumes-from pkg existdb/existdb:latest
+                docker run -dit -p 8080:8080 --rm --volumes-from pkg existdb/existdb:latest
           # TODO(DP): 
           #   - see #379 use e.g. -e API_PORT=8080, or context/executor declaration to set working (!) env variables
           #   - s.a. to sidestep auth bug: docker login repo.evolvedbinary.com:9543 -u FDB_NIGHTLY_DOCKER_USER -p FDB_NIGHTLY_DOCKER_PASS

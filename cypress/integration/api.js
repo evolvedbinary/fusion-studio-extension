@@ -1,11 +1,11 @@
 /// <reference types="Cypress" />
-import { mkApiUrl, mkApiPathUrl, fsUrl } from '../support/config.js';
+import { mkApiUrl, mkApiPathUrl } from '../support/config.js';
 import { dialogTitle, dialogBody, dialogMainButton, dialog } from '../support/utils';
 
 context('Fusion Studio', function () {
   describe('API minimum version', function () {
     it('should connect with newer api', function () {
-      cy.visit(fsUrl, {
+      cy.visit('/', {
         onBeforeLoad(win) {
           cy.stub(win, 'fetch').callThrough().withArgs(mkApiUrl('/version')).as('version api').resolves({
             status: 200,
@@ -28,7 +28,7 @@ context('Fusion Studio', function () {
       cy.getTreeNode(mkApiPathUrl('admin', '/db')).should('exist');
     })
     it('shouldn\'t connect with older api', function () {
-      cy.visit(fsUrl, {
+      cy.visit('/', {
         onBeforeLoad(win) {
           cy.stub(win, 'fetch').callThrough().withArgs(mkApiUrl('/version')).as('version api').resolves({
             status: 200,
@@ -48,7 +48,7 @@ context('Fusion Studio', function () {
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
       cy.addConnection();
-      cy.get(dialogTitle).should('contain.text', 'New Connection');
+      // cy.get(dialogTitle).should('contain.text', 'New Connection');
       cy.get(dialogBody).should('be.visible')
         .should('contain.text', 'Outdated API "0.0.1"')
         .should('contain.text', 'You need to update your API to version "0.2.0" or higher');

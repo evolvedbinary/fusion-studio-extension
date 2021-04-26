@@ -1,8 +1,7 @@
 /// <reference types="Cypress" />
-import { fsUrl } from '../support/config.js';
 context('Fusion Studio', function() {
   beforeEach('IDE', function(){
-    cy.visit(fsUrl)
+    cy.visit('/')
       .get('#theia-top-panel', {timeout: 30000})
       .should('be.visible')
       .get('.theia-preload').should('not.exist');

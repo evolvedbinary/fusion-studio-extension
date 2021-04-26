@@ -1,9 +1,9 @@
 /// <reference types="Cypress" />
-import { apiScheme, apiHost, apiPort, mkApiPathUrl, fsUrl } from '../support/config.js';
+import { apiHost, apiPort } from '../support/config.js';
 context('Fusion Studio', function() {
   describe('Connections', function() {
     beforeEach('IDE', function(){
-      cy.visit(fsUrl)
+      cy.visit('/')
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
@@ -20,7 +20,7 @@ context('Fusion Studio', function() {
         })
       // set connection credentials
       cy.get('div.name-field > input').clear().type(apiHost)
-      cy.get('div.server-field > input').clear().type(apiScheme + '://' + apiHost + ':' + apiPort)
+      cy.get('div.server-field > input').clear().type( apiHost + apiPort)
       cy.get('div.username-field > input').clear().type('admin')
       cy.get('div.password-field > input').clear()
       // open connection
@@ -67,7 +67,7 @@ context('Fusion Studio', function() {
 
   describe('Security', function() {
     before('Connect', function () {
-      cy.visit(fsUrl)
+      cy.visit('/')
         .get('#theia-top-panel', {timeout: 30000})
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
@@ -81,7 +81,7 @@ context('Fusion Studio', function() {
       })
       // set connection credentials
       cy.get('div.name-field > input').clear().type(apiHost)
-      cy.get('div.server-field > input').clear().type(apiScheme + '://' + apiHost + ':' + apiPort)
+      cy.get('div.server-field > input').clear().type(apiHost + apiPort)
       cy.get('div.username-field > input').clear().type('admin')
       cy.get('div.password-field > input').clear()
       // open connection

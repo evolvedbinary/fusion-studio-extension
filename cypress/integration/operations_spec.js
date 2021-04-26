@@ -1,5 +1,5 @@
 /// <reference types="Cypress" />
-import { mkApiPathUrl, fsUrl, apiScheme, apiHost, apiPort } from '../support/config.js';
+import { mkApiPathUrl, apiHost, apiPort } from '../support/config.js';
 import '@4tw/cypress-drag-drop'
 import { treenode, dialogTitle, dialogBody, dialogMainButton, dialog } from '../support/utils';
 context('Fusion Studio', function () {
@@ -10,7 +10,7 @@ context('Fusion Studio', function () {
   });
   describe('Documents and Collections', function () {
     it('Browse to root dir "db"', function () {
-      cy.visit(fsUrl)
+      cy.visit('/')
       .get('#theia-top-panel', { timeout: 30000 })
       .should('be.visible')
       .get('.theia-preload').should('not.exist');
@@ -144,7 +144,7 @@ context('Fusion Studio', function () {
       cy.get(dialogTitle).should('contain.text', 'Remove Connection');
       cy.get(dialogBody).should('be.visible').find('p')
         .should('contain.text', 'Are you sure you want to remove the connection: new_name?')
-        .should('contain.text', `Server URI: ${apiScheme}://${apiHost}:${apiPort}`)
+        .should('contain.text', `Server URI: ${apiHost}${apiPort}`)
         .should('contain.text', 'Username: admin');
       cy.get(dialogMainButton).should('be.visible').click();
       cy.get(dialog).should('not.exist');
