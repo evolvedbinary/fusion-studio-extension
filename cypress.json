@@ -1,5 +1,6 @@
 {
   "baseUrl": "http://localhost:3000",
   "ignoreTestFiles": "**/integration/examples/*.*",
-  "projectId": "ftw148"
+  "projectId": "ftw148",
+  "experimentalFetchPolyfill": true
 }
