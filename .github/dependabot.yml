@@ -1,0 +1,73 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: cypress
+    versions:
+    - 6.3.0
+    - 6.4.0
+    - 6.5.0
+    - 6.6.0
+    - 6.7.1
+    - 6.8.0
+    - 7.0.0
+    - 7.0.1
+    - 7.1.0
+  - dependency-name: "@theia/monaco"
+    versions:
+    - 1.12.0
+  - dependency-name: "@theia/process"
+    versions:
+    - 1.10.0
+    - 1.11.0
+    - 1.12.0
+  - dependency-name: "@theia/terminal"
+    versions:
+    - 1.10.0
+    - 1.11.0
+    - 1.12.0
+  - dependency-name: "@theia/editor"
+    versions:
+    - 1.12.0
+  - dependency-name: "@theia/preferences"
+    versions:
+    - 1.10.0
+    - 1.11.0
+    - 1.12.0
+  - dependency-name: "@theia/filesystem"
+    versions:
+    - 1.12.0
+  - dependency-name: "@theia/messages"
+    versions:
+    - 1.12.0
+  - dependency-name: typescript
+    versions:
+    - 4.2.3
+  - dependency-name: "@theia/electron"
+    versions:
+    - 1.10.0
+    - 1.11.0
+  - dependency-name: "@theia/workspace"
+    versions:
+    - 1.10.0
+    - 1.11.0
+  - dependency-name: "@theia/markers"
+    versions:
+    - 1.10.0
+    - 1.11.0
+  - dependency-name: "@theia/core"
+    versions:
+    - 1.10.0
+    - 1.11.0
+  - dependency-name: "@theia/cli"
+    versions:
+    - 1.10.0
+    - 1.11.0
+  - dependency-name: mime-types
+    versions:
+    - 2.1.28
+    - 2.1.29
