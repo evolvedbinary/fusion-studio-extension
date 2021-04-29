@@ -2,6 +2,10 @@
 import { mkApiPathUrl, apiHost, apiPort } from '../support/config.js';
 import '@4tw/cypress-drag-drop'
 import { dialogTitle, dialogBody, dialogMainButton, dialogSecondaryButton, dialog } from '../support/utils';
+
+// TODO(DP): these tests need to be folded into the operations_spec where we create object in the first place, 
+// no need to repeat 90% of actions, just to check visbility of a single pane
+// this will also take care of the repeated runs problem, where collection already exist warning pollute the db
 context('Properties dialog', function () {
   afterEach(function () {
     if (this.currentTest.state === 'failed') {
@@ -143,7 +147,7 @@ context('Properties dialog', function () {
       cy.get(dialogTitle).should('contain.text', 'Edit Connection');
       cy.get(dialogBody).should('be.visible').then(body => {
         cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
-          .find('+ input.theia-input[type=text]').should('have.value', 'locahost');
+          .find('+ input.theia-input[type=text]').should('have.value', 'localhost');
           cy.wrap(body).find('.vertical-form .server-field span').contains('Server URI:')
           .find('+ input.theia-input[type=text]').should('have.value', apiHost +  apiPort);
           cy.wrap(body).find('.vertical-form .username-field span').contains('Username:')
@@ -163,7 +167,7 @@ context('Properties dialog', function () {
       cy.get(dialogTitle).should('contain.text', 'Edit Connection');
       cy.get(dialogBody).should('be.visible').then(body => {
         cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
-        .find('+ input.theia-input[type=text]').should('have.value', apiHost).clear().type('new_name');
+        .find('+ input.theia-input[type=text]').should('have.value', 'localhost').clear().type('new_name');
         cy.get(dialogMainButton).should('be.visible').click();
         cy.get(dialog).should('not.exist');
       });

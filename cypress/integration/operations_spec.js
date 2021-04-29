@@ -20,6 +20,9 @@ context('Fusion Studio', function () {
         cy.get('.fusion-item').should('have.length.gt', count);
       });
     })
+    // TODO(DP): 
+    // - this needs to clean up after itself to allow for repeated runs in case of failures
+    // - the "item already exists" warning needs its own test to check if it is visible in case of name clashes
     it('create test collections', function () {
       cy.addCollection(mkApiPathUrl('admin', '/db'), 'test_col');
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();

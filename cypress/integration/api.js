@@ -27,6 +27,7 @@ context('Fusion Studio', function () {
       cy.addConnection();
       cy.getTreeNode(mkApiPathUrl('admin', '/db')).should('exist');
     })
+    // TODO(DP) this test is failing properly it seems, figure out why and adjust test logic 
     it('shouldn\'t connect with older api', function () {
       cy.visit('/', {
         onBeforeLoad(win) {

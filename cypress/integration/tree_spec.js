@@ -1,5 +1,6 @@
 /// <reference types="Cypress" />
 import { apiHost, apiPort } from '../support/config.js';
+// TODO(DP): more folding in here
 context('Fusion Studio', function() {
   describe('Connections', function() {
     beforeEach('IDE', function(){
@@ -54,7 +55,7 @@ context('Fusion Studio', function() {
       // see it in action
       cy.get('.ReactVirtualized__Grid')
         .should('be.visible')
-        .should('contain', apiHost)
+        .should('contain', 'localhost')
       cy.get('.fusion-item')
         .click()
         .then(() => {
