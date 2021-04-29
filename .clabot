@@ -5,6 +5,7 @@
     "duncdrum",
     "marmoure",
     "dependabot-preview",
-    "dependabot-preview[bot]"
+    "dependabot-preview[bot]",
+    "dependabot[bot]"
   ]
 }
