@@ -16,7 +16,7 @@
   "dependencies": {
     "@theia/core": "^1.11.0",
     "awesomplete": "1.1.5",
-    "filesize": "6.1.0",
+    "filesize": "6.3.0",
     "mime-types": "2.1.29",
     "moment": "2.29.1",
     "ripemd160": "2.0.2",
