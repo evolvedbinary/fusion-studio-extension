@@ -27,7 +27,7 @@ workflows:
   build:
     jobs:
       - cypress/run:
-          executor: cypress/base-12
+          executor: cypress/base-14
           context: FusionDB_images
           yarn: true
           post-checkout:
@@ -36,22 +36,23 @@ workflows:
                 apt-get --yes install libx11-dev libxkbfile-dev
                 wget https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_20.10.6~3-0~ubuntu-bionic_amd64.deb
                 dpkg -i *.deb
-          start: cd browser-app && yarn start 
-          post-install:
             - setup_remote_docker:
                 version: 20.10.2
-                docker_layer_caching: false
+                docker_layer_caching: false    
+          start: cd browser-app && yarn start
+          post-install:
             - run:  |
                 wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
                 docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
                 docker cp *.xar pkg:/exist/autodeploy                
-                docker run -dit -p 8080:8080 --rm --volumes-from pkg existdb/existdb:latest
+                docker run -dit -p 8080:8080 --name exist-ci --rm --volumes-from pkg existdb/existdb:latest
+            - run: curl http://localhost:8080       
           # TODO(DP): 
           #   - see #379 use e.g. -e API_PORT=8080, or context/executor declaration to set working (!) env variables
           #   - s.a. to sidestep auth bug: docker login repo.evolvedbinary.com:9543 -u FDB_NIGHTLY_DOCKER_USER -p FDB_NIGHTLY_DOCKER_PASS
-          command: npx cypress run -e API_PORT=8080
+          command: npx cypress run
           no-workspace: true                     
-          # record: true
-          # store_artifacts: true
-          # tags: 'eXist-db,latest'
+          record: true
+          store_artifacts: true
+          tags: 'eXist-db,latest'
 
