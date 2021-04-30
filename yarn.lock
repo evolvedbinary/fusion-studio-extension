@@ -2086,9 +2086,9 @@
     base64-arraybuffer "^0.1.5"
 
 "@theia/electron@^1.11.0":
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/@theia/electron/-/electron-1.11.0.tgz#ded283b908a69659a23335b07bd9a276689be7b5"
-  integrity sha512-/7/BcfO7+0cjMRwTHs6YoWoj5JrLGF9B2e0ZJ+Pv+VPNqkLfYme60sukhWqhbWzE5K2iohyc4FopAdp8IHBmdg==
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/@theia/electron/-/electron-1.13.0.tgz#6b29d582060c54826851a3acba9a37974086e176"
+  integrity sha512-22Q0x7SFzD07FKDZ3GcFDTcfDZ/Jfp1YDzuFMXWxxL1S8v/voSzeVi6PTiNbiIZfPN73CYZquIaNFJoT2mw0jg==
   dependencies:
     electron "^9.0.2"
     electron-download "^4.1.1"
