@@ -1,67 +1,95 @@
 version: 2.1
 
-# TODO(DP): the following context declaration does not appear to be working
-context: FusionDB_images
+# TODO(DP): cache all the things (yarn, xar, images, ... )
 
-executors:
-  node14-exist:
+jobs:
+  build:
     docker:
-      - image: 'cypress/base-14'
-        auth:
-          username: duncdrum
-          password: $DOCKER_TMP_PW  
-      - image: 'existdb/existdb:latest'
+      - image: "cimg/python:3.9-browsers"
         auth:
           username: duncdrum
           password: $DOCKER_TMP_PW
-
-
-# see https://circleci.com/developer/orbs/orb/cypress-io/cypress
-orbs:
-  cypress: cypress-io/cypress@1.28.0
-# TODO(DP): There is a bug here somewhere as we can run neither with nor without authentication creds. 
-# executors:
-#   node12-exist:
-#     docker:
-#       - image: 'cypress/base-14'
-        # auth:
-        #   username: duncdrum
-        #   password: $DOCKER_TMP_PW  
-      # - image: 'existdb/existdb:latest'
-        # auth:
-        #   username: duncdrum
-        #   password: $DOCKER_TMP_PW
-
+      # - image: "existdb/existdb:latest"
+      #   name: exist-top
+      #   auth:
+      #     username: duncdrum
+      #     password: $DOCKER_TMP_PW
+    steps:
+      - checkout
+      - run: |
+          sudo apt-get update 
+          sudo apt-get --yes install libx11-dev libxkbfile-dev
+      - setup_remote_docker:
+          version: 20.10.2
+          docker_layer_caching: false    
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+      - run: |
+          wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
+          docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
+          docker cp *.xar pkg:/exist/autodeploy                
+          docker run -dit -p 8080:8080 --name exist-ci --rm --volumes-from pkg existdb/existdb:latest      
+      - run:
+          name: Wait for db
+          command: dockerize -wait http://localhost:8080 -timeout 1m          
+      - run: docker ps
+      - run: node --version
+      - run: yarn
+      - run:
+          working_directory: browser-app 
+          command: yarn start
+          background: true
+      - run: 
+          command: npx cypress run 
+          no_output_timeout: 1m
 workflows:
-  build:
+  browser_build:
     jobs:
-      - cypress/run:
-          executor: node14-exist
+      - build:
           context: FusionDB_images
-          yarn: true
-          post-checkout:
-            - run:  |
-                apt-get update 
-                apt-get --yes install libx11-dev libxkbfile-dev
-                wget https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_20.10.6~3-0~ubuntu-bionic_amd64.deb
-                dpkg -i *.deb
-            - setup_remote_docker:
-                version: 20.10.2
-                docker_layer_caching: false    
-          start: cd browser-app && yarn theia start --hostname 0.0.0.0 --port 3000
-          post-install:
-            - run:  |
-                wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
-                docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
-                docker cp *.xar pkg:/exist/autodeploy                
-                docker run -dit -p 8080:8080 --name exist-ci --rm --volumes-from pkg existdb/existdb:latest
-            - run: curl --retry 5 http://localhost:8080          
-          # TODO(DP): 
-          #   - see #379 use e.g. -e API_PORT=8080, or context/executor declaration to set working (!) env variables
-          #   - s.a. to sidestep auth bug: docker login repo.evolvedbinary.com:9543 -u FDB_NIGHTLY_DOCKER_USER -p FDB_NIGHTLY_DOCKER_PASS
-          command: npx cypress run
-          no-workspace: false                     
-          record: true
-          store_artifacts: true
-          tags: 'eXist-db,latest'
+  
+# see https://circleci.com/developer/orbs/orb/cypress-io/cypress
 
+
+# ------------------
+# TODO(DP): There is a known bug preventing us from using the more modern concise approach below
+# https://support.circleci.com/hc/en-us/articles/360051099071-Docker-Hub-Authentication-With-Orb-Executors
+
+# version: 2.1
+# see https://circleci.com/developer/orbs/orb/cypress-io/cypress
+# see https://github.com/cypress-io/circleci-orb/issues/317
+# orbs:
+#   cypress: cypress-io/cypress@1
+
+# workflows:
+#   build:
+#     jobs:
+#       - cypress/run:
+#           executor: cypress/base-14
+#           context: FusionDB_images
+#           yarn: true
+#           post-checkout:
+#             - run: |
+#                 apt-get update 
+#                 apt-get --yes install libx11-dev libxkbfile-dev
+#                 wget https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_20.10.6~3-0~ubuntu-bionic_amd64.deb
+#                 dpkg -i *.deb
+#             - setup_remote_docker:
+#                 version: 20.10.2
+#                 docker_layer_caching: false
+#           start: cd browser-app && yarn start
+#           post-install:
+#             - run: |
+#                 wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
+#                 docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
+#                 docker cp *.xar pkg:/exist/autodeploy                
+#                 docker run -dit -p 8080:8080 --name exist-ci --rm --volumes-from pkg existdb/existdb:latest
+#             - run: curl --retry 5 http://localhost:8080
+#           command: npx cypress run
+#           no-workspace: false
+#           record: true
+#           store_artifacts: true
+#           tags: "eXist-db,latest"
