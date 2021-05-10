@@ -4,11 +4,13 @@ version: 2.1
 
 jobs:
   build:
-    docker:
-      - image: "cimg/python:3.9-browsers"
-        auth:
-          username: duncdrum
-          password: $DOCKER_TMP_PW
+    machine:
+      image: ubuntu-2004:202104-01 
+    # docker:
+    #   - image: "cimg/python:3.9-browsers"
+    #     auth:
+    #       username: duncdrum
+    #       password: $DOCKER_TMP_PW
       # - image: "existdb/existdb:latest"
       #   name: exist-top
       #   auth:
@@ -19,9 +21,9 @@ jobs:
       - run: |
           sudo apt-get update 
           sudo apt-get --yes install libx11-dev libxkbfile-dev
-      - setup_remote_docker:
-          version: 20.10.2
-          docker_layer_caching: false    
+      # - setup_remote_docker:
+      #     version: 20.10.2
+      #     docker_layer_caching: false    
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -35,8 +37,9 @@ jobs:
       - run:
           name: Wait for db
           command: dockerize -wait http://localhost:8080 -timeout 1m          
-      - run: docker ps
       - run: node --version
+      - run: python --version
+      - run: docker ps      
       - run: yarn
       - run:
           working_directory: browser-app 
