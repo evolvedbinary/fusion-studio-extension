@@ -18,6 +18,11 @@ jobs:
       #     password: $DOCKER_TMP_PW
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-deps-{{ .Branch }}-{{ checksum "package.json" }}
+            - v1-deps-{{ .Branch }}
+            - v1-deps
       - run: |
           sudo apt-get update 
           sudo apt-get --yes install libx11-dev libxkbfile-dev
@@ -41,6 +46,10 @@ jobs:
       - run: python --version
       - run: docker ps      
       - run: yarn
+      - save_cache:
+          key: v1-deps-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - ~/.cache ## cache both yarn and Cypress!  
       - run:
           working_directory: browser-app 
           command: yarn start
