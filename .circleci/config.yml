@@ -25,7 +25,8 @@ jobs:
             - v1-deps
       - run: |
           sudo apt-get update 
-          sudo apt-get --yes install libx11-dev libxkbfile-dev
+          sudo apt-get --yes install libx11-dev libxkbfile-dev libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb python-is-python3
+
       # - setup_remote_docker:
       #     version: 20.10.2
       #     docker_layer_caching: false    
@@ -45,7 +46,7 @@ jobs:
       - run: node --version
       - run: python --version
       - run: docker ps      
-      - run: yarn
+      - run: yarn install --frozen-lockfile
       - save_cache:
           key: v1-deps-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
