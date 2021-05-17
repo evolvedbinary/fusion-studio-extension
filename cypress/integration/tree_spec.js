@@ -5,7 +5,7 @@ context('Fusion Studio', function() {
   describe('Connections', function() {
     beforeEach('IDE', function(){
       cy.visit('/')
-        .get('#theia-top-panel', {timeout: 30000})
+        .get('#theia-top-panel', {timeout: 60000})
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
     })
@@ -69,7 +69,7 @@ context('Fusion Studio', function() {
   describe('Security', function() {
     before('Connect', function () {
       cy.visit('/')
-        .get('#theia-top-panel', {timeout: 30000})
+        .get('#theia-top-panel', {timeout: 60000})
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
       cy.get(':nth-child(1) > .p-MenuBar-itemLabel')

@@ -20,7 +20,7 @@ context('Properties dialog', function () {
   });
   before(function () {
     cy.visit('/')
-      .get('#theia-top-panel', { timeout: 30000 })
+      .get('#theia-top-panel', { timeout: 60000 })
       .should('be.visible')
       .get('.theia-preload').should('not.exist');
     cy.addConnection();
