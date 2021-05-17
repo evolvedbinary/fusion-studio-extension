@@ -17,7 +17,10 @@ context('Fusion Studio', function () {
                 "version" : "5.2.0",
                 "revision" : "c58d04ec45de50e7738489dee072fcc863dc8b1b"
               },
-              "version" : "999.0.0"
+              "exist-db" : {
+                "compatible-version" : null
+              }
+              
             }),
           });
         },
@@ -41,7 +44,10 @@ context('Fusion Studio', function () {
                 "version" : "5.2.0",
                 "revision" : "c58d04ec45de50e7738489dee072fcc863dc8b1b"
               },
-              "version" : "0.0.1"
+              "exist-db": {
+                "compatible-version" : "0.0.1"
+              }
+              
             }),
           });
         },
