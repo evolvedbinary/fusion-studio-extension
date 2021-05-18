@@ -1,33 +1,33 @@
 {
-  "private": true,
-  "author": "Evolved Binary <tech@evolvedbinary.com>",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/evolvedbinary/fusion-studio-extension/issues"
-  },
-  "homepage": "https://github.com/evolvedbinary/fusion-studio-extension#readme",
-  "scripts": {
-    "postinstall": "yarn sass",
-    "sass": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css",
-    "sass:watch": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css --watch",
-    "prepare": "lerna run prepare",
-    "rebuild:browser": "theia rebuild:browser",
-    "rebuild:electron": "theia rebuild:electron",
-    "test:ci": "cypress run",
-    "test": "echo \"no test specified\" && exit 0"
-  },
-  "devDependencies": {
-    "@4tw/cypress-drag-drop": "https://github.com/ccheraa/cypress-drag-drop",
-    "cypress": "6.6.0",
-    "lerna": "3.22.1",
-    "node-sass": "5.0.0"
-  },
-  "resolutions": {
-    "node-gyp": "^7.0.0"
-  },
-  "workspaces": [
-    "fusion-studio-extension",
-    "browser-app",
-    "electron-app"
-  ]
+    "private": true,
+    "author": "Evolved Binary <tech@evolvedbinary.com>",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/evolvedbinary/fusion-studio-extension/issues"
+    },
+    "homepage": "https://github.com/evolvedbinary/fusion-studio-extension#readme",
+    "scripts": {
+        "postinstall": "yarn sass",
+        "sass": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css",
+        "sass:watch": "node-sass ./fusion-studio-extension/src/browser/style/index.scss ./fusion-studio-extension/src/browser/style/index.css --watch",
+        "prepare": "lerna run prepare",
+        "rebuild:browser": "theia rebuild:browser",
+        "rebuild:electron": "theia rebuild:electron",
+        "test:ci": "cypress run",
+        "test": "echo \"no test specified\" && exit 0"
+    },
+    "devDependencies": {
+        "@4tw/cypress-drag-drop": "https://github.com/ccheraa/cypress-drag-drop",
+        "cypress": "7.3.0",
+        "lerna": "4.0.0",
+        "node-sass": "5.0.0"
+    },
+    "resolutions": {
+        "node-gyp": "^7.0.0"
+    },
+    "workspaces": [
+        "fusion-studio-extension",
+        "browser-app",
+        "electron-app"
+    ]
 }
