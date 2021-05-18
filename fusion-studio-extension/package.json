@@ -17,7 +17,6 @@
         "@theia/core": "^1.13.0",
         "awesomplete": "1.1.5",
         "filesize": "6.3.0",
-        "mime-types": "2.1.29",
         "moment": "2.29.1",
         "ripemd160": "2.0.2",
         "typescript": "4.2.4",
@@ -26,7 +25,6 @@
     "devDependencies": {
         "@types/awesomplete": "1.1.10",
         "@types/filesize": "5.0.0",
-        "@types/mime-types": "2.1.0",
         "@types/ripemd160": "2.0.0",
         "rimraf": "3.0.2"
     },
