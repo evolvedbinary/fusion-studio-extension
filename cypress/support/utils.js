@@ -53,6 +53,7 @@ Cypress.Commands.add('addConnection', (name = 'localhost', server = apiHost + ap
   }
   cy.get(dialogMainButton).click();
   cy.getTreeNode(username + '@' + server).click();
+  // TODO get rid of custom commands for this, use inbuild functions for waiting where necessary
   cy.waitForLoading();
 });
 Cypress.Commands.add('addCollection', (id, name) => {
@@ -78,6 +79,7 @@ Cypress.Commands.add('addDocument', (collection, name, type = '') => {
   cy.get('.p-Menu-item[data-type=command][data-command=core\\.save]').click()
 });
 
+// TODO: All of these need to replaced by meaningful selectors in the source-code
 export const dialogOverlay = '.p-Widget.dialogOverlay#theia-dialog-shell';
 export const dialog = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock';
 export const dialogTitle = '.p-Widget.dialogOverlay#theia-dialog-shell .dialogBlock .dialogTitle';
