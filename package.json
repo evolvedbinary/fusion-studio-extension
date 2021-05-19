@@ -20,7 +20,7 @@
         "@4tw/cypress-drag-drop": "https://github.com/ccheraa/cypress-drag-drop",
         "cypress": "7.3.0",
         "lerna": "4.0.0",
-        "node-sass": "5.0.0"
+        "node-sass": "6.0.0"
     },
     "resolutions": {
         "node-gyp": "^7.0.0"
