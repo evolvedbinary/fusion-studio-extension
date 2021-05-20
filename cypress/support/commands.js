@@ -9,8 +9,16 @@
 // ***********************************************
 //
 //
+import "cypress-localstorage-commands"
+
 // -- This is a parent command --
-// Cypress.Commands.add("login", (email, password) => { ... })
+Cypress.Commands.add("connect", (email, password) => { 
+    // see https://stackoverflow.com/questions/56431316/set-local-storage-in-cypress
+    // connections	{"admin@http://localhost:8080":{"name":"localhost","server":"http://localhost:8080","username":"admin","password":"","users":[],"groups":[]}}
+    cy.clearLocalStorage()
+    cy.request('http://localhost:8080/exist/restxq/fusiondb')
+
+ })
 //
 //
 // -- This is a child command --
