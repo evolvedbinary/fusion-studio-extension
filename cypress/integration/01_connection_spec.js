@@ -2,7 +2,7 @@
 context('Fusion Studio', () => {
     describe('Connection Dialogue', () => {
         after(() => {
-            // cleanup connections before each test
+            // cleanup connections after test
             cy.visit('/')
             cy.get('.fusion-item')
                 .rightclick()
@@ -11,6 +11,7 @@ context('Fusion Studio', () => {
                         .click()
                     cy.get('.main').click()
                 })
+            cy.clearLocalStorage()    
         })
 
         it('should create a connection', () => {
@@ -23,7 +24,7 @@ context('Fusion Studio', () => {
                         .click()
                     // set connection credentials
                     cy.get('div.name-field > input').clear().type('server1')
-                    cy.get('div.server-field > input').clear().type('http://localhost:8080')
+                    cy.get('div.server-field > input').clear().type(Cypress.env('API_HOST'))
                     cy.get('div.username-field > input').clear().type('admin')
                     cy.get('div.password-field > input').clear()
                     cy.get('.main').click()
@@ -48,7 +49,7 @@ context('Fusion Studio', () => {
                 .then(() => {
                     // bad credentials
                     cy.get('div.name-field > input').clear().type('server2')
-                    cy.get('div.server-field > input').clear().type('http://localhost:8080')
+                    cy.get('div.server-field > input').clear().type(Cypress.env('API_HOST'))
                     cy.get('div.username-field > input').clear().type('badmin')
                     cy.get('.main').click()
                 })
@@ -57,7 +58,7 @@ context('Fusion Studio', () => {
             cy.get('.ReactVirtualized__Grid')
                 .should('be.visible')
                 .should('contain', 'server2')
-            cy.get(`[node-id=${CSS.escape('badmin@http://localhost:8080')}]`)
+            cy.get(`[node-id=${CSS.escape('badmin@' + Cypress.env('API_HOST'))}]`)
                 .click()
                 .then(() => {
                     cy.get('.dialogContent')
@@ -68,7 +69,7 @@ context('Fusion Studio', () => {
         })
 
         it('should remove bad connection', () => {
-            cy.get(`[node-id=${CSS.escape('badmin@http://localhost:8080')}]`)
+            cy.get(`[node-id=${CSS.escape('badmin@' + Cypress.env('API_HOST'))}]`)
                 .rightclick()
                 .then(() => {
                     cy.get('[data-command="fusion.disconnect"] > .p-Menu-itemLabel')
