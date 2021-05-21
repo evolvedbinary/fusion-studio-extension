@@ -2,16 +2,9 @@
 context('Fusion Studio', () => {
     describe('Connection Dialogue', () => {
         after(() => {
-            // cleanup connections after test
-            cy.visit('/')
-            cy.get('.fusion-item')
-                .rightclick()
-                .then(() => {
-                    cy.get('[data-command="fusion.disconnect"] > .p-Menu-itemLabel')
-                        .click()
-                    cy.get('.main').click()
-                })
-            cy.clearLocalStorage()    
+            // cleanup connections after test            
+            cy.clearLocalStorage('connections')
+            cy.reload()    
         })
 
         it('should create a connection', () => {
