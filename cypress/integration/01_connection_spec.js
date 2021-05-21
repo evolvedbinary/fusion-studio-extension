@@ -61,6 +61,27 @@ context('Connecting to Servers', () => {
                 })
         })
 
+
+        // TODO(DP): add Connection properties test here
+        // it('Connection properties', function () {
+        //     cy.waitForLoading();
+        //     cy.getTreeNode(mkApiPathUrl('admin')).rightclick()
+        //       .getMenuCommand('fusion.properties').should('be.visible').click()
+        //     cy.get(dialogTitle).should('contain.text', 'Edit Connection');
+        //     cy.get(dialogBody).should('be.visible').then(body => {
+        //       cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
+        //         .find('+ input.theia-input[type=text]').should('have.value', 'localhost');
+        //         cy.wrap(body).find('.vertical-form .server-field span').contains('Server URI:')
+        //         .find('+ input.theia-input[type=text]').should('have.value', apiHost +  apiPort);
+        //         cy.wrap(body).find('.vertical-form .username-field span').contains('Username:')
+        //         .find('+ input.theia-input[type=text]').should('have.value', 'admin');
+        //       cy.wrap(body).find('.vertical-form .password-field span').contains('Password')
+        //         .find('+ input.theia-input[type=password]').should('have.value', '');
+        //       cy.get(dialogSecondaryButton).should('be.visible').click();
+        //       cy.get(dialog).should('not.exist');
+        //     });
+        //   })
+
         it('should remove bad connection', () => {
             cy.get(`[node-id=${CSS.escape('badmin@' + Cypress.env('API_HOST'))}]`)
                 .rightclick()

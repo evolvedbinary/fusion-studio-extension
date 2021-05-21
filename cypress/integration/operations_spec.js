@@ -89,6 +89,7 @@ context('Fusion Studio', function () {
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/col1')).should('not.exist');
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/other_col1')).should('be.visible');
     })
+    // TODO(DP): add to connection_spec
     it('rename a connection', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
@@ -140,19 +141,19 @@ context('Fusion Studio', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('not.exist');
     })
-    it('delete a connection', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
-      cy.getMenuCommand('fusion.disconnect').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Remove Connection');
-      cy.get(dialogBody).should('be.visible').find('p')
-        .should('contain.text', 'Are you sure you want to remove the connection: new_name?')
-        .should('contain.text', `Server URI: ${apiHost}${apiPort}`)
-        .should('contain.text', 'Username: admin');
-      cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.exist');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin')).should('not.exist');
+    // it('delete a connection', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
+    //   cy.getMenuCommand('fusion.disconnect').should('be.visible').click()
+    //   cy.get(dialogTitle).should('contain.text', 'Remove Connection');
+    //   cy.get(dialogBody).should('be.visible').find('p')
+    //     .should('contain.text', 'Are you sure you want to remove the connection: new_name?')
+    //     .should('contain.text', `Server URI: ${apiHost}${apiPort}`)
+    //     .should('contain.text', 'Username: admin');
+    //   cy.get(dialogMainButton).should('be.visible').click();
+    //   cy.get(dialog).should('not.exist');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin')).should('not.exist');
     })
   })
 })
