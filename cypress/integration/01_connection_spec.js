@@ -1,5 +1,5 @@
 /// <reference types="Cypress" />
-context('Fusion Studio', () => {
+context('Connecting to Servers', () => {
     describe('Connection Dialogue', () => {
         after(() => {
             // cleanup connections after test            

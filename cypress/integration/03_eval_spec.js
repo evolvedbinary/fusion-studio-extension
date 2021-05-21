@@ -1,5 +1,5 @@
 /// <reference types="Cypress" />
-context('Fusion Studio', () => {
+context('Evaluation', () => {
   before(() => {
     cy.visit('/')
       .get('#theia-top-panel')
@@ -7,7 +7,7 @@ context('Fusion Studio', () => {
       .get('.theia-preload').should('not.exist')
   })
 
-  describe('Evaluation panel', () => {
+  describe('The Theia Panel', () => {
     it('should be accessible from command panel', () => {
       // invoke command panel and run the command
       cy.get('body').trigger('keydown', { keyCode: 112, which: 112 })
