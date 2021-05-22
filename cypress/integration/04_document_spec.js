@@ -62,8 +62,66 @@ context('Basic Operations', () => {
             })
 
             // TODO(DP): documents properties test could go here
-
-            // TODO(DP): only allow unique file creation test should go here
+            // it('Document properties', function () {
+            //   cy.waitForLoading();
+            //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).rightclick()
+            //     .getMenuCommand('fusion.properties').should('be.visible').click()
+            //   cy.get(dialogTitle).should('contain.text', 'Properties');
+            //   cy.get(dialogBody).should('be.visible').then(body => {
+            //     cy.wrap(body).find('td.label').contains('Name')
+            //       .find('+ td.value input.theia-input[type=text]').should('contain.value', 'text_file.txt');
+            //     cy.wrap(body).find('td.label').contains('Collection')
+            //       .find('+ td.value').should('contain.text', '/db/test_col');
+            //     cy.wrap(body).find('td.label').contains('Created')
+            //       .find('+ td.value').should('contain.text', Cypress.formatDate());
+            //     cy.wrap(body).find('td.label').contains('Modified')
+            //       .find('+ td.value').should('contain.text', Cypress.formatDate());
+            //     cy.wrap(body).find('td.label').contains('Media Type')
+            //       .find('+ td.value').should('contain.text', 'text/plain');
+            //     cy.wrap(body).find('td.label').contains('Binary')
+            //       .find('+ td.value').should('contain.text', 'Yes')
+            //       .find('button.theia-button').should('contain.text', 'Convert to non-binary');
+            //     cy.wrap(body).find('td.label').contains('Size')
+            //       .find('+ td.value').should('contain.text', '24 B');
+            //     cy.wrap(body).find('td.label').contains('Owner')
+            //       .find('+ td.value input.theia-input[type=text]').should('contain.value', 'admin');
+            //     cy.wrap(body).find('td.label').contains('Group')
+            //       .find('+ td.value input.theia-input[type=text]').should('contain.value', 'dba');
+            //     cy.wrap(body).find('table.permissions-editor tr').then(trs => {
+            //       cy.wrap(trs).eq(0).find('td').then(tds => {
+            //         cy.wrap(tds).eq(0).should('contain.text', 'user');
+            //         cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
+            //         cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').checked();
+            //         cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').notChecked();
+            //         cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'setUID').notChecked();
+            //       });
+            //       cy.wrap(trs).eq(1).find('td').then(tds => {
+            //         cy.wrap(tds).eq(0).should('contain.text', 'group');
+            //         cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
+            //         cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').notChecked();
+            //         cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').notChecked();
+            //         cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'setGID').notChecked();
+            //       });
+            //       cy.wrap(trs).eq(2).find('td').then(tds => {
+            //         cy.wrap(tds).eq(0).should('contain.text', 'other');
+            //         cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
+            //         cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').notChecked();
+            //         cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').notChecked();
+            //         cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'sticky').notChecked();
+            //       });
+            //     });
+            //   });
+            //   cy.get(dialogSecondaryButton).should('be.visible').click();
+            //   cy.get(dialog).should('not.exist');
+            //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/xml_file.xml')).rightclick()
+            //     .getMenuCommand('fusion.properties').should('be.visible').click()
+            //   cy.get(dialogBody).should('be.visible').find('td.label').contains('Binary')
+            //     .find('+ td.value').should('contain.text', 'No')
+            //     .find('button.theia-button').should('contain.text', 'Convert to binary');
+            //   cy.get(dialogSecondaryButton).should('be.visible').click();
+            //   cy.get(dialog).should('not.exist');
+            // })
+            // TODO(DP): only allow unique document creation test should go here
 
             it('should let users delete documents', () => {
                 cy.get('[node-id$=test\\.txt]')
