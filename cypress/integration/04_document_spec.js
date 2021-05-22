@@ -24,7 +24,7 @@ context('Basic Operations', () => {
                             .should('be.visible')
                             .click()
                     })
-                // TODO(DP): start workaround for #413 
+                // (DP): start workaround for #413 
                 cy.get('[node-id$=db]')
                   .trigger('mousemove')
                   .type('{enter}') 
@@ -33,20 +33,17 @@ context('Basic Operations', () => {
                   .contains('untitled-1')
 
                 // TODO(DP):
-                // - add test for #413, 
-                // - check if tree view is deselected, 
-                // - check if Explorer is updated properly, 
-                // - check if editor window is opening the newly create doc in a new tab
-                // - two routes one with follow-up dialog (xquery lib) one without (txt, xml)
+                // - add test for #413 : change order, remove workaround, might need a call to focused()
+                // - check if tree view is deselected (it is but need not be), 
+                // - check if Explorer is updated properly (seems inconsistent need to double click)
+                // - check if editor window is opening the newly create doc in a new tab (it doesn't)
+                // - two file create routes one with follow-up dialog (xquery lib) one without (txt, xml)
             })
 
-                // Get rid of this:
-                // cy.addDocument(mkApiPathUrl('admin', '/db/test_col'), 'text_file.txt');
-
             // TODO(DP): make this work on all OS by either adjusting the key sequence ctrl+s cmd+s …
-            // or by cicking through the file menu instead
+            // or by using the file menu UI instead
             // see #414
-            it('should let us edit the file', () => {
+            it('should let users edit new document', () => {
                 cy.get('[node-id$=untitled-1]')
                   .dblclick()
                 cy.get('.view-line')
@@ -64,7 +61,7 @@ context('Basic Operations', () => {
                   .type('test.txt{enter}')  
             })
 
-            // TODO(DP): file properties test could go here
+            // TODO(DP): documents properties test could go here
 
             // TODO(DP): only allow unique file creation test should go here
 

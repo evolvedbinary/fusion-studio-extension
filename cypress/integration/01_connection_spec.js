@@ -62,7 +62,7 @@ context('Connecting to Servers', () => {
         })
 
 
-        // TODO(DP): add Connection properties test here
+        // TODO(DP): add Connection properties tests here (rename and contencheck)
         // it('Connection properties', function () {
         //     cy.waitForLoading();
         //     cy.getTreeNode(mkApiPathUrl('admin')).rightclick()

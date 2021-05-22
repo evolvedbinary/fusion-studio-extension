@@ -162,23 +162,25 @@ context('Properties dialog', function () {
     // })
   })
   describe('Renaming objects', function () {
-    it('Rename a connection', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin')).rightclick()
-      .getMenuCommand('fusion.properties').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Edit Connection');
-      cy.get(dialogBody).should('be.visible').then(body => {
-        cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
-        .find('+ input.theia-input[type=text]').should('have.value', 'localhost').clear().type('new_name');
-        cy.get(dialogMainButton).should('be.visible').click();
-        cy.get(dialog).should('not.exist');
-      });
-      cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db')).click();
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();
-    })
+    // it('Rename a connection', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin')).rightclick()
+    //   .getMenuCommand('fusion.properties').should('be.visible').click()
+    //   cy.get(dialogTitle).should('contain.text', 'Edit Connection');
+    //   cy.get(dialogBody).should('be.visible').then(body => {
+    //     cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
+    //     .find('+ input.theia-input[type=text]').should('have.value', 'localhost').clear().type('new_name');
+    //     cy.get(dialogMainButton).should('be.visible').click();
+    //     cy.get(dialog).should('not.exist');
+    //   });
+    //   cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db')).click();
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();
+    // })
+    
+    // TODO(DP): Add second rename route via properties to document_spec
     it('rename a document', function () {
       cy.waitForLoading();
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('be.visible').rightclick();
