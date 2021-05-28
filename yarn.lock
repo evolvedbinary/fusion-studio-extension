@@ -2010,6 +2010,23 @@
     semver "^5.4.1"
     write-json-file "^2.2.0"
 
+"@theia/application-package@1.14.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@theia/application-package/-/application-package-1.14.0.tgz#04146d575a75f2d141d92e79f796f703bc08cd34"
+  integrity sha512-YOlWxvc2H+QwmY0a+H7B+yoLc/Mep+YmRAFlCGaVspGtQglUXB7kwhHYv9KIfhx0mlLX/d+PlNsDPMT/ijHsig==
+  dependencies:
+    "@types/fs-extra" "^4.0.2"
+    "@types/request" "^2.0.3"
+    "@types/semver" "^5.4.0"
+    "@types/write-json-file" "^2.2.1"
+    changes-stream "^2.2.0"
+    deepmerge "2.0.1"
+    fs-extra "^4.0.2"
+    is-electron "^2.1.0"
+    request "^2.82.0"
+    semver "^5.4.1"
+    write-json-file "^2.2.0"
+
 "@theia/cli@^1.13.0":
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/@theia/cli/-/cli-1.13.0.tgz#a6870fa3e5134e8bc052cfefde94dc7e8d6750c8"
@@ -2049,7 +2066,7 @@
     serialize-javascript "^1.4.0"
     webpack-sources "^1.0.1"
 
-"@theia/core@1.13.0", "@theia/core@^1.13.0":
+"@theia/core@1.13.0":
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.13.0.tgz#86e5a03988977f85ffa20c2c1e9978f2c2ec73cf"
   integrity sha512-ZR0cwYgsWn9FxjyxgShm4WeWhea19VG18abKIeqm+1noNYfUidUQw1AT90Zk5c3HVxUuafmVllIXZvGQJniRuQ==
@@ -2113,13 +2130,87 @@
     ws "^7.1.2"
     yargs "^15.3.1"
 
-"@theia/editor@1.13.0", "@theia/editor@^1.13.0":
+"@theia/core@1.14.0", "@theia/core@^1.13.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@theia/core/-/core-1.14.0.tgz#0dd1b88c267f5caa8dd60962703ee1cd55345a0a"
+  integrity sha512-nVU1syezmJ3RBscGUAGVIWLGfARTxKndemaaQj65AayLww8XjiMWcNjNCU5w3xVs7PD7nZ/5DCC+LtXFAluhHg==
+  dependencies:
+    "@babel/runtime" "^7.10.0"
+    "@phosphor/algorithm" "1"
+    "@phosphor/commands" "1"
+    "@phosphor/coreutils" "1"
+    "@phosphor/domutils" "1"
+    "@phosphor/dragdrop" "1"
+    "@phosphor/messaging" "1"
+    "@phosphor/properties" "1"
+    "@phosphor/signaling" "1"
+    "@phosphor/virtualdom" "1"
+    "@phosphor/widgets" "1"
+    "@primer/octicons-react" "^9.0.0"
+    "@theia/application-package" "1.14.0"
+    "@types/body-parser" "^1.16.4"
+    "@types/cookie" "^0.3.3"
+    "@types/express" "^4.16.0"
+    "@types/fs-extra" "^4.0.2"
+    "@types/lodash.debounce" "4.0.3"
+    "@types/lodash.throttle" "^4.1.3"
+    "@types/react" "^16.8.0"
+    "@types/react-dom" "^16.8.0"
+    "@types/react-virtualized" "^9.18.3"
+    "@types/route-parser" "^0.1.1"
+    "@types/safer-buffer" "^2.1.0"
+    "@types/ws" "^5.1.2"
+    "@types/yargs" "^15"
+    ajv "^6.5.3"
+    body-parser "^1.17.2"
+    cookie "^0.4.0"
+    drivelist "^9.0.2"
+    es6-promise "^4.2.4"
+    express "^4.16.3"
+    file-icons-js "~1.0.3"
+    font-awesome "^4.7.0"
+    fs-extra "^4.0.2"
+    fuzzy "^0.1.3"
+    iconv-lite "^0.6.0"
+    inversify "^5.0.1"
+    jschardet "^2.1.1"
+    lodash.debounce "^4.0.8"
+    lodash.throttle "^4.1.1"
+    nsfw "^2.1.2"
+    p-debounce "^2.1.0"
+    perfect-scrollbar "^1.3.0"
+    react "^16.8.0"
+    react-dom "^16.8.0"
+    react-virtualized "^9.20.0"
+    reconnecting-websocket "^4.2.0"
+    reflect-metadata "^0.1.10"
+    route-parser "^0.0.5"
+    safer-buffer "^2.1.2"
+    uuid "^8.3.2"
+    vscode-languageserver-protocol "~3.15.3"
+    vscode-languageserver-types "^3.15.1"
+    vscode-uri "^2.1.1"
+    vscode-ws-jsonrpc "^0.2.0"
+    ws "^7.1.2"
+    yargs "^15.3.1"
+
+"@theia/editor@1.13.0":
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/@theia/editor/-/editor-1.13.0.tgz#115fa9c7343a6bea82e48eb1499bf98917442048"
   integrity sha512-aszvMJuRIKKBg4n5wjmHVOs6xIYDF+EyfdF7b8zOWiKKHNg3DELQEN87mcgtYtnN2XMfg6Kgyvv0xp1wVvVFTQ==
   dependencies:
     "@theia/core" "1.13.0"
     "@theia/variable-resolver" "1.13.0"
+    "@types/base64-arraybuffer" "0.1.0"
+    base64-arraybuffer "^0.1.5"
+
+"@theia/editor@^1.13.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@theia/editor/-/editor-1.14.0.tgz#00440e1d5c0698abd8cfdb61bb04d95b8341e895"
+  integrity sha512-Xt0gNwejndD/gzta3ZFAuwCmC/nAMT1B5cMHiGidN+j37xPLuF09TzUW85j6qa+oI0C71niN71PPL3pxZqsvZA==
+  dependencies:
+    "@theia/core" "1.14.0"
+    "@theia/variable-resolver" "1.14.0"
     "@types/base64-arraybuffer" "0.1.0"
     base64-arraybuffer "^0.1.5"
 
@@ -2274,6 +2365,13 @@
   integrity sha512-hYpXN0GxAlRf7pwyj8HTbXNNwihhf6XcWMhJbNOuz7mXMW73unQnR8A+uVyny9cX72Flm3PHpJTETobTnydKuw==
   dependencies:
     "@theia/core" "1.13.0"
+
+"@theia/variable-resolver@1.14.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@theia/variable-resolver/-/variable-resolver-1.14.0.tgz#faac6b9a3f36b83cfb3314c163122a65ed2a1454"
+  integrity sha512-NlaChAKAU8VqYyJj1j0VvStmqIU6sfvVIj97fOEYxfsdbxpWr7uVdT+7moGj3/x8nfSuXhv4sHdemETN3BUKiA==
+  dependencies:
+    "@theia/core" "1.14.0"
 
 "@theia/workspace@1.13.0", "@theia/workspace@^1.13.0":
   version "1.13.0"
