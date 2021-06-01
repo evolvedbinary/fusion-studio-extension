@@ -9,8 +9,23 @@
 // ***********************************************
 //
 //
+// see https://github.com/javierbrea/cypress-localstorage-commands
+import "cypress-localstorage-commands"
+
 // -- This is a parent command --
-// Cypress.Commands.add("login", (email, password) => { ... })
+// populate localStorage with a default connection, automatically cleared before each spec
+// assumes default 'admin' user and '' password
+// actual server URL is retrieved via ENV
+Cypress.Commands.add("connect", () => { 
+    // conn_val mimics actual app behavior, its value is inconsequential for establishing a connection
+    let conn_val = 'admin@' + Cypress.env('API_HOST')
+    let nested = {"name":"localhost","server": Cypress.env('API_HOST'),"username":"admin","password":"","users":[],"groups":[]}
+    let obj = {}
+    obj[conn_val] = nested
+
+    localStorage.setItem('connections',	JSON.stringify(obj))
+
+ })
 //
 //
 // -- This is a child command --

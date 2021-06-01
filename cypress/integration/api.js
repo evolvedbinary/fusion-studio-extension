@@ -31,7 +31,7 @@ context('Fusion Studio', function () {
       cy.getTreeNode(mkApiPathUrl('admin', '/db')).should('exist');
     })
     // TODO(DP) this test is failing properly it seems, figure out why and adjust test logic 
-    it.skip('shouldn\'t connect with older api', function () {
+    it('shouldn\'t connect with older api', function () {
       cy.visit('/', {
         onBeforeLoad(win) {
           cy.stub(win, 'fetch').callThrough().withArgs(mkApiUrl('/version')).as('version api').resolves({
@@ -47,7 +47,6 @@ context('Fusion Studio', function () {
               "exist-db": {
                 "compatible-version" : "0.0.1"
               }
-              
             }),
           });
         },
@@ -55,7 +54,7 @@ context('Fusion Studio', function () {
         .should('be.visible')
         .get('.theia-preload').should('not.exist');
       cy.addConnection();
-      // cy.get(dialogTitle).should('contain.text', 'New Connection');
+      cy.get(dialogTitle).should('contain.text', 'New Connection');
       cy.get(dialogBody).should('be.visible')
         .should('contain.text', 'Outdated API "0.0.1"')
         .should('contain.text', 'You need to update your API to version "0.2.0" or higher');

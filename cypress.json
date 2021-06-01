@@ -2,5 +2,8 @@
   "baseUrl": "http://localhost:3000",
   "ignoreTestFiles": "**/integration/examples/*.*",
   "projectId": "ftw148",
-  "experimentalFetchPolyfill": true
+  "experimentalFetchPolyfill": true,
+  "env": {
+    "API_HOST": "http://localhost:8080"
+  }
 }

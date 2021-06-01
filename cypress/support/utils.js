@@ -1,5 +1,7 @@
 import { apiHost, apiPort } from '../support/config.js';
 
+// CSS does not require custom approach
+// see https://docs.cypress.io/faq/questions/using-cypress-faq#How-do-I-use-special-characters-with-cy-get
 export function treenode(id) {
   return '[node-id=' + CSS.escape(id) + ']';
 }
