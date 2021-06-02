@@ -4,8 +4,8 @@ context('Document Operations', () => {
   describe('working with tree view', () => {
     before(() => {
       cy.connect()
-      // TODO(DP): might have to improve by adding more before / after hooks to prevent dangling documents
-      // see #400
+        // TODO(DP): might have to improve by adding more before / after hooks to prevent dangling documents
+        // see #400
     })
 
     describe('db context menu', () => {
@@ -15,7 +15,7 @@ context('Document Operations', () => {
           .should('be.visible')
         cy.get('.fusion-item')
           .click()
-        //  all we need is the final part of the node-id attribute
+          //  all we need is the final part of the node-id attribute
         cy.get('[node-id$=db]')
           .rightclick()
           .then(() => {
@@ -27,11 +27,11 @@ context('Document Operations', () => {
               .should('be.visible')
               .click()
           })
-        // (DP): start workaround for #413 
+          // (DP): start workaround for #413 
         cy.get('[node-id$=db]')
           .trigger('mousemove')
           .type('{enter}')
-        // end workaround for #413
+          // end workaround for #413
         cy.get('.ReactVirtualized__Grid')
           .contains('untitled-1')
 
@@ -47,13 +47,13 @@ context('Document Operations', () => {
       // or by using the file menu UI instead
       // see #414
       it('should let users edit new document', () => {
-        cy.get('[node-id$=untitled-1]')
-          .dblclick()
-        cy.get('.view-line')
-          .type('asdf{meta+s}')
-      })
-      // see #414 workaround is to run this after editing and saving the document, 
-      // we should be able to rename before entering content
+          cy.get('[node-id$=untitled-1]')
+            .dblclick()
+          cy.get('.view-line')
+            .type('asdf{meta+s}')
+        })
+        // see #414 workaround is to run this after editing and saving the document, 
+        // we should be able to rename before entering content
       it('should let users rename documents', () => {
         cy.get('[node-id$=untitled-1]')
           .rightclick()
@@ -70,11 +70,11 @@ context('Document Operations', () => {
           .type('{alt+enter}', { force: true })
         cy.get('.dialogTitle')
           .should('contain.text', 'Properties')
-        // rename file -> text.xml
+          // rename file -> text.xml
         cy.get('.value > .theia-input')
           .clear()
           .type('test.xml')
-        // check properties table 
+          // check properties table 
         cy.get('.dialogContent')
           .find('.keys > tr')
           .should('have.length', 11)
@@ -82,7 +82,7 @@ context('Document Operations', () => {
         cy.get('.dialogContent')
           .find('.keys > tr')
           .contains('Owner')
-        // check permissions table  
+          // check permissions table  
         cy.get('.dialogContent')
           .find('.permissions-editor > tr')
           .should('have.length', 3)
@@ -120,7 +120,7 @@ context('Document Operations', () => {
           .click()
         cy.get('.main')
           .click()
-        // make sure all test files are gone see #400
+          // make sure all test files are gone see #400
         cy.get('[node-id$=untitled-1]')
           .should('not.exist')
         cy.get('[node-id$=test\\.txt]')
