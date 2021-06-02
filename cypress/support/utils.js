@@ -67,19 +67,19 @@ Cypress.Commands.add('addCollection', (id, name) => {
   cy.waitForLoading();
   cy.getTreeNode(id + '/' + name).should('be.visible');
 });
-Cypress.Commands.add('addDocument', (collection, name, type = '') => {
-  cy.waitForLoading();
-  const command = 'fusion.new-document' + (type ? '-template:' + type : '');
-  cy.getTreeNode(collection).rightclick()
-  cy.getSubMenu('New document...').trigger('mousemove').getMenuCommand(command).should('be.visible').click();
-  cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'untitled').clear().type(name + '{enter}');
-  if (type === '') {
-    cy.get('.p-Widget.p-TabBar li[title=' + CSS.escape(collection + '/' + name) + ']').click();
-    cy.get('[role=presentation].editor-scrollable').click().type('Sample text file content');
-  }
-  cy.get('#theia-top-panel .p-MenuBar-item').contains('File').click()
-  cy.get('.p-Menu-item[data-type=command][data-command=core\\.save]').click()
-});
+// Cypress.Commands.add('addDocument', (collection, name, type = '') => {
+//   cy.waitForLoading();
+//   const command = 'fusion.new-document' + (type ? '-template:' + type : '');
+//   cy.getTreeNode(collection).rightclick()
+//   cy.getSubMenu('New document...').trigger('mousemove').getMenuCommand(command).should('be.visible').click();
+//   cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'untitled').clear().type(name + '{enter}');
+//   if (type === '') {
+//     cy.get('.p-Widget.p-TabBar li[title=' + CSS.escape(collection + '/' + name) + ']').click();
+//     cy.get('[role=presentation].editor-scrollable').click().type('Sample text file content');
+//   }
+//   cy.get('#theia-top-panel .p-MenuBar-item').contains('File').click()
+//   cy.get('.p-Menu-item[data-type=command][data-command=core\\.save]').click()
+// });
 
 // TODO: All of these need to replaced by meaningful selectors in the source-code
 export const dialogOverlay = '.p-Widget.dialogOverlay#theia-dialog-shell';
