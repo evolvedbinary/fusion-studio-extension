@@ -94,54 +94,54 @@ context('Properties dialog', function () {
     //   cy.get(dialogSecondaryButton).should('be.visible').click();
     //   cy.get(dialog).should('not.exist');
     // })
-    it('Collection properties', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).rightclick()
-        .getMenuCommand('fusion.properties').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Properties');
-      cy.get(dialogBody).should('be.visible').then(body => {
-        cy.wrap(body).find('td.label').contains('Name')
-          .find('+ td.value input.theia-input[type=text]').should('contain.value', 'test_col');
-        cy.wrap(body).find('td.label').contains('Collection')
-          .find('+ td.value').should('contain.text', '/db');
-        cy.wrap(body).find('td.label').contains('Created')
-          .find('+ td.value').should('contain.text', Cypress.formatDate());
-        cy.wrap(body).find('td.label').contains('Owner')
-          .find('+ td.value input.theia-input[type=text]').should('contain.value', 'admin');
-        cy.wrap(body).find('td.label').contains('Group')
-          .find('+ td.value input.theia-input[type=text]').should('contain.value', 'dba');
-        cy.wrap(body).find('table.permissions-editor tr').then(trs => {
-          cy.wrap(trs).eq(0).find('td').then(tds => {
-            cy.wrap(tds).eq(0).should('contain.text', 'user');
-            cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
-            cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').checked();
-            cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').checked();
-            cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'setUID').notChecked();
-          });
-          cy.wrap(trs).eq(1).find('td').then(tds => {
-            cy.wrap(tds).eq(0).should('contain.text', 'group');
-            cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
-            cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').notChecked();
-            cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').checked();
-            cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'setGID').notChecked();
-          });
-          cy.wrap(trs).eq(2).find('td').then(tds => {
-            cy.wrap(tds).eq(0).should('contain.text', 'other');
-            cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
-            cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').notChecked();
-            cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').checked();
-            cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'sticky').notChecked();
-          });
-        });
-        cy.get(dialogSecondaryButton).should('be.visible').click();
-        cy.get(dialog).should('not.exist');
-        cy.getTreeNode(mkApiPathUrl('admin', '/db')).rightclick()
-          .getMenuCommand('fusion.properties').should('be.visible').click()
-        cy.get(dialogBody).should('be.visible').find('td.label').should('not.contain.text', 'Collection');
-        cy.get(dialogSecondaryButton).should('be.visible').click();
-        cy.get(dialog).should('not.exist');
-      });
-    })
+    // it('Collection properties', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).rightclick()
+    //     .getMenuCommand('fusion.properties').should('be.visible').click()
+    //   cy.get(dialogTitle).should('contain.text', 'Properties');
+    //   cy.get(dialogBody).should('be.visible').then(body => {
+    //     cy.wrap(body).find('td.label').contains('Name')
+    //       .find('+ td.value input.theia-input[type=text]').should('contain.value', 'test_col');
+    //     cy.wrap(body).find('td.label').contains('Collection')
+    //       .find('+ td.value').should('contain.text', '/db');
+    //     cy.wrap(body).find('td.label').contains('Created')
+    //       .find('+ td.value').should('contain.text', Cypress.formatDate());
+    //     cy.wrap(body).find('td.label').contains('Owner')
+    //       .find('+ td.value input.theia-input[type=text]').should('contain.value', 'admin');
+    //     cy.wrap(body).find('td.label').contains('Group')
+    //       .find('+ td.value input.theia-input[type=text]').should('contain.value', 'dba');
+    //     cy.wrap(body).find('table.permissions-editor tr').then(trs => {
+    //       cy.wrap(trs).eq(0).find('td').then(tds => {
+    //         cy.wrap(tds).eq(0).should('contain.text', 'user');
+    //         cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
+    //         cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').checked();
+    //         cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').checked();
+    //         cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'setUID').notChecked();
+    //       });
+    //       cy.wrap(trs).eq(1).find('td').then(tds => {
+    //         cy.wrap(tds).eq(0).should('contain.text', 'group');
+    //         cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
+    //         cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').notChecked();
+    //         cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').checked();
+    //         cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'setGID').notChecked();
+    //       });
+    //       cy.wrap(trs).eq(2).find('td').then(tds => {
+    //         cy.wrap(tds).eq(0).should('contain.text', 'other');
+    //         cy.wrap(tds).eq(1).findCheckbox().should('contain.text', 'read').checked();
+    //         cy.wrap(tds).eq(2).findCheckbox().should('contain.text', 'write').notChecked();
+    //         cy.wrap(tds).eq(3).findCheckbox().should('contain.text', 'execute').checked();
+    //         cy.wrap(tds).eq(4).findCheckbox().should('contain.text', 'sticky').notChecked();
+    //       });
+    //     });
+    //     cy.get(dialogSecondaryButton).should('be.visible').click();
+    //     cy.get(dialog).should('not.exist');
+    //     cy.getTreeNode(mkApiPathUrl('admin', '/db')).rightclick()
+    //       .getMenuCommand('fusion.properties').should('be.visible').click()
+    //     cy.get(dialogBody).should('be.visible').find('td.label').should('not.contain.text', 'Collection');
+    //     cy.get(dialogSecondaryButton).should('be.visible').click();
+    //     cy.get(dialog).should('not.exist');
+    //   });
+    // })
     // it('Connection properties', function () {
     //   cy.waitForLoading();
     //   cy.getTreeNode(mkApiPathUrl('admin')).rightclick()
@@ -180,34 +180,34 @@ context('Properties dialog', function () {
     //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();
     // })
     
-    // TODO(DP): Add second rename route via properties to document_spec
-    it('rename a document', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('be.visible').rightclick();
-      cy.getMenuCommand('fusion.properties').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Properties');
-      cy.get(dialogBody).should('be.visible')
-        .find('td.label').contains('Name')
-        .find('+ td.value input.theia-input[type=text]').should('contain.value', 'text_file.txt').type('new_name.txt');
-      cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.exist');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('not.exist');
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/new_name.txt')).should('be.visible');
-    })
-    it('rename a collection', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('be.visible').rightclick();
-      cy.getMenuCommand('fusion.properties').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Properties');
-      cy.get(dialogBody).should('be.visible')
-        .find('td.label').contains('Name')
-        .find('+ td.value input.theia-input[type=text]').should('contain.value', 'test_col').type('new_test_col');
-      cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.exist');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('not.exist');
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/new_test_col')).should('be.visible');
-    })
+    // // TODO(DP): Add second rename route via properties to document_spec
+    // it('rename a document', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('be.visible').rightclick();
+    //   cy.getMenuCommand('fusion.properties').should('be.visible').click()
+    //   cy.get(dialogTitle).should('contain.text', 'Properties');
+    //   cy.get(dialogBody).should('be.visible')
+    //     .find('td.label').contains('Name')
+    //     .find('+ td.value input.theia-input[type=text]').should('contain.value', 'text_file.txt').type('new_name.txt');
+    //   cy.get(dialogMainButton).should('be.visible').click();
+    //   cy.get(dialog).should('not.exist');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/text_file.txt')).should('not.exist');
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/new_name.txt')).should('be.visible');
+    // })
+    // it('rename a collection', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('be.visible').rightclick();
+    //   cy.getMenuCommand('fusion.properties').should('be.visible').click()
+    //   cy.get(dialogTitle).should('contain.text', 'Properties');
+    //   cy.get(dialogBody).should('be.visible')
+    //     .find('td.label').contains('Name')
+    //     .find('+ td.value input.theia-input[type=text]').should('contain.value', 'test_col').type('new_test_col');
+    //   cy.get(dialogMainButton).should('be.visible').click();
+    //   cy.get(dialog).should('not.exist');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('not.exist');
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/new_test_col')).should('be.visible');
+    // })
   })
 })
