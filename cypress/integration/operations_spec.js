@@ -90,14 +90,14 @@ context('Fusion Studio', function () {
     //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/other_col1')).should('be.visible');
     // })
     // TODO(DP): add to connection_spec
-    it('rename a connection', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
-      cy.getMenuCommand('fusion.rename').should('be.visible').click()
-      cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'localhost').clear().type('new_name{enter}');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
-    })
+    // it('rename a connection', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
+    //   cy.getMenuCommand('fusion.rename').should('be.visible').click()
+    //   cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'localhost').clear().type('new_name{enter}');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
+    // })
   })
   describe('Deleting', function () {
     // it('delete a document', function () {

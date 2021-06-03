@@ -95,6 +95,8 @@ context('Connecting to Servers', () => {
                 cy.get('.main')
                     .should('be.visible')
                     .click()
+                cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
+                  .contains('local1')    
             })
         })
 
