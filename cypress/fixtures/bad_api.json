@@ -1,11 +1,12 @@
 {
-    "server": {
-        "product-name": "eXist",
-        "build": "20200123123609",
-        "version": "5.2.0",
-        "revision": "c58d04ec45de50e7738489dee072fcc863dc8b1b"
-    },
-    "exist-db": {
-        "compatible-version": "0.0.1"
-    }
+  "version": "0.0.1",
+  "server": {
+    "product-name": "eXist",
+    "build": "20200123123609",
+    "version": "5.2.0",
+    "revision": "c58d04ec45de50e7738489dee072fcc863dc8b1b"
+  },
+  "exist-db": {
+    "compatible-version": null
+  }
 }
