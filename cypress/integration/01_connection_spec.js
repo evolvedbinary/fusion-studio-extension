@@ -1,10 +1,10 @@
 /// <reference types="Cypress" />
 context('Connecting to Servers', () => {
-    describe('Connection Dialogue', () => {
+    describe('New Connection Dialogue', () => {
         after(() => {
             // cleanup connections after test            
             cy.clearLocalStorage('connections')
-            cy.reload()    
+            cy.reload()
         })
 
         it('should create a connection', () => {
@@ -57,30 +57,10 @@ context('Connecting to Servers', () => {
                     cy.get('.dialogContent')
                         // TODO(DP): #408 this needs a meaningful error message
                         .contains('error')
-                        cy.get('.dialogControl > .theia-button').click()
+                    cy.get('.dialogControl > .theia-button').click()
                 })
         })
 
-
-        // TODO(DP): add Connection properties tests here (rename and contencheck)
-        // it('Connection properties', function () {
-        //     cy.waitForLoading();
-        //     cy.getTreeNode(mkApiPathUrl('admin')).rightclick()
-        //       .getMenuCommand('fusion.properties').should('be.visible').click()
-        //     cy.get(dialogTitle).should('contain.text', 'Edit Connection');
-        //     cy.get(dialogBody).should('be.visible').then(body => {
-        //       cy.wrap(body).find('.vertical-form .name-field span').contains('Connection Name:')
-        //         .find('+ input.theia-input[type=text]').should('have.value', 'localhost');
-        //         cy.wrap(body).find('.vertical-form .server-field span').contains('Server URI:')
-        //         .find('+ input.theia-input[type=text]').should('have.value', apiHost +  apiPort);
-        //         cy.wrap(body).find('.vertical-form .username-field span').contains('Username:')
-        //         .find('+ input.theia-input[type=text]').should('have.value', 'admin');
-        //       cy.wrap(body).find('.vertical-form .password-field span').contains('Password')
-        //         .find('+ input.theia-input[type=password]').should('have.value', '');
-        //       cy.get(dialogSecondaryButton).should('be.visible').click();
-        //       cy.get(dialog).should('not.exist');
-        //     });
-        //   })
 
         it('should remove bad connection', () => {
             cy.get(`[node-id=${CSS.escape('badmin@' + Cypress.env('API_HOST'))}]`)
@@ -89,14 +69,37 @@ context('Connecting to Servers', () => {
                     cy.get('[data-command="fusion.disconnect"] > .p-Menu-itemLabel')
                         .click()
                     cy.get('.dialogContent')
-                      .contains('you sure') 
+                        .contains('you sure')
                     cy.get('.main').click()
                 })
             cy.get('.ReactVirtualized__Grid')
                 .should('be.visible')
-                .should('not.contain', 'server2')    
+                .should('not.contain', 'server2')
         })
-    })
 
+        describe('Connection Propertes Dialog', () => {
+            // TODO(DP): add Connection properties tests here (rename and contencheck)
+            it('should have working properties dialog', () => {
+                cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
+                    .rightclick()
+                    .type('{alt+enter}', { force: true })
+                cy.get('.dialogTitle')
+                    .should('contain.text', 'Edit Connection')
+                cy.get('.dialogContent')
+                    .find('.theia-input')
+                    .should('have.length', 4)
+                cy.get('.name-field > .theia-input')
+                    .should('have.value', 'server1')
+                    .clear()
+                    .type('local1')
+                cy.get('.main')
+                    .should('be.visible')
+                    .click()
+                cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
+                  .contains('local1')    
+            })
+        })
+
+    })
 
 })

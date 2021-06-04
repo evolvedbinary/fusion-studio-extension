@@ -23,13 +23,13 @@ context('Fusion Studio', function () {
     // TODO(DP): 
     // - this needs to clean up after itself to allow for repeated runs in case of failures
     // - the "item already exists" warning needs its own test to check if it is visible in case of name clashes
-    it('create test collections', function () {
-      cy.addCollection(mkApiPathUrl('admin', '/db'), 'test_col');
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();
-      cy.addCollection(mkApiPathUrl('admin', '/db/test_col'), 'col1');
-      cy.addCollection(mkApiPathUrl('admin', '/db/test_col'), 'col2');
-      cy.addCollection(mkApiPathUrl('admin', '/db/test_col'), 'col3');
-    })
+    // it('create test collections', function () {
+    //   cy.addCollection(mkApiPathUrl('admin', '/db'), 'test_col');
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).click();
+    //   cy.addCollection(mkApiPathUrl('admin', '/db/test_col'), 'col1');
+    //   cy.addCollection(mkApiPathUrl('admin', '/db/test_col'), 'col2');
+    //   cy.addCollection(mkApiPathUrl('admin', '/db/test_col'), 'col3');
+    // })
     // it('create text document', function () {
     //         cy.addDocument(mkApiPathUrl('admin', '/db/test_col'), 'text_file.txt');
     // })
@@ -80,24 +80,24 @@ context('Fusion Studio', function () {
     //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/text_file.txt')).should('not.exist');
     //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/new_name.txt')).should('be.visible');
     // })
-    it('rename a collection', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/col1')).should('be.visible').rightclick();
-      cy.getMenuCommand('fusion.rename').should('be.visible').click()
-      cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'col1').clear().type('other_col1{enter}');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/col1')).should('not.exist');
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/other_col1')).should('be.visible');
-    })
+    // it('rename a collection', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/col1')).should('be.visible').rightclick();
+    //   cy.getMenuCommand('fusion.rename').should('be.visible').click()
+    //   cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'col1').clear().type('other_col1{enter}');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/col1')).should('not.exist');
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2/other_col1')).should('be.visible');
+    // })
     // TODO(DP): add to connection_spec
-    it('rename a connection', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
-      cy.getMenuCommand('fusion.rename').should('be.visible').click()
-      cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'localhost').clear().type('new_name{enter}');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
-    })
+    // it('rename a connection', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
+    //   cy.getMenuCommand('fusion.rename').should('be.visible').click()
+    //   cy.get('.fs-inline-input').should('exist').find('input.theia-input[type=text]').should('contain.value', 'localhost').clear().type('new_name{enter}');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').contains('new_name');
+    // })
   })
   describe('Deleting', function () {
     // it('delete a document', function () {
@@ -130,17 +130,17 @@ context('Fusion Studio', function () {
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col2')).should('not.exist');
       cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col/col3')).should('not.exist');
     })
-    it('delete a collection', function () {
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('be.visible').rightclick();
-      cy.getMenuCommand('fusion.delete').should('be.visible').click()
-      cy.get(dialogTitle).should('contain.text', 'Delete collection');
-      cy.get(dialogBody).should('be.visible').find('p').should('contain.text', 'Are you sure you want to delete the collection: test_col?');
-      cy.get(dialogMainButton).should('be.visible').click();
-      cy.get(dialog).should('not.exist');
-      cy.waitForLoading();
-      cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('not.exist');
-    })
+    // it('delete a collection', function () {
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('be.visible').rightclick();
+    //   cy.getMenuCommand('fusion.delete').should('be.visible').click()
+    //   cy.get(dialogTitle).should('contain.text', 'Delete collection');
+    //   cy.get(dialogBody).should('be.visible').find('p').should('contain.text', 'Are you sure you want to delete the collection: test_col?');
+    //   cy.get(dialogMainButton).should('be.visible').click();
+    //   cy.get(dialog).should('not.exist');
+    //   cy.waitForLoading();
+    //   cy.getTreeNode(mkApiPathUrl('admin', '/db/test_col')).should('not.exist');
+    // })
     // it('delete a connection', function () {
     //   cy.waitForLoading();
     //   cy.getTreeNode(mkApiPathUrl('admin')).should('be.visible').rightclick();
