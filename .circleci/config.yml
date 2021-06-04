@@ -66,7 +66,7 @@ jobs:
           command: |
             pwd
             sleep 15
-            npx cypress run --config defaultCommandTimeout=55000
+            npx cypress run --config defaultCommandTimeout=58000
           no_output_timeout: 2m
 workflows:
   browser_build:

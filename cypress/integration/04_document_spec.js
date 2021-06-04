@@ -43,24 +43,9 @@ context('Document Operations', () => {
         // - two file create routes one with follow-up dialog (xquery lib) one without (txt, xml)
       })
 
-      // TODO(DP): make this work on all OS by either adjusting the key sequence ctrl+s cmd+s …
-      // or by using the file menu UI instead
       // see https://github.com/cypress-io/cypress/pull/15388/files#
       // see #414
 
-      // it('sets focus on search files filters if user presses Cmd + F', () => {
-      //   if (Cypress.platform === 'darwin') {
-      //     cy.get('.filter').type('{cmd}F')
-      //     cy.get('.filter').should('have.focus')
-      //   }
-      // })
-
-      // it('sets focus on search files filter if user presses Ctrl + F', () => {
-      //   if (Cypress.platform !== 'darwin') {
-      //     cy.get('.filter').type('{ctrl}F')
-      //     cy.get('.filter').should('have.focus')
-      //   }
-      // })
       it('should let users edit new document', () => {
           cy.get('[node-id$=untitled-1]')
             .dblclick()
@@ -130,7 +115,6 @@ context('Document Operations', () => {
               .should('contain.text', 'Item already exists')
           })
       })
-
 
       it('should let users delete documents', () => {
         cy.get('[node-id$=test\\.xml]')
