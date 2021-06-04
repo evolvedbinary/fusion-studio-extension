@@ -1,15 +1,15 @@
 // (DP) rewrite
 
-export const apiHost = 'http://localhost:';
-export const apiPort = '8080';
-export const apiUrl = apiHost + apiPort + "/exist/restxq/fusiondb";
+// export const apiHost = 'http://localhost:';
+// export const apiPort = '8080';
+// export const apiUrl = apiHost + apiPort + "/exist/restxq/fusiondb";
 
-export function mkApiUrl(apiService) {
-  return apiHost + apiService;
-};
-export function mkApiPathUrl(username, dbPath = '') {
-  return username + '@' + apiHost + apiPort + dbPath;
-};
+// export function mkApiUrl(apiService) {
+//   return apiHost + apiService;
+// };
+// export function mkApiPathUrl(username, dbPath = '') {
+//   return username + '@' + apiHost + apiPort + dbPath;
+// };
 
 
 // Connection details for the Fusion Studio API
