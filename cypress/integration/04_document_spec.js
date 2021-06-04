@@ -45,12 +45,32 @@ context('Document Operations', () => {
 
       // TODO(DP): make this work on all OS by either adjusting the key sequence ctrl+s cmd+s …
       // or by using the file menu UI instead
+      // see https://github.com/cypress-io/cypress/pull/15388/files#
       // see #414
+
+      // it('sets focus on search files filters if user presses Cmd + F', () => {
+      //   if (Cypress.platform === 'darwin') {
+      //     cy.get('.filter').type('{cmd}F')
+      //     cy.get('.filter').should('have.focus')
+      //   }
+      // })
+
+      // it('sets focus on search files filter if user presses Ctrl + F', () => {
+      //   if (Cypress.platform !== 'darwin') {
+      //     cy.get('.filter').type('{ctrl}F')
+      //     cy.get('.filter').should('have.focus')
+      //   }
+      // })
       it('should let users edit new document', () => {
           cy.get('[node-id$=untitled-1]')
             .dblclick()
-          cy.get('.view-line')
+          if( Cypress.platform === 'darwin') {
+            cy.get('.view-line')
             .type('asdf{meta+s}')
+          } else {
+            cy.get('.view-line')
+            .type('asdf{ctrl+s}')
+          }          
         })
         // see #414 workaround is to run this after editing and saving the document, 
         // we should be able to rename before entering content
