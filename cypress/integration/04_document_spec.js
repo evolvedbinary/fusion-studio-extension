@@ -4,13 +4,14 @@ context('Document Operations', () => {
   describe('working with tree view', () => {
     before(() => {
       cy.connect()
+      cy.visit('/')
+      cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
         // TODO(DP): might have to improve by adding more before / after hooks to prevent dangling documents
         // see #400
     })
 
     describe('db context menu', () => {
       it('should display creation options', () => {
-        cy.visit('/')
         cy.get('.ReactVirtualized__Grid', { timeout: 55000 })
           .should('be.visible')
         cy.get('.fusion-item')
