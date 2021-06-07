@@ -145,7 +145,15 @@ context('Collection Operations', () => {
         cy.get('.main')
           .click()
         cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test_col2', { method: 'DELETE' });
-        // make sure all test files are gone see #400
+        // make sure all test files are gone see #400, including those produced by failed create commands
+        cy.get('[node-id$=untitled-1]')
+          .should('not.exist')
+        cy.get('[node-id$=untitled-2]')
+          .should('not.exist')
+        cy.get('[node-id$=test_col]')
+          .should('not.exist')
+        cy.get('[node-id$=test_col1]')
+          .should('not.exist')
         cy.get('[node-id$=test_col2]')
           .should('not.exist')
         cy.get('[node-id$=test_colA]')
