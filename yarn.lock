@@ -5623,11 +5623,6 @@ cyclist@^1.0.1:
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
 
-cypress-localstorage-commands@^1.4.4:
-  version "1.4.4"
-  resolved "https://registry.yarnpkg.com/cypress-localstorage-commands/-/cypress-localstorage-commands-1.4.4.tgz#96ebce71b78895bd34a96c6d424b5de18a257b82"
-  integrity sha512-j502dbaQxTkz8iXYPClpYn2AIFyMZvvODNNHVZVoKBSkKOEuWAx3/RT4RvH0naV4/T05oUw2O9Cm5VxeZbyxiw==
-
 cypress@7.4.0:
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/cypress/-/cypress-7.4.0.tgz#679bfe75335b9a4873d44f0d989e9f0367f00665"
