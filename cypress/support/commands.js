@@ -10,7 +10,7 @@
 //
 //
 // see https://github.com/javierbrea/cypress-localstorage-commands
-import "cypress-localstorage-commands"
+// import "cypress-localstorage-commands"
 
 // -- This is a parent command --
 // populate localStorage with a default connection, automatically cleared before each spec

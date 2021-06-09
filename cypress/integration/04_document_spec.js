@@ -4,13 +4,14 @@ context('Document Operations', () => {
   describe('working with tree view', () => {
     before(() => {
       cy.connect()
+      cy.visit('/')
+      cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
         // TODO(DP): might have to improve by adding more before / after hooks to prevent dangling documents
         // see #400
     })
 
     describe('db context menu', () => {
       it('should display creation options', () => {
-        cy.visit('/')
         cy.get('.ReactVirtualized__Grid', { timeout: 55000 })
           .should('be.visible')
         cy.get('.fusion-item')
@@ -43,14 +44,19 @@ context('Document Operations', () => {
         // - two file create routes one with follow-up dialog (xquery lib) one without (txt, xml)
       })
 
-      // TODO(DP): make this work on all OS by either adjusting the key sequence ctrl+s cmd+s …
-      // or by using the file menu UI instead
+      // see https://github.com/cypress-io/cypress/pull/15388/files#
       // see #414
+
       it('should let users edit new document', () => {
           cy.get('[node-id$=untitled-1]')
             .dblclick()
-          cy.get('.view-line')
+          if( Cypress.platform === 'darwin') {
+            cy.get('.view-line')
             .type('asdf{meta+s}')
+          } else {
+            cy.get('.view-line')
+            .type('asdf{ctrl+s}')
+          }          
         })
         // see #414 workaround is to run this after editing and saving the document, 
         // we should be able to rename before entering content
@@ -110,7 +116,6 @@ context('Document Operations', () => {
               .should('contain.text', 'Item already exists')
           })
       })
-
 
       it('should let users delete documents', () => {
         cy.get('[node-id$=test\\.xml]')
