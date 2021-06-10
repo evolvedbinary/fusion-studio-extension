@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import { v4 } from "uuid";
-import { FSNode, FSDocumentNode, FSCollectionNode, FSToolbarNode, FSConnectionNode, FSItemNode, FSSecurityNode, FSUsersNode, FSGroupsNode, FSUserNode, FSGroupNode, FSContainerNode, FSIndexesNode, FSIndexNode, FSRestNode, FSRestURINode, FSRestMethodNode } from "../classes/node";
+import { FSNode, FSDocumentNode, FSCollectionNode, FSToolbarNode, FSConnectionNode, FSItemNode, FSSecurityNode, FSUsersNode, FSGroupsNode, FSUserNode, FSGroupNode, FSContainerNode, FSIndexesNode, FSIndexNode, FSRestNode, FSRestURINode, FSRestMethodNode, FSLoadEvent } from "../classes/node";
 import { open, TreeNode, CompositeTreeNode, ConfirmDialog, SingleTextInputDialog, OpenerService, StatusBar, StatusBarAlignment, WidgetManager } from "@theia/core/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { OpenFileDialogProps, FileDialogService } from "@theia/filesystem/lib/browser";
@@ -66,6 +66,7 @@ export class FSCore {
   updating = false;
   renaming = '';
   dict: Record<string, FSNode> = {};
+  loadEvents: Record<string, (FSLoadEvent)[]> = {};
 
   setLabelProvider(labelProvider: FSLabelProviderContribution) {
     this._labelProvider = labelProvider;
@@ -193,6 +194,9 @@ export class FSCore {
   }
 
   protected removeNode(child: FSNode) {
+    if (this.loadEvents[child.id]) {
+      delete(this.loadEvents[child.id]);
+    }
     const removeNodeId = (node: FSNode) => {
       delete(this.dict[node.nodeId]);
       if (CompositeTreeNode.is(node)) {
@@ -255,8 +259,24 @@ export class FSCore {
     }
   }
 
-  public expand(node: CompositeTreeNode) {
-    this.model && this.model.expandNode(node as any);
+  public async expand(node: CompositeTreeNode) {
+    this.model && await this.model.expandNode(node as any);
+  }
+
+  public expandAndWait(node: FSContainerNode) {
+    return new Promise(resolve => {
+      this.addLoadEvent(node, node => {
+        resolve(null);
+        return true;
+      });
+      this.expand(node);
+    })
+  }
+
+  public async ensureExpanded(node: FSContainerNode) {
+    if (!node.expanded && !node.loaded) {
+      await this.expandAndWait(node);
+    }
   }
 
   public getNode(id: string): FSNode | undefined {
@@ -361,10 +381,54 @@ export class FSCore {
     return false;
   }
 
-  protected endLoading(node: TreeNode): void {
+  protected async endLoading(node: TreeNode) {
     if (FSNode.is(node)) {
       node.loading = false;
-      this.refresh();
+      await this.refresh();
+      if (this.loadEvents[node.id]) {
+        // const a =
+        this.loadEvents[node.id] = await (await Promise.all(this.loadEvents[node.id].map(async event => {
+          const result = event(node);
+          if (!result) {
+            return event;
+          }
+          if (result === true) {
+            return null;
+          }
+          return await result ? null : event
+        }))).filter(event => event != null) as FSLoadEvent[];
+        if (this.loadEvents[node.id].length < 1) {
+          delete(this.loadEvents[node.id]);
+        }
+      }
+    }
+    (window as any).loadEvents = this.loadEvents;
+  }
+
+  protected addLoadEvent(node: TreeNode, event: FSLoadEvent): void {
+    if (FSNode.is(node)) {
+      if (!this.loadEvents[node.id]) {
+        this.loadEvents[node.id] = [event];
+      } else {
+        if (!this.loadEvents[node.id].find(value => value === event)) {
+          this.loadEvents[node.id].push(event);
+        }
+      }
+    }
+  }
+
+  protected removeLoadEvent(node: TreeNode, event?: FSLoadEvent): void {
+    if (FSNode.is(node)) {
+      if (this.loadEvents[node.id]) {
+        if (event) {
+          this.loadEvents[node.id] = this.loadEvents[node.id].filter(value => value != event);
+          if (this.loadEvents[node.id].length < 1) {
+            delete(this.loadEvents[node.id]);
+          }
+        } else {
+          delete(this.loadEvents[node.id]);
+        }
+      }
     }
   }
   
@@ -1449,6 +1513,7 @@ export class FSCore {
       return false;
     }
     const collection = this.node as FSCollectionNode;
+    await this.ensureExpanded(collection);
     const validator = (input: string) => input !== '' && !this.fileExists(input);
     let initialName = this.newName(validator);
     if (extension) {
@@ -1544,6 +1609,7 @@ export class FSCore {
       }
     }
     if (FSNode.isCollection(collection)) {
+      await this.ensureExpanded(collection);
       const validator = (input: string) => input !== '' && !this.fileExists(input);
       const dialog = new SingleTextInputDialog({
         initialValue: this.newName(validator),
