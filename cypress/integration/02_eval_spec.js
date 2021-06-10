@@ -1,5 +1,5 @@
 /// <reference types="Cypress" />
-context('Evaluation', () => {
+context.skip('Evaluation', () => {
   before(() => {
     cy.visit('/')
       .get('#theia-top-panel')
