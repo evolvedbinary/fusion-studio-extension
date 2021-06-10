@@ -63,10 +63,8 @@ jobs:
           background: true
       - run: 
           working_directory: .
-          command: |
-            pwd
-            sleep 15
-            npx cypress run --config defaultCommandTimeout=58000
+          # command: npx cypress run --config defaultCommandTimeout=58000
+          command: npx cypress run
           no_output_timeout: 2m
 workflows:
   browser_build:
@@ -113,6 +111,6 @@ workflows:
 #             - run: curl --retry 5 http://localhost:8080
 #           command: npx cypress run
 #           no-workspace: false
-#           record: true
+#           record: false
 #           store_artifacts: true
 #           tags: "eXist-db,latest"

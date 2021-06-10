@@ -1,7 +1,7 @@
 /// <reference types="Cypress" />
 
 context('Talking to the api directly', () => {
-  describe.skip('API version', () => {
+  describe('API version', () => {
     before(function() {
       cy.connect();
       cy.visit('/');
