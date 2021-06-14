@@ -62,6 +62,10 @@ jobs:
           command: yarn start
           background: true
       - run: 
+          command: |
+            sleep 15
+            curl -v --connect-timeout 4 --max-time 8 http://localhost:3000 
+      - run: 
           working_directory: .
           # command: npx cypress run --config defaultCommandTimeout=58000
           command: npx cypress run
