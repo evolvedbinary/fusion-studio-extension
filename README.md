@@ -1,6 +1,5 @@
 # Fusion Studio Theia Extension
-[![Build Status](https://travis-ci.com/evolvedbinary/fusion-studio-extension.svg?branch=master)](https://travis-ci.com/evolvedbinary/fusion-studio-extension)
-[![Build status](https://ci.appveyor.com/api/projects/status/3fxvhf0k0cjjcukv/branch/master?svg=true)](https://ci.appveyor.com/project/AdamRetter/fusion-studio-extension/branch/master)
+[![CircleCI](https://circleci.com/gh/evolvedbinary/fusion-studio-extension/tree/master.svg?style=svg)](https://circleci.com/gh/evolvedbinary/fusion-studio-extension/tree/master)
 [![Cypress Dashboard](https://img.shields.io/badge/cypress-dashboard-brightgreen.svg)](https://dashboard.cypress.io/#/projects/ftw148/runs)
 [![npm version](https://badge.fury.io/js/fusion-studio-extension.svg)](https://badge.fury.io/js/fusion-studio-extension)
 [![License](https://img.shields.io/badge/license-GPL%203-blue.svg)](https://opensource.org/licenses/GPL-3.0)
@@ -18,7 +17,7 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 *   [Node 12](https://nodejs.org/dist/v12.18.3/). `>= 12.18.3` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm))
     * Node 10 may work, and Node 14 should work... however we are focused on Node 12 compatibility.
 *   [Yarn](https://yarnpkg.com). `> 1.15.x` (it can easily be installed globally via npm (Node Package Manager), but you should be aware this has a small [security implication](https://classic.yarnpkg.com/en/docs/install/#install-via-npm). npm is installed when you install Node).
-*   [Python](https://www.python.org/) `>= 2.7.12` or `>= 3.7.7.` (if your system does not provide it, consider using [pyenv](https://github.com/pyenv/pyenv)).
+*   [Python](https://www.python.org/) `>= 3.7.7.` (if your system does not provide it, consider using [pyenv](https://github.com/pyenv/pyenv)).
         If you are having trouble building and have multiple versions of Python installed via `pyenv` or any other mechanism, see the [Debugging Python Build Issues](#debugging-python-build-issues) section).
 *   Windows platforms only:
     *   Microsoft Visual Studio 2015 C++. Tested with Community Edition
@@ -123,7 +122,7 @@ yarn run cypress open
 ```
 or in cases where the above fails to load the [cypress test runner](https://docs.cypress.io/guides/core-concepts/test-runner.html#Overview), use:
 ```bash
-./node_modules/.bin/cypress open
+npx cypress open
 ```
 
 Integration tests are also run on travis. To see a similar command line style output use:
