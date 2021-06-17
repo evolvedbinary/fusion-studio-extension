@@ -1,5 +1,8 @@
 {
   "baseUrl": "http://localhost:3000",
   "ignoreTestFiles": "**/integration/examples/*.*",
-  "projectId": "ftw148"
+  "projectId": "ftw148",
+  "env": {
+    "API_HOST": "http://localhost:8080"
+  }
 }

@@ -18,9 +18,13 @@
     },
     "devDependencies": {
         "@4tw/cypress-drag-drop": "https://github.com/ccheraa/cypress-drag-drop",
-        "cypress": "7.3.0",
+        "chai": "^4.3.4",
+        "cypress": "7.5.0",
         "lerna": "4.0.0",
-        "node-sass": "5.0.0"
+        "mocha": "^8.4.0",
+        "node-sass": "6.0.0",
+        "sinon": "^10.0.0",
+        "ts-node": "^9.1.1"
     },
     "resolutions": {
         "node-gyp": "^7.0.0"

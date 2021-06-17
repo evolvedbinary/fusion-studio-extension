@@ -1,0 +1,120 @@
+version: 2.1
+
+# TODO(DP): cache all the things (yarn [x], xar [ ], images [ ], ... )
+# https://discuss.circleci.com/t/caching-apt-get-packages/9076 for 1.0 ubuntu caching (not working on 2.1)
+# see https://circleci.com/docs/2.0/browser-testing/?section=examples-and-guides#debugging-browser-tests
+
+jobs:
+  build:
+    machine:
+      image: ubuntu-2004:202104-01 
+    # docker:
+    #   - image: "cimg/python:3.9-browsers"
+    #     auth:
+    #       username: duncdrum
+    #       password: $DOCKER_TMP_PW
+      # - image: "existdb/existdb:latest"
+      #   name: exist-top
+      #   auth:
+      #     username: duncdrum
+      #     password: $DOCKER_TMP_PW
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-deps-{{ .Branch }}-{{ checksum "package.json" }}
+            - v1-deps-{{ .Branch }}
+            - v1-deps
+      # TODO (DP) slim this down 
+      - run: |
+          sudo apt-get update 
+          sudo apt-get --yes install libx11-dev libxkbfile-dev libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+
+      # - setup_remote_docker:
+      #     version: 20.10.2
+      #     docker_layer_caching: false    
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+      - run: |
+          wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
+          docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
+          docker cp *.xar pkg:/exist/autodeploy                
+          docker run -dit -p 8080:8080 --name exist-ci --rm --volumes-from pkg existdb/existdb:latest      
+      - run:
+          name: Wait for db
+          command: dockerize -wait http://localhost:8080 -timeout 1m          
+      - run: node --version
+      - run: |
+          pyenv versions
+          pyenv global 3.9.4
+      - run: python --version
+      - run: docker ps      
+      - run: yarn install --frozen-lockfile
+      - save_cache:
+          key: v1-deps-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - ~/.cache ## cache both yarn and Cypress!  
+      - run:
+          working_directory: browser-app 
+          command: yarn start
+          background: true
+      - run: 
+          command: |
+            sleep 15
+            curl -v --connect-timeout 4 --max-time 8 http://localhost:3000 
+      - run: 
+          working_directory: .
+          # command: npx cypress run --config defaultCommandTimeout=58000
+          command: npx cypress run
+          no_output_timeout: 2m
+workflows:
+  browser_build:
+    jobs:
+      - build:
+          context: FusionDB_images
+  
+# see https://circleci.com/developer/orbs/orb/cypress-io/cypress
+
+
+# ------------------
+# TODO(DP): There is a known bug preventing us from using the more modern concise approach below
+# https://support.circleci.com/hc/en-us/articles/360051099071-Docker-Hub-Authentication-With-Orb-Executors
+
+# version: 2.1
+# see https://circleci.com/developer/orbs/orb/cypress-io/cypress
+# see https://github.com/cypress-io/circleci-orb/issues/317
+# orbs:
+#   cypress: cypress-io/cypress@1
+
+# workflows:
+#   build:
+#     jobs:
+#       - cypress/run:
+#           executor: cypress/base-14
+#           context: FusionDB_images
+#           yarn: true
+#           post-checkout:
+#             - run: |
+#                 apt-get update 
+#                 apt-get --yes install libx11-dev libxkbfile-dev
+#                 wget https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_20.10.6~3-0~ubuntu-bionic_amd64.deb
+#                 dpkg -i *.deb
+#             - setup_remote_docker:
+#                 version: 20.10.2
+#                 docker_layer_caching: false
+#           start: cd browser-app && yarn start
+#           post-install:
+#             - run: |
+#                 wget https://github.com/evolvedbinary/fusion-studio-api/releases/download/1.2.0/fusion-studio-api-1.2.0.xar
+#                 docker create -v /exist/autodeploy --name pkg alpine:3.4 /bin/true
+#                 docker cp *.xar pkg:/exist/autodeploy                
+#                 docker run -dit -p 8080:8080 --name exist-ci --rm --volumes-from pkg existdb/existdb:latest
+#             - run: curl --retry 5 http://localhost:8080
+#           command: npx cypress run
+#           no-workspace: false
+#           record: false
+#           store_artifacts: true
+#           tags: "eXist-db,latest"
