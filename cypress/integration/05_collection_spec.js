@@ -22,42 +22,16 @@ context('Collection Operations', () => {
       cy.visit('/', {
         onBeforeLoad(win) {
           fetchSpy = cy.spy(win, 'fetch')
-          win.ExFile = class extends win.File {
-            constructor(root, data, fileName, options) {
-              super(data, fileName, options);
-              this.root = root;
-            }
-            webkitGetAsEntry() {
-              const me = this;
-              return {
-                isDirectory: false,
-                isFile: true,
-                fullPath: this.root + this.name,
-                file: callback => callback(this),
-              };
-            }
-          }
-          win.ExDir = class extends win.ExFile {
-            constructor(root, entries, fileName, options) {
-              super(root, [], fileName, options);
-              this.entries = entries.map(entry => entry.webkitGetAsEntry());
-            }
-            webkitGetAsEntry() {
-              const me = this;
-              return {
-                isDirectory: true,
-                isFile: false,
-                fullPath: this.root + this.name,
-                createReader: () => ({ readEntries: callback => callback(this.entries) }),
-              };
-            }
-          }
         }
       });
     })
     after(() => {
       // delete the test collection
       new Cypress.Promise(resolve => FSApi.remove(connection, '/db/test', true).then(resolve).catch(resolve))
+    })
+    afterEach(() => {
+      // make sure the tree has rendered all its items properly
+      cy.wait(10)
     })
 
     it('should display creation options', () => {
@@ -186,32 +160,10 @@ context('Collection Operations', () => {
         .should('exist')
     })
 
-    it('should upload a document', () => {
-      cy.window().then(win => {
-        const file = new win.ExFile('/', [new Blob(['sample text content.'])], 'test.txt', { type: 'text/plain' })
-
-        const originalDataTransfer = new win.DataTransfer();
-        originalDataTransfer.items.add(file);
-        const dataTransfer = {
-          ...originalDataTransfer,
-          items: [file],
-          files: [file],
-        };
-        dataTransfer.getData = (...args) => originalDataTransfer.getData(...args);
-
-        cy.get('[node-id$=test]')
-          .trigger('dragover', { dataTransfer })
-          .trigger('drop', { dataTransfer })
-        fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/test.txt', { method: 'PUT' })
-        cy.get('[node-id$="test\\/test.txt"]')
-          .should('be.visible')
-      })
-    })
-
     it('should upload a collection', () => {
-      cy.window().then(win => {
-        const file = new win.ExFile('/col/', [new Blob(['sample text content.'])], 'test2.txt', { type: 'text/plain' })
-        const dir = new win.ExDir('/', [file], 'col')
+      cy.extendedFiles().then(win => {
+        const file = new win.ExFile('/uploaded_col/', [new Blob(['sample text content.'])], 'uploaded_test.txt', { type: 'text/plain' })
+        const dir = new win.ExDir('/', [file], 'uploaded_col')
 
         const originalDataTransfer = new win.DataTransfer();
         originalDataTransfer.items.add(file);
@@ -225,11 +177,11 @@ context('Collection Operations', () => {
         cy.get('[node-id$=test]')
           .trigger('dragover', { dataTransfer })
           .trigger('drop', { dataTransfer })
-        fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/col', { method: 'PUT' })
-        cy.get('[node-id$="test\\/col"]')
+        fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/uploaded_col', { method: 'PUT' })
+        cy.get('[node-id$="test\\/uploaded_col"]')
           .should('be.visible')
           .click()
-        cy.get('[node-id$="col\\/test2.txt"]')
+        cy.get('[node-id$="uploaded_col\\/uploaded_test.txt"]')
           .should('be.visible')
       })
     })

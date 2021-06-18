@@ -28,7 +28,11 @@ context('Document Operations', () => {
     })
     after(() => {
       // delete the test colelction
-      // new Cypress.Promise(resolve => FSApi.remove(connection, '/db/test', true).then(resolve).catch(resolve))
+      new Cypress.Promise(resolve => FSApi.remove(connection, '/db/test', true).then(resolve).catch(resolve))
+    })
+    afterEach(() => {
+      // make sure the tree has rendered all its items properly
+      cy.wait(10)
     })
     it('should display creation options', () => {
       cy.get('.fusion-view', { timeout: 55000 })
@@ -90,7 +94,7 @@ context('Document Operations', () => {
       cy.get('[node-id$=untitled_1]')
         .rightclick()
       cy.get('[data-command="fusion.rename"]')
-      .should('be.visible')
+        .should('be.visible')
         .contains('Rename')
         .click()
         .focused()
@@ -152,6 +156,30 @@ context('Document Operations', () => {
       cy.get('.error')
         .should('exist')
         .should('contain.text', 'Item already exists')
+      cy.get('.fs-inline-input > .theia-input')
+        .type('{esc}')
+    })
+
+    it('should upload a document', () => {
+      cy.extendedFiles().then(win => {
+        const file = new win.ExFile('/', [new Blob(['sample text content.'])], 'upload_test.txt', { type: 'text/plain' })
+
+        const originalDataTransfer = new win.DataTransfer();
+        originalDataTransfer.items.add(file);
+        const dataTransfer = {
+          ...originalDataTransfer,
+          items: [file],
+          files: [file],
+        };
+        dataTransfer.getData = (...args) => originalDataTransfer.getData(...args);
+
+        cy.get('[node-id$=test]')
+          .trigger('dragover', { dataTransfer })
+          .trigger('drop', { dataTransfer })
+        fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/upload_test.txt', { method: 'PUT' })
+        cy.get('[node-id$="test\\/upload_test.txt"]')
+          .should('be.visible')
+      })
     })
 
     it('should move a document', () => {
