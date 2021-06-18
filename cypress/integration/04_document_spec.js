@@ -160,7 +160,7 @@ context('Document Operations', () => {
         .type('{esc}')
     })
 
-    it('should upload a document', () => {
+    it('should upload a document using drag and drop', () => {
       cy.extendedFiles().then(win => {
         const file = new win.ExFile('/', [new Blob(['sample text content.'])], 'upload_test.txt', { type: 'text/plain' })
 
@@ -179,6 +179,38 @@ context('Document Operations', () => {
         fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/upload_test.txt', { method: 'PUT' })
         cy.get('[node-id$="test\\/upload_test.txt"]')
           .should('be.visible')
+      })
+    })
+
+    it('should upload a document using the upload dialog', () => {
+      cy.writeFile(require('path').resolve(Cypress.env('homedir'), 'upload_file_test.txt'), 'sample text content');
+      cy.get('[node-id$=test]')
+        .rightclick()
+      cy.get('[data-command="fusion.upload-document"]')
+        .should('be.visible')
+        .contains('Upload document(s)')
+        .click()
+      cy.get('.dialogBlock .theia-Tree.theia-FileTree')
+      const timer = Date.now();
+      new Cypress.Promise((resolve, reject) => {
+        function tick() {
+          const file = cy.$$('.theia-TreeNode:contains(upload_file_test.txt)');
+          if (file.length) {
+            cy.wrap(file[0])
+              .click({ force: true })
+            cy.get('.main').click();
+            fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxqs/fusiondb/document?uri=/db/test/upload_file_test.txt', { method: 'PUT' })
+            cy.get('[node-id$="test\\/upload_file_test.txt"]')
+              .should('be.visible')
+            resolve();
+          } else {
+            if (Date.now() < timer + 5000) {
+              cy.get('.theia-FileTree.theia-FileDialog.ps .ps__rail-y').click('bottom', { force: true })
+              cy.wait(100).then(tick);
+            }
+          }
+        }
+        tick()
       })
     })
 
