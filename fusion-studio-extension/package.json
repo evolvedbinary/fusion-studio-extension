@@ -14,7 +14,7 @@
         "src/browser/style/index.css"
     ],
     "dependencies": {
-        "@theia/core": "^1.13.0",
+        "@theia/core": "^1.14.0",
         "awesomplete": "1.1.5",
         "filesize": "6.3.0",
         "mimetype": "^0.0.8",
@@ -35,8 +35,10 @@
         "build": "tsc",
         "watch": "tsc -w"
     },
-    "theiaExtensions": [{
-        "frontend": "lib/browser/fusion-studio-frontend-module",
-        "backend": "lib/node/fusion-studio-backend-module"
-    }]
+    "theiaExtensions": [
+        {
+            "frontend": "lib/browser/fusion-studio-frontend-module",
+            "backend": "lib/node/fusion-studio-backend-module"
+        }
+    ]
 }
