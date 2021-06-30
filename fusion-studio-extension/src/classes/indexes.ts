@@ -1,5 +1,3 @@
-import { isArray } from "util";
-
 export interface LuceneTextAttrPtn {
   qname: string;
   value: string;
@@ -71,19 +69,18 @@ export function readIndex(data: any): FSIndex {
       ignore: [],
       text: [],
     },
-    ngram: isArray(data.ngram) ? data.ngram : [],
-    range: isArray(data.range) ? data.range : [],
-    legacyRange: isArray(data['legacy-range']) ? data['legacy-range'] : [],
+    ngram: Array.isArray(data.ngram) ? data.ngram : [],
+    range: Array.isArray(data.range) ? data.range : [],
+    legacyRange: Array.isArray(data['legacy-range']) ? data['legacy-range'] : [],
   };
   if (data.lucene) {
-    console.log(isArray);
-    if (data.lucene.analyzers && isArray(data.lucene.analyzers)) {
+    if (data.lucene.analyzers && Array.isArray(data.lucene.analyzers)) {
       result.lucene.analyzers = data.lucene.analyzers;
     }
-    if (data.lucene.ignore && isArray(data.lucene.ignore)) {
+    if (data.lucene.ignore && Array.isArray(data.lucene.ignore)) {
       result.lucene.ignore = data.lucene.ignore;
     }
-    if (data.lucene.text && isArray(data.lucene.text)) {
+    if (data.lucene.text && Array.isArray(data.lucene.text)) {
       data.lucene.text.matchSiblingAttr = data.lucene.text['match-sibling-attr'];
       data.lucene.text.hasSiblingAttr = data.lucene.text['has-sibling-attr'];
       data.lucene.text.matchAttr = data.lucene.text['match-attr'];
