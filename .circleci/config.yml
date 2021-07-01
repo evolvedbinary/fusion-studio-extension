@@ -118,3 +118,6 @@ workflows:
 #           record: false
 #           store_artifacts: true
 #           tags: "eXist-db,latest"
+
+
+#  check wait-on: http://localhost:3000
