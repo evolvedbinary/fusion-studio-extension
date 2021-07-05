@@ -68,7 +68,7 @@ jobs:
       - run: 
           working_directory: .
           # command: npx cypress run --config defaultCommandTimeout=58000
-          command: npx cypress run
+          command: npx cypress run --headless -b chrome
           no_output_timeout: 2m
 workflows:
   browser_build:
