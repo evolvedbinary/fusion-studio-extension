@@ -265,16 +265,21 @@ export class FSCore {
 
   public expandAndWait(node: FSContainerNode) {
     return new Promise(resolve => {
-      this.addLoadEvent(node, node => {
+      if (node.loaded) {
+        this.expand(node);
         resolve(null);
-        return true;
-      });
-      this.expand(node);
+      } else {
+        this.addLoadEvent(node, node => {
+          resolve(null);
+          return true;
+        });
+        this.expand(node);
+      }
     })
   }
 
   public async ensureExpanded(node: FSContainerNode) {
-    if (!node.expanded && !node.loaded) {
+    if (!node.expanded) {
       await this.expandAndWait(node);
     }
   }
@@ -438,7 +443,7 @@ export class FSCore {
       if (FSItem.isCollection(result)) {
         const collection = result;
         // refresh collections
-        let collectionsOld = node.children.filter(child => FSNode.isCollection(child)) as FSCollectionNode[];
+        let collectionsOld = node.children.filter(child => FSNode.isCollection(child) && !child.isNew) as FSCollectionNode[];
         const collectionsNew = collection.collections.filter(subCollection => {
           const collectionNode = this.getNode(this.itemID(node.connectionNode.connection, subCollection));
           if (FSNode.isCollection(collectionNode) && collectionNode.parent === node) {
@@ -451,7 +456,7 @@ export class FSCore {
         collectionsOld.forEach(node => this.removeNode(node));
         collectionsNew.forEach(collection => this.addCollection(node, collection));
         // refresh documents
-        let documentsOld = node.children.filter(child => FSNode.isDocument(child)) as FSDocumentNode[];
+        let documentsOld = node.children.filter(child => FSNode.isDocument(child) && !child.isNew) as FSDocumentNode[];
         const documentsNew = collection.documents.filter(subDocument => {
           const documentNode = this.getNode(this.itemID(node.connectionNode.connection, subDocument));
           if (FSNode.isDocument(documentNode) && documentNode.parent === node) {
