@@ -2,13 +2,12 @@ import { FSFiles, FSFilenameList } from "../classes/files";
 import { injectable } from "inversify";
 import { readFileSync, statSync, readdirSync } from "fs";
 import { createError, FSError } from "../classes/error";
-import { isArray } from "util";
 
 function getFiles(files: string | string[], result?: string[]): string[] {
-  if (!isArray(result)) {
+  if (!Array.isArray(result)) {
     result = [];
   }
-  if (isArray(files)) {
+  if (Array.isArray(files)) {
     files.forEach(async file => result = getFiles(file, result));
   } else {
     if (statSync(files).isDirectory()) {

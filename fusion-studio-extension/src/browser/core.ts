@@ -14,8 +14,7 @@ import { FSDragOperation } from "./widget/drag";
 import { FSTemplate } from "../classes/template";
 import { FSConnectionDialog, FSNewFromTemplateDialog, FSNewFromTemplateDialogResult, FSPropertiesDialog } from "./dialogs";
 import { FSFiles, FSFileList } from "../classes/files";
-import { isArray } from "util";
-import { lookup } from "mime-types";
+import { lookup } from "mimetype";
 import { createError, FSError, FSErrorObject, ERROR_MESSAGES } from "../classes/error";
 import { asyncForEach } from "../common/asyncForEach";
 import { FSStatusEntry } from "../classes/status";
@@ -1517,7 +1516,7 @@ export class FSCore {
     };
     const [rootStat] = await this.workspace.roots;
     const file: URI | URI[] = await this.fileDialog.showOpenDialog(props, rootStat) as any;
-    const selectedFiles = (isArray(file) ? file : [file]).map(f => f.path.toString());
+    const selectedFiles = (Array.isArray(file) ? file : [file]).map(f => f.path.toString());
     const top = this.getTopDir(selectedFiles);
     const files = await this.files.getFiles({ file: selectedFiles });
     const collectionNode = this.node as FSCollectionNode;
