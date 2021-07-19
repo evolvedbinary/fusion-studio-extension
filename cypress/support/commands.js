@@ -16,16 +16,26 @@
 // populate localStorage with a default connection, automatically cleared before each spec
 // assumes default 'admin' user and '' password
 // actual server URL is retrieved via ENV
-Cypress.Commands.add("connect", () => { 
+Cypress.Commands.add("connect", () => {
     // conn_val mimics actual app behavior, its value is inconsequential for establishing a connection
     let conn_val = 'admin@' + Cypress.env('API_HOST')
-    let nested = {"name":"localhost","server": Cypress.env('API_HOST'),"username":"admin","password":"","users":[],"groups":[]}
+    let nested = { "name": "localhost", "server": Cypress.env('API_HOST'), "username": "admin", "password": "", "users": [], "groups": [] }
     let obj = {}
     obj[conn_val] = nested
 
-    localStorage.setItem('connections',	JSON.stringify(obj))
+    localStorage.setItem('connections', JSON.stringify(obj))
 
- })
+})
+Cypress.Commands.overwrite('visit', (orig, url, options) => {
+    // this is a fix to include the process variable when using the Electron browser
+    return orig('/', Cypress.isBrowser('electron') ? {
+        onBeforeLoad(win) {
+            win.process = {
+                env: [],
+            };
+        }
+    } : undefined);
+})
 //
 //
 // -- This is a child command --
