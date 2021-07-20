@@ -28,13 +28,15 @@ Cypress.Commands.add("connect", () => {
 })
 Cypress.Commands.overwrite('visit', (orig, url, options) => {
     // this is a fix to include the process variable when using the Electron browser
-    return orig('/', Cypress.isBrowser('electron') ? {
+    return orig(url, Cypress.isBrowser('electron') ? {
+        ...options,
         onBeforeLoad(win) {
-            win.process = {
-                env: [],
-            };
+            win.process = Cypress.config('process');
+            if (options?.onBeforeLoad) {
+                options.onBeforeLoad(win);
+            }
         }
-    } : undefined);
+    } : options);
 })
 //
 //
