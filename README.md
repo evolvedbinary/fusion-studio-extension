@@ -76,7 +76,7 @@ sudo yum install -y rpm-build
 ```
 
 #### For Testing
-*   [cypress.js](https://www.cypress.io) ` >= 7.4.0`.
+*   [cypress.js](https://www.cypress.io) ` >= 8.0.0`.
 
 
 
