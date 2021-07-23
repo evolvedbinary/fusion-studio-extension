@@ -460,7 +460,7 @@ export class FSCore {
       this.startLoading(node);
       const docs = await FSApi.saveDocuments(node.connectionNode.connection, node.collection, documents);
       this.endLoading(node);
-      this.load(node, node.uri);
+      this.asyncLoad(node);
       return docs;
     } catch (error) {
       this.endLoading(node);

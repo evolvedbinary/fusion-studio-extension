@@ -3,13 +3,14 @@ import { FSApi } from '../../fusion-studio-extension/src/common/api';
 
 context('Collection Operations', () => {
   describe('working with tree view', () => {
+    let fetchSpy;
     const connection = {
       server: Cypress.env('API_HOST'),
       username: 'admin',
       password: '',
     };
     before(() => {
-      // prepare collections used in the test
+      // prepare collections and documents used in the test
       new Cypress.Promise(async resolve => {
         await FSApi.remove(connection, '/db/test', true).catch(e => { });
         await FSApi.newCollection(connection, '/db/test');
@@ -18,13 +19,44 @@ context('Collection Operations', () => {
         resolve();
       })
       cy.connect()
-      cy.visit('/');
-    })
-    beforeEach(() => {
-      cy.window().then(win => cy.spy(win, 'fetch').as('fetch'));
+      cy.visit('/', {
+        onBeforeLoad(win) {
+          fetchSpy = cy.spy(win, 'fetch')
+          win.ExFile = class extends win.File {
+            constructor(root, data, fileName, options) {
+              super(data, fileName, options);
+              this.root = root;
+            }
+            webkitGetAsEntry() {
+              const me = this;
+              return {
+                isDirectory: false,
+                isFile: true,
+                fullPath: this.root + this.name,
+                file: callback => callback(this),
+              };
+            }
+          }
+          win.ExDir = class extends win.ExFile {
+            constructor(root, entries, fileName, options) {
+              super(root, [], fileName, options);
+              this.entries = entries.map(entry => entry.webkitGetAsEntry());
+            }
+            webkitGetAsEntry() {
+              const me = this;
+              return {
+                isDirectory: true,
+                isFile: false,
+                fullPath: this.root + this.name,
+                createReader: () => ({ readEntries: callback => callback(this.entries) }),
+              };
+            }
+          }
+        }
+      });
     })
     after(() => {
-      // delete the test colelction
+      // delete the test collection
       new Cypress.Promise(resolve => FSApi.remove(connection, '/db/test', true).then(resolve).catch(resolve))
     })
 
@@ -42,8 +74,8 @@ context('Collection Operations', () => {
       cy.get('[node-id$=test]')
         .click()
         .prev().should('not.have.class', 'fa-spin')
-      cy.get('@fetch').should('be.calledWith', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/explorer?uri=/db');
-      cy.get('@fetch').should('be.calledWith', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/explorer?uri=/db/test');
+      fetchSpy.calledWith(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/explorer?uri=/db');
+      fetchSpy.calledWith(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/explorer?uri=/db/test');
       cy.get('[node-id$=test]')
         .rightclick();
       cy.get('.p-Menu')
@@ -56,7 +88,7 @@ context('Collection Operations', () => {
         .type('{enter}')
       cy.get('.fusion-view')
         .contains('untitled-1')
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/untitled-1', { method: 'PUT' });
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/untitled-1', { method: 'PUT' });
     })
 
     it('should let users rename collection', () => {
@@ -68,7 +100,7 @@ context('Collection Operations', () => {
         .click()
       cy.focused()
         .type('test_col{enter}')
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col', {
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col', {
         method: 'PUT',
         headers: { 'x-fs-move-source': '/db/test/untitled-1' },
       });
@@ -154,6 +186,54 @@ context('Collection Operations', () => {
         .should('exist')
     })
 
+    it('should upload a document', () => {
+      cy.window().then(win => {
+        const file = new win.ExFile('/', [new Blob(['sample text content.'])], 'test.txt', { type: 'text/plain' })
+
+        const originalDataTransfer = new win.DataTransfer();
+        originalDataTransfer.items.add(file);
+        const dataTransfer = {
+          ...originalDataTransfer,
+          items: [file],
+          files: [file],
+        };
+        dataTransfer.getData = (...args) => originalDataTransfer.getData(...args);
+
+        cy.get('[node-id$=test]')
+          .trigger('dragover', { dataTransfer })
+          .trigger('drop', { dataTransfer })
+        fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/test.txt', { method: 'PUT' })
+        cy.get('[node-id$="test\\/test.txt"]')
+          .should('be.visible')
+      })
+    })
+
+    it('should upload a collection', () => {
+      cy.window().then(win => {
+        const file = new win.ExFile('/col/', [new Blob(['sample text content.'])], 'test2.txt', { type: 'text/plain' })
+        const dir = new win.ExDir('/', [file], 'col')
+
+        const originalDataTransfer = new win.DataTransfer();
+        originalDataTransfer.items.add(file);
+        const dataTransfer = {
+          ...originalDataTransfer,
+          items: [dir],
+          files: [dir],
+        };
+        dataTransfer.getData = (...args) => originalDataTransfer.getData(...args);
+
+        cy.get('[node-id$=test]')
+          .trigger('dragover', { dataTransfer })
+          .trigger('drop', { dataTransfer })
+        fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/col', { method: 'PUT' })
+        cy.get('[node-id$="test\\/col"]')
+          .should('be.visible')
+          .click()
+        cy.get('[node-id$="col\\/test2.txt"]')
+          .should('be.visible')
+      })
+    })
+
     it('should move a collection', () => {
       const dataTransfer = new DataTransfer();
       cy.get('[node-id$="test\\/col1"]')
@@ -162,7 +242,7 @@ context('Collection Operations', () => {
       cy.get('[node-id$=test_col2]')
         .trigger('dragover', { dataTransfer })
         .trigger('drop', { dataTransfer })
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2/col1', {
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2/col1', {
         method: 'PUT',
         headers: { 'x-fs-move-source': '/db/test/col1' },
       })
@@ -183,7 +263,7 @@ context('Collection Operations', () => {
       cy.get('[node-id$=test]')
         .trigger('dragover', { dataTransfer })
         .trigger('drop', { dataTransfer, ctrlKey: true })
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1', {
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1', {
         method: 'PUT',
         headers: { 'x-fs-copy-source': '/db/test/test_col2/col1' },
       })
@@ -210,11 +290,11 @@ context('Collection Operations', () => {
       cy.get('[node-id$=test\\/col1]')
         .trigger('dragover', { dataTransfer })
         .trigger('drop', { dataTransfer })
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/col1', {
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/col1', {
         method: 'PUT',
         headers: { 'x-fs-move-source': '/db/test/test_col2/col1' },
       })
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/test_colA', {
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/test_colA', {
         method: 'PUT',
         headers: { 'x-fs-move-source': '/db/test/test_col2/test_colA' },
       })
@@ -243,11 +323,11 @@ context('Collection Operations', () => {
       cy.get('[node-id$=test\\/test_col2]')
         .trigger('dragover', { dataTransfer })
         .trigger('drop', { dataTransfer, ctrlKey: true })
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2/col1', {
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2/col1', {
         method: 'PUT',
         headers: { 'x-fs-copy-source': '/db/test/col1/col1' },
       })
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2/test_colA', {
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2/test_colA', {
         method: 'PUT',
         headers: { 'x-fs-copy-source': '/db/test/col1/test_colA' },
       })
@@ -274,7 +354,7 @@ context('Collection Operations', () => {
       cy.get('[node-id$=test\\/col1\\/col1]')
         .trigger('dragover', { dataTransfer })
         .trigger('drop', { dataTransfer })
-      cy.get('@fetch').should('not.be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/col1/col1', {
+      fetchSpy.neverCalledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/col1/col1', {
         method: 'PUT',
         headers: { 'x-fs-move-source': '/db/test/test/col1' },
       })
@@ -294,7 +374,7 @@ context('Collection Operations', () => {
       cy.get('[node-id$=test\\/col1\\/col1]')
         .trigger('dragover', { dataTransfer })
         .trigger('drop', { dataTransfer, ctrlKey: true })
-      cy.get('@fetch').should('not.be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/col1/col1', {
+      fetchSpy.neverCalledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/col1/col1/col1', {
         method: 'PUT',
         headers: { 'x-fs-move-source': '/db/test/test/col1' },
       })
@@ -315,7 +395,7 @@ context('Collection Operations', () => {
         .click()
       cy.get('.main')
         .click()
-      cy.get('@fetch').should('be.calledWithMatch', Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2', { method: 'DELETE' });
+      fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/collection?uri=/db/test/test_col2', { method: 'DELETE' });
       // make sure all test files are gone see #400, including those produced by failed create commands
       cy.get('[node-id$=untitled-1]')
         .should('not.exist')
