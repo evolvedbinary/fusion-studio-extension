@@ -164,9 +164,9 @@ $ yarn run sass
     -   First, you need to build the docker image:
     ```bash
     $ cd browser-app
-    $ docker build --rm --force-rm -t evolvedbinary/fusion-studio:app .
+    $ docker build --rm --force-rm -t evolvedbinary/fusion-studio .
     ```
     -   Then, run the container and expose port 3000:
     ```bash
-    $ docker run -ditp 3000:3000 -name fusion-studio evolvedbinary/fusion-studio:app
+    $ docker run -ditp 3000:3000 --name fusion-studio evolvedbinary/fusion-studio
     ```
