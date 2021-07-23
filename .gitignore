@@ -81,3 +81,5 @@ cypress/screenshots/*
 # node-gyp
 build/
 fusion-studio-extension/src/variables.ts
+
+!webpack.config.js
