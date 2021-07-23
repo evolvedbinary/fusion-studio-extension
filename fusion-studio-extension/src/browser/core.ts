@@ -1320,7 +1320,9 @@ export class FSCore {
       node.uri = name;
     }
     node.nodeName = this.getName(name);;
+    delete(this.dict[node.nodeId]);
     node.nodeId = this.ID(node);
+    this.dict[node.nodeId] = node;
     return node;
   }
 
