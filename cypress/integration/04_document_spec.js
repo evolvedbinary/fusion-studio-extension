@@ -222,6 +222,7 @@ context('Document Operations', () => {
       cy.get('[node-id$=col1]')
         .trigger('dragover', { dataTransfer })
         .trigger('drop', { dataTransfer })
+        .prev().should('not.have.class', 'fa-spin').wait(1)
       fetchSpy.calledWithMatch(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/document?uri=/db/test/col1/test.xml', {
         method: 'PUT',
         headers: { 'x-fs-move-source': '/db/test/test.xml' },
