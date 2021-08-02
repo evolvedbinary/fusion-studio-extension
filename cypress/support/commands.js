@@ -26,18 +26,6 @@ Cypress.Commands.add("connect", () => {
     localStorage.setItem('connections', JSON.stringify(obj))
 
 })
-Cypress.Commands.overwrite('visit', (orig, url, options) => {
-    // this is a fix to include the process variable when using the Electron browser
-    return orig(url, Cypress.isBrowser('electron') ? {
-        ...options,
-        onBeforeLoad(win) {
-            win.process = Cypress.config('process');
-            if (options?.onBeforeLoad) {
-                options.onBeforeLoad(win);
-            }
-        }
-    } : options);
-})
 //
 //
 // -- This is a child command --
