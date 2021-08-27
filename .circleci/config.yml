@@ -79,7 +79,9 @@ workflows:
   browser_build:
     jobs:
       - build:
-          context: FusionDB_images
+          context:
+            - FusionStudio
+            - FusionDB_images
   
 # see https://circleci.com/developer/orbs/orb/cypress-io/cypress
 
