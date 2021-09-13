@@ -28,7 +28,9 @@ context('Document Operations', () => {
               .should('be.visible')
               .click()
           })
-          // (DP): start workaround for #413 
+          // (DP): start workaround for #413
+        cy.get('.fusion-item')
+          .click()   
         cy.get('[node-id$=db]')
           .trigger('mousemove')
           .type('{enter}')
