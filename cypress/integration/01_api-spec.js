@@ -28,14 +28,16 @@ context('Talking to the api directly', () => {
           fetchSpy.withArgs(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/user').as('/user')
           fetchSpy.withArgs(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/group').as('/group')
           fetchSpy.withArgs(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/index').as('/index')
-          fetchSpy.withArgs(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/restxq').as('/restxq')
+          // See #508 
+          // fetchSpy.withArgs(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/restxq').as('/restxq')
           cy.get('.fusion-item').click()
           cy.get('@/version').should('be.called')
           cy.get('@/explorer').should('be.called')
           cy.get('@/user').should('be.called')
           cy.get('@/group').should('be.called')
           cy.get('@/index').should('be.called')
-          cy.get('@/restxq').should('be.called')
+          // See #508 
+          // cy.get('@/restxq').should('be.called')
         });
       });
 
@@ -43,8 +45,9 @@ context('Talking to the api directly', () => {
         cy.get('.fusion-item').click()
         cy.get('.fusion-view')
           .should('contain', 'db')
-          .should('contain', 'RestXQ')
           .should('contain', 'Security')
+          // see #508
+          // .should('contain', 'RestXQ')          
       });
     })
   });
