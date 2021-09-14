@@ -25,19 +25,22 @@ jobs:
             - v1-deps-{{ .Branch }}-{{ checksum "package.json" }}
             - v1-deps-{{ .Branch }}
             - v1-deps
-      # TODO (DP) slim this down 
+      # TODO (DP) slim this down source: https://github.com/cypress-io/cypress-docker-images/blob/ec0962672571ff557bd3654000a0aa5a0a02057b/base/14.7.0/Dockerfile#L11 
       - run: |
           sudo apt-get update 
-          sudo apt-get --yes install fonts-liberation libx11-dev libxkbfile-dev libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xdg-utils xvfb
+          sudo apt-get --yes install libx11-dev libxkbfile-dev libgtk2.0-0 libgtk-3-0 libgconf-2-4 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
       # - setup_remote_docker:
       #     version: 20.10.2
-      #     docker_layer_caching: false    
-      - run:
-          name: get and install chrome
-          command: |
-            wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-            sudo dpkg -i google-chrome-stable_current_amd64.deb
+      #     docker_layer_caching: false
+      
+      # (DP) only activate on CI if absolutely necessary. Electron browser tests are our gold standard
+      # - run:
+      #     name: get and install chrome
+      #     command: |
+      #       sudo apt-get --yes install fonts-liberation xdg-utils
+      #       wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      #       sudo dpkg -i google-chrome-stable_current_amd64.deb
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -72,7 +75,7 @@ jobs:
             curl -v --connect-timeout 4 --max-time 8 http://localhost:3000 
       - run: 
           working_directory: .
-          command: npx cypress run --config defaultCommandTimeout=58000
+          command: npx cypress run --config defaultCommandTimeout=40000
           # command: npx cypress run -b chrome --config defaultCommandTimeout=58000
           no_output_timeout: 2m
 workflows:
