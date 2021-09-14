@@ -8,14 +8,24 @@ context('Permission Manager', () => {
         .click()
     })
 
+    // (DP)) we need frequent assertions to work around the fact that the tree collapes on new requests
+    // see #513 #397
     it('should have user entries', () => {
       cy.get('[node-id$=security]')
-        .click()
-      cy.get('.ReactVirtualized__Grid')
-        .contains('Users')
-        .click()
-      cy.get('[node-id$=user\\/guest]')
         .should('be.visible')
+        .click()
+        .then(() => {
+          cy.get('[node-id$=security\\/user]')
+            .should('be.visible')
+            .click()
+            .then(() => {
+              cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
+                .should('be.visible')
+                .click()
+              cy.get('[node-id$=user\\/guest]')
+                .should('be.visible')
+            })
+        })
     })
 
     it('should have group entries', () => {
@@ -30,6 +40,7 @@ context('Permission Manager', () => {
     describe('the user item', () => {
       it('should let us create a new user', () => {
         cy.get('[node-id$=security]')
+          .should('be.visible')
           .rightclick()
         cy.get('[data-command="fusion.add-user"]')
           .contains('Add')
@@ -53,6 +64,7 @@ context('Permission Manager', () => {
 
       it('should display user properties card', () => {
         cy.get('[node-id$=user\\/guest]')
+          .should('be.visible')
           .rightclick()
         cy.get('.p-Menu > ul > .p-Menu-item')
           .should('be.visible')
@@ -79,6 +91,7 @@ context('Permission Manager', () => {
 
       it('should let us delete a user', () => {
         cy.get('[node-id$=user\\/cy-usr]')
+          .should('be.visible')
           .rightclick()
         cy.get('[data-command="fusion.delete-user"]')
           .click()
@@ -94,6 +107,7 @@ context('Permission Manager', () => {
     describe('the groups item', () => {
       it('should let us create a new group', () => {
         cy.get('[node-id$=security]')
+          .should('be.visible')
           .rightclick()
         cy.get('[data-command="fusion.add-group"]')
           .contains('Add')
@@ -107,6 +121,7 @@ context('Permission Manager', () => {
 
       it('should display group properties card', () => {
         cy.get('[node-id$=group\\/guest]')
+          .should('be.visible')
           .rightclick()
         cy.get('.p-Menu > ul > .p-Menu-item')
           .should('be.visible')
@@ -129,6 +144,7 @@ context('Permission Manager', () => {
 
       it('should let us delete a group', () => {
         cy.get('[node-id$=group\\/cy-group]')
+          .should('be.visible')
           .rightclick()
         cy.get('[data-command="fusion.delete-group"]')
           .click()
