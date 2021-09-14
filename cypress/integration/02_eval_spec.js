@@ -10,9 +10,14 @@ context('Evaluation', () => {
   describe('The Theia Panel', () => {
     it('should be accessible from command panel', () => {
       // invoke command panel and run the command
-      cy.get('body').trigger('keydown', { keyCode: 112, which: 112 })
-        .trigger('keyup', { keyCode: 112, which: 112 })
-      cy.get('.quick-open-overlay .quick-open-input input')
+        if (Cypress.platform === 'darwin') {
+          cy.get('body')
+            .type('{shift+meta+P}')
+        } else {
+          cy.get('body')
+            .type('{shift+ctrl+P}')
+        }
+      cy.get('input.input')
         .clear()
         .type('>Toggle Evaluation View{enter}')
       // check the panel
@@ -43,7 +48,7 @@ context('Evaluation', () => {
         .contains('file')
         .click()
     })
-    
+
     it('should have proper header and footer', () => {
       cy.get('.x-header > button')
         .should('be.disabled')
@@ -54,13 +59,13 @@ context('Evaluation', () => {
         .should('be.disabled')
         .should('contain', 'New file')
     })
-    
+
     it('should disappear again', () => {
       // invoke command panel and run the command again
       cy.get('body')
         .trigger('keydown', { keyCode: 112, which: 112 })
         .trigger('keyup', { keyCode: 112, which: 112 })
-      cy.get('.quick-open-overlay .quick-open-input input')
+      cy.get('input.input')
         .clear()
         .type('>Toggle Evaluation View{enter}')
       // check the panel
