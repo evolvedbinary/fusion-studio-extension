@@ -17,14 +17,13 @@
         "test": "echo \"no test specified\" && exit 0"
     },
     "devDependencies": {
-        "@4tw/cypress-drag-drop": "https://github.com/ccheraa/cypress-drag-drop",
         "chai": "^4.3.4",
-        "cypress": "^8.0.0",
+        "cypress": "^8.4.0",
         "lerna": "4.0.0",
-        "mocha": "^9.0.2",
+        "mocha": "^9.1.1",
         "node-sass": "6.0.1",
         "sinon": "^11.1.1",
-        "ts-node": "^10.1.0"
+        "ts-node": "^10.2.1"
     },
     "resolutions": {
         "node-gyp": "^7.0.0"
