@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-context('Collection Operations', () => {
+context.skip('Collection Operations', () => {
   let fetchSpy;
   describe('working with tree view', () => {
     before(() => {

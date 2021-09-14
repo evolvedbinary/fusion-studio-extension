@@ -20,7 +20,7 @@ context('Talking to the api directly', () => {
       })
     })
     describe('With current API', () => {
-      it('should call all endpoints', () => {
+      it('should reach all api endpoints', () => {
         cy.window().then(function (win) {
           const fetchSpy = cy.spy(win, 'fetch')
           fetchSpy.withArgs(Cypress.env('API_HOST') + '/exist/restxq/fusiondb/version').as('/version')
@@ -41,13 +41,26 @@ context('Talking to the api directly', () => {
         })
       })
 
-      it('should display tree roots', () => {
+      // (DP) we might want to merge the three cases again at a future time
+      it('should display db tree item', () => {
         cy.contains('localhost').click()
         cy.get('.fusion-view')
           .should('contain', 'db')
-          .should('contain', 'Security')
-          // see #508
+          // .should('contain', 'Security')
           // .should('contain', 'RestXQ')          
+      })
+
+      it('should display security tree item', () => {
+        cy.contains('localhost')
+        cy.get('.fusion-view')
+          .should('contain', 'Security')      
+      })
+
+      // see #508
+      it.skip('should display restxq tree item', () => {
+        cy.contains('localhost')
+        cy.get('.fusion-view')
+          .should('contain', 'RestXQ')          
       })
     })
   })

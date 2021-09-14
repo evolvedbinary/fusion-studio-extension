@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-context('Document Operations', () => {
+context.skip('Document Operations', () => {
   describe('working with tree view', () => {
     before(() => {
       cy.connect()
