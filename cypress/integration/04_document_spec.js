@@ -1,23 +1,66 @@
 /// <reference types="Cypress" />
 
-context.skip('Document Operations', () => {
+context('Document Operations', () => {
   describe('working with tree view', () => {
     before(() => {
       cy.connect()
       cy.visit('/')
       cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
-        // TODO(DP): might have to improve by adding more before / after hooks to prevent dangling documents
-        // see #400
+        .should('be.visible')
+      // TODO(DP): might have to improve by adding more before / after hooks to prevent dangling documents
+      // see #400
     })
 
     describe('db context menu', () => {
+      it.only('should display creation options', () => {
+        cy.get('.ReactVirtualized__Grid', { timeout: 55000 })
+          .should('be.visible')
+        cy.get('.fusion-item')
+          .should('be.visible')
+          .click()
+        //  all we need is the final part of the node-id attribute
+        cy.get('[node-id$=db]')
+          .should('be.visible')
+          .rightclick()
+          .then(() => {
+            cy.get('.p-Menu')
+              .should('be.visible')
+              .contains('New document')
+              .trigger('mousemove')
+            cy.get('[data-command="fusion.new-document"] > .p-Menu-itemLabel')
+              .should('be.visible')
+              .click()            
+          })
+        // (DP): start workaround for #413
+        cy.get('.fusion-item')
+          .should('be.visible')
+          .click()
+        cy.get('[node-id$=db]')
+          .should('be.visible')
+          .focused()
+          .type('{enter}')
+        // end workaround for #413
+        cy.get('.ReactVirtualized__Grid')
+          .should('be.visible')
+          .contains('untitled-1')
+
+        // TODO(DP):
+        // - add test for #413 : change order, remove workaround, might need a call to focused()
+        // - check if tree view is deselected (it is but need not be), 
+        // - check if Explorer is updated properly (seems inconsistent need to double click)
+        // - check if editor window is opening the newly create doc in a new tab (it doesn't)
+        // - two file create routes one with follow-up dialog (xquery lib) one without (txt, xml)
+      })
+
       it('should display creation options', () => {
         cy.get('.ReactVirtualized__Grid', { timeout: 55000 })
           .should('be.visible')
         cy.get('.fusion-item')
+          .should('be.visible')
           .click()
-          //  all we need is the final part of the node-id attribute
+        //  all we need is the final part of the node-id attribute
         cy.get('[node-id$=db]')
+          .should('be.visible')
           .rightclick()
           .then(() => {
             cy.get('.p-Menu')
@@ -28,14 +71,17 @@ context.skip('Document Operations', () => {
               .should('be.visible')
               .click()
           })
-          // (DP): start workaround for #413
+        // (DP): start workaround for #413
         cy.get('.fusion-item')
-          .click()   
+          .should('be.visible')
+          .click()
         cy.get('[node-id$=db]')
+          .should('be.visible')
           .trigger('mousemove')
           .type('{enter}')
-          // end workaround for #413
+        // end workaround for #413
         cy.get('.ReactVirtualized__Grid')
+          .should('be.visible')
           .contains('untitled-1')
 
         // TODO(DP):
@@ -50,18 +96,18 @@ context.skip('Document Operations', () => {
       // see #414
 
       it('should let users edit new document', () => {
-          cy.get('[node-id$=untitled-1]')
-            .dblclick()
-          if( Cypress.platform === 'darwin') {
-            cy.get('.view-line')
+        cy.get('[node-id$=untitled-1]')
+          .dblclick()
+        if (Cypress.platform === 'darwin') {
+          cy.get('.view-line')
             .type('asdf{meta+s}')
-          } else {
-            cy.get('.view-line')
+        } else {
+          cy.get('.view-line')
             .type('asdf{ctrl+s}')
-          }          
-        })
-        // see #414 workaround is to run this after editing and saving the document, 
-        // we should be able to rename before entering content
+        }
+      })
+      // see #414 workaround is to run this after editing and saving the document, 
+      // we should be able to rename before entering content
       it('should let users rename documents', () => {
         cy.get('[node-id$=untitled-1]')
           .rightclick()
@@ -78,11 +124,11 @@ context.skip('Document Operations', () => {
           .type('{alt+enter}', { force: true })
         cy.get('.dialogTitle')
           .should('contain.text', 'Properties')
-          // rename file -> text.xml
+        // rename file -> text.xml
         cy.get('.value > .theia-input')
           .clear()
           .type('test.xml')
-          // check properties table 
+        // check properties table 
         cy.get('.dialogContent')
           .find('.keys > tr')
           .should('have.length', 11)
@@ -90,7 +136,7 @@ context.skip('Document Operations', () => {
         cy.get('.dialogContent')
           .find('.keys > tr')
           .contains('Owner')
-          // check permissions table  
+        // check permissions table  
         cy.get('.dialogContent')
           .find('.permissions-editor > tr')
           .should('have.length', 3)
@@ -127,7 +173,7 @@ context.skip('Document Operations', () => {
           .click()
         cy.get('.main')
           .click()
-          // make sure all test files are gone see #400
+        // make sure all test files are gone see #400
         cy.get('[node-id$=untitled-1]')
           .should('not.exist')
         cy.get('[node-id$=test\\.txt]')
