@@ -16,5 +16,12 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
+// (DP) workaround for #517 this needs to go.   
+Cypress.on('uncaught:exception', (err, runnable) => {
+    if (err.message.includes('filesystem provider')) {
+      return false
+    }
+  })
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
