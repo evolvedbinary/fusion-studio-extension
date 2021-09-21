@@ -13,12 +13,11 @@ context.only('Document Operations', () => {
 
     describe('db context menu', () => {
       it('should display creation options', () => {
-
         cy.get('.ReactVirtualized__Grid')
           .should('be.visible')
         cy.get('.fusion-item')
           .should('be.visible')
-          .click()
+          .click({animationDistanceThreshold: 2})
         //  all we need is the final part of the node-id attribute
         cy.get('[node-id$=db]')
           .should('be.visible')
@@ -32,10 +31,11 @@ context.only('Document Operations', () => {
               .should('be.visible')
               .click()            
           })
+        // (DP) untitled-1 has been created
         // (DP): start workaround for #413
         cy.get('.fusion-item')
           .should('be.visible')
-          .click()
+          .click({animationDistanceThreshold: 2})
         cy.get('[node-id$=db]')
           .should('be.visible')
           .focused()
@@ -57,6 +57,9 @@ context.only('Document Operations', () => {
       // see #414
 
       it('should let users edit new document', () => {
+        cy.get('.fusion-item')
+          .should('be.visible')
+        // (DP) edit and save untitled-1
         cy.get('[node-id$=untitled-1]')
           .dblclick()
         if (Cypress.platform === 'darwin') {
@@ -70,6 +73,9 @@ context.only('Document Operations', () => {
       // see #414 workaround is to run this after editing and saving the document, 
       // we should be able to rename before entering content
       it('should let users rename documents', () => {
+        cy.get('.fusion-item')
+          .should('be.visible')
+        // (DP) rename untitled-1 -> test.txt
         cy.get('[node-id$=untitled-1]')
           .should('be.visible')
           .rightclick()
@@ -81,13 +87,14 @@ context.only('Document Operations', () => {
       })
 
       it('should display document properties', () => {
+        cy.get('[node-id$=db]')
+          .should('be.visible')
         cy.get('[node-id$=test\\.txt]')
           .should('be.visible')
-          // .focused()
           .type('{alt+enter}', { force: true })
         cy.get('.dialogTitle')
           .should('contain.text', 'Properties')
-        // rename file -> text.xml
+        // rename test.xml -> text.xml
         cy.get('.value > .theia-input')
           .clear()
           .type('test.xml')
@@ -98,15 +105,52 @@ context.only('Document Operations', () => {
           .find('.keys > tr')
           // .should('have.length', 11)
           .should('be.visible')
+          // .should('contain.text', 'Media Type')
           // .contains('Media Type')
         cy.get('.dialogContent')
           .find('.keys > tr')
-          .contains('Owner')
+          .should('contain.text','Owner')
         // check permissions table  
         cy.get('.dialogContent')
           .find('.permissions-editor > tr')
           .should('have.length', 3)
-          .contains('user')
+          .should('contain.text', 'user')
+          // .contains('user')
+        cy.get('.main')
+          .click()
+      })
+
+      it.skip('should display document properties', () => {
+        cy.get('.fusion-item')
+          .should('be.visible')
+        cy.get('[node-id$=test\\.txt]')
+          .should('be.visible')
+          // .focused()
+          .type('{alt+enter}', { force: true })
+        cy.get('.dialogTitle')
+          .should('contain.text', 'Properties')
+        // rename test.xml -> text.xml
+        cy.get('.value > .theia-input')
+          .clear()
+          .type('test.xml')
+        // check properties table 
+        // TODO (DP) # 519 flaky test, properties table changes based on filetype
+        //  hence only check visibility. 
+        cy.get('.dialogContent')
+          .find('.keys > tr')
+          // .should('have.length', 11)
+          .should('be.visible')
+          // .should('contain.text', 'Media Type')
+          // .contains('Media Type')
+        cy.get('.dialogContent')
+          .find('.keys > tr')
+          .should('contain.text','Owner')
+        // check permissions table  
+        cy.get('.dialogContent')
+          .find('.permissions-editor > tr')
+          .should('have.length', 3)
+          .should('contain.text', 'user')
+          // .contains('user')
         cy.get('.main')
           .click()
       })
