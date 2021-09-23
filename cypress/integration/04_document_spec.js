@@ -25,7 +25,7 @@ context.only('Document Operations', () => {
 
     describe('db context menu', () => {
       it('should display creation options', () => {
-        cy.get('.ReactVirtualized__Grid')
+        cy.get('.ReactVirtualized__Grid', { timeout: 55000 })
           .should('be.visible')
         cy.get('.fusion-item')
           .should('be.visible')
