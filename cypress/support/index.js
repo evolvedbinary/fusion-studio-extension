@@ -16,7 +16,8 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
-// (DP) workaround for #517 this needs to go.   
+// (DP) workaround for #517 this needs to go. 
+// https://docs.cypress.io/api/events/catalog-of-events#Uncaught-Exceptions
 Cypress.on('uncaught:exception', (err, runnable) => {
     if (err.message.includes('filesystem provider')) {
       return false
