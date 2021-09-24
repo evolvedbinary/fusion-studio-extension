@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-context.only('Document Operations', () => {
+context('Document Operations', () => {
   describe('working with tree view', () => {
     before(() => {
       cy.connect()
@@ -24,8 +24,8 @@ context.only('Document Operations', () => {
     })
 
     describe('db context menu', () => {
-      it('should display creation options', () => {
-        cy.get('.ReactVirtualized__Grid', { timeout: 55000 })
+      it('should create documents', () => {
+        cy.get('.ReactVirtualized__Grid')
           .should('be.visible')
         cy.get('.fusion-item')
           .should('be.visible')
@@ -43,7 +43,7 @@ context.only('Document Operations', () => {
               .should('be.visible')
               .click()
           })
-        // (DP) untitled-1 has been created
+        // (DP) untitled-1 document has been created
         // (DP): start workaround for #413
         cy.get('.fusion-item')
           .should('be.visible')
@@ -74,7 +74,7 @@ context.only('Document Operations', () => {
       // see https://github.com/cypress-io/cypress/pull/15388/files#
       // see #414
 
-      it('should let users edit document contents', () => {
+      it('should edit document contents', () => {
         cy.get('.fusion-item')
           .should('be.visible')
         // (DP) edit and save untitled-1
@@ -103,6 +103,7 @@ context.only('Document Operations', () => {
           .should('not.exist')
       })
 
+      // (DP): Fix #527 then finish this
       it.skip('should load previously stored document', () => {
         cy.get('.fusion-item')
           .should('be.visible')
@@ -170,12 +171,13 @@ context.only('Document Operations', () => {
             cy.get('.error')
               .should('exist')
               .should('contain.text', 'Item already exists')
+              .type('{esc}')
             cy.get('[node-id$=untitled-1]')
               .should('exist')
           })
       })
 
-      it('should let users delete documents', () => {
+      it('should delete documents', () => {
         cy.get('[node-id$=untitled-1]')
           .should('be.visible')
           .rightclick()
@@ -268,7 +270,7 @@ context.only('Document Operations', () => {
           })
       })
 
-      it.skip('should let users delete documents', () => {
+      it.skip('should delete documents', () => {
         cy.get('[node-id$=test\\.txt]')
           .should('be.visible')
           .rightclick()
