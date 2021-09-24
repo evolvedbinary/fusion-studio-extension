@@ -14,8 +14,8 @@ If you don't know what Theia is, then you likely want the full [Fusion Studio ID
 *   [Fusion Studio API](https://github.com/evolvedbinary/fusion-studio-api) installed in a compatible [FusionDB Server](https://www.fusiondb.com) or [eXist-db](https://www.exist-db.org) database.
 
 #### For building
-*   [Node 12](https://nodejs.org/dist/v12.18.3/). `>= 12.18.3` (it should most likely be installed with [nvm](https://github.com/nvm-sh/nvm))
-    * Node 10 may work, and Node 14 should work... however we are focused on Node 12 compatibility.
+*   [Node LTS](https://nodejs.org/en/). `>= 12.18.3` (use [nvm](https://github.com/nvm-sh/nvm))
+    * Node `12` should work should work..., however we are focused on Node `LTS` compatibility.
 *   [Yarn](https://yarnpkg.com). `> 1.15.x` (it can easily be installed globally via npm (Node Package Manager), but you should be aware this has a small [security implication](https://classic.yarnpkg.com/en/docs/install/#install-via-npm). npm is installed when you install Node).
 *   [Python](https://www.python.org/) `>= 3.7.7.` (if your system does not provide it, consider using [pyenv](https://github.com/pyenv/pyenv)).
         If you are having trouble building and have multiple versions of Python installed via `pyenv` or any other mechanism, see the [Debugging Python Build Issues](#debugging-python-build-issues) section).
@@ -45,7 +45,7 @@ then the following information may be useful.
 The following commands will install the required packages and setup Python 3 via pyenv on Ubuntu 20.04.
 
 ```
-sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt-get install nodejs yarnpkg libx11-dev libxkbfile-dev
 alias yarn=yarnpkg
 
@@ -116,19 +116,16 @@ $ yarn start
 ```
 
 #### Integration Testing
-To run the integrations tests you need a running database with the fusion-studio-api installed. It should be reachable at `localhost:8080` and have an empty admin password. You can then run the integration test GUI locally by using:
-```bash
-yarn run cypress open
-```
-or in cases where the above fails to load the [cypress test runner](https://docs.cypress.io/guides/core-concepts/test-runner.html#Overview), use:
+To run the integrations tests you need a running database with the [fusion-studio-api](https://github.com/evolvedbinary/fusion-studio-api) installed. It should be reachable at `localhost:8080` and have an empty admin password. 
 ```bash
 npx cypress open
 ```
 
-Integration tests are also run on travis. To see a similar command line style output use:
+Integration tests are also run on circleCI. To use the electron headless browser via command line use:
 ```bash
-yarn run cypress run
+npx cypress run
 ```
+
 ### Developing
 *   To compile css:
 ```bash

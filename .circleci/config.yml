@@ -75,7 +75,7 @@ jobs:
             curl -v --connect-timeout 4 --max-time 8 http://localhost:3000 
       - run: 
           working_directory: .
-          command: npx cypress run --config defaultCommandTimeout=20000
+          command: npx cypress run --config defaultCommandTimeout=25000
           # command: npx cypress run -b chrome --config defaultCommandTimeout=58000
           no_output_timeout: 2m
 workflows:

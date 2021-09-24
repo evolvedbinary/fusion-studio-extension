@@ -5,6 +5,7 @@ context('Permission Manager', () => {
       cy.connect()
       cy.visit('/')
       cy.get(`[node-id=${CSS.escape('admin@' + Cypress.env('API_HOST'))}]`)
+        .should('be.visible')
         .click()
     })
 
