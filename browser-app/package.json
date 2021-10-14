@@ -22,7 +22,7 @@
     },
     "scripts": {
         "prepare": "theia build --mode development",
-        "start": "theia start",
+        "start": "theia start --hostname 0.0.0.0",
         "watch": "theia build --watch --mode development"
     },
     "theia": {
